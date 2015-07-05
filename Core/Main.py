@@ -396,7 +396,6 @@ sleep 3
             QMessageBox.information(self,"Error", "Network interface not supported :(")
         else:
             if path.exists("Settings/"):
-                print(":::")
                 if not geteuid() == 0:
                     QMessageBox.information(self, "Permission Denied", 'the Tool must be run as root try again.')
                     dot = 0
@@ -413,7 +412,7 @@ sleep 3
 
     def Edit_etter(self):
         n = dist()
-        if n[0] == "Ubuntu":
+        if n[0] == "Ubuntu" or n[0] == "Kali":
             system("xterm -e nano /etc/ettercap/etter.dns")
         elif n[0] == "debian":
             system("xterm -e nano /usr/share/ettercap/etter.dns")
