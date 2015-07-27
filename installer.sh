@@ -66,7 +66,8 @@ func_install(){
 		exit 1
 	fi
 	install_repo
-	sudo apt-get install -y python-qt4 ettercap-graphical xterm python-scapy aircrack-ng php5-cli BeautifulSoup python-nmap mdk3
+	sudo apt-get install -y python-qt4 ettercap-graphical xterm python-scapy aircrack-ng php5-cli  python-nmap mdk3
+	sudo pip install BeautifulSoup -y   
     File="/etc/apt/sources.list"
     if  grep -q '#Eviltwininstall' $File;then
 	    sudo cp /etc/apt/sources.list.backup /etc/apt/sources.list
