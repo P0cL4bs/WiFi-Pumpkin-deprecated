@@ -330,9 +330,12 @@ class frm_Arp_Poison(QWidget):
                 self.movie_screen.setDisabled(True)
                 self.tables.setVisible(False)
                 config_gateway = str(self.txt_gateway.text())
-                get_ip = len(config_gateway)-1
-                config_gateway = config_gateway[:get_ip] + '0/24'
-                self.ThreadScanner = ThreadScan(config_gateway)
+                scan = ''
+                config_gateway = config_gateway.split('.')
+                del config_gateway[-1]
+                for i in config_gateway:
+                    scan += str(i) + '.'
+                self.ThreadScanner = ThreadScan(scan + '0/24')
                 self.connect(self.ThreadScanner,SIGNAL('Activated ( QString ) '), self.thread_scan_reveice)
                 self.StatusMonitor(True,'stas_scan')
                 self.ThreadScanner.start()
@@ -362,8 +365,12 @@ class frm_Arp_Poison(QWidget):
                 print ip,'offline'
 
     def scanner_network(self,gateway):
-        get_ip = len(gateway)-1
-        gateway = gateway[:get_ip]
+        scan = ''
+        config_gateway = gateway.split('.')
+        del config_gateway[-1]
+        for i in config_gateway:
+            scan += str(i) + '.'
+        gateway = scan
         ranger = str(self.ip_range.text()).split('-')
         jobs = []
         manager = Manager()
