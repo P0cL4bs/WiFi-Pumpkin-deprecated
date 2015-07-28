@@ -352,7 +352,7 @@ class frm_DnsSpoof(QWidget):
                     for i in self.domains:
                         self.targets[i.split(':')[0]] = (i.split(':')[1]).replace('\n','')
                     self.domains = []
-                    open('echo 1 > /proc/sys/net/ipv4/ip_forward')
+                    popen('echo 1 > /proc/sys/net/ipv4/ip_forward')
                     arp_target = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()))
                     arp_target.setName('Arp Posion:: [target]')
                     arp_target.setDaemon(True)
