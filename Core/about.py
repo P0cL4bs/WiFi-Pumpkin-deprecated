@@ -4,7 +4,7 @@ author      = ' @mh4x0f P0cl4bs Team'
 emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
 version     = '0.6.3'
 date_create = '18/01/2015'
-update      ='07/06/2015'
+update      ='27/07/2015'
 license     = 'MIT License (MIT)'
 desc        = ['Framework for EvilTwin Attacks']
 class frmAbout(QDialog):
