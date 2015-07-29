@@ -9,10 +9,11 @@ Framework for EvilTwin Attacks
 * aircrack-ng
 * DHCP-server
 
-
-#### Ubuntu and Kali install
+#### How to install on Ubuntu or Kali
 ```sh
-$ chmod +x installer.sh
+$ git clone https://github.com/P0cL4bs/3vilTwinAttacker.git
+$ cd 3vilTwinAttacker
+$ sudo chmod +x installer.sh
 ```
 ```sh
 $ sudo ./installer --install
@@ -70,6 +71,8 @@ $ sudo pacman -S dhcp
 [Demo 2](http://youtu.be/qVGLGNYyLzg)
 --
 [Demo 3](http://youtu.be/rNWvpV6NZoI)
+--
+[Demo 4](https://youtu.be/-xP9ZPJUcLA)
 --
 The MIT License (MIT)
 
