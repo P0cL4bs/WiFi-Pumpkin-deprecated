@@ -515,14 +515,9 @@ class frm_template(QDialog):
         self.gui_temp()
 
     def loadtheme(self,theme):
-        if theme != 'theme2':
-            sshFile=('Core/%s.qss'%(theme))
-            with open(sshFile,'r') as fh:
-                self.setStyleSheet(fh.read())
-        else:
-            sshFile=('Core/%s.qss'%(theme))
-            with open(sshFile,'r') as fh:
-                self.setStyleSheet(fh.read())
+        sshFile=("Core/%s.qss"%(theme))
+        with open(sshFile,"r") as fh:
+            self.setStyleSheet(fh.read())
 
     def center(self):
         frameGm = self.frameGeometry()
