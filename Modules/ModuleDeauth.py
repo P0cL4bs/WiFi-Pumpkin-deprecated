@@ -172,8 +172,10 @@ class frm_deauth(QWidget):
                 'airmon-ng could not enable monitor '+
                 'mode on device %s.your card not supports monitor mode.' % interface)
             try:
-                monitor = re.search(r"monitor mode enabled on (\w+)", result).group(1)
-                if monitor == None:
+                monitor = re.search(r"monitor mode enabled on (\w+)", result)
+                if monitor != None:
+                    return monitor.group(1)
+                else:
                     monitor = re.search('on ([^ ]+)',result).group(1).split(']')[1].replace(')\n','')
             except:
                 pass
