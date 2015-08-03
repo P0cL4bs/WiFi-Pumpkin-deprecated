@@ -4,7 +4,6 @@ Framework for EvilTwin Attacks
 ![Supported Python versions](https://img.shields.io/badge/python-2.7-blue.svg)
 ![Linux OS](https://img.shields.io/badge/Supported%20OS-Linux-green.svg)
 ![Release](https://img.shields.io/badge/3vilTwinAttacker-0.6.3%20-orange.svg)
----
 ### dependencies:
 * Python-scapy
 * Python-nmap (optional)
