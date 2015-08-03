@@ -1,6 +1,9 @@
 # 3vilTwinAttacker v0.6.3
 Framework for EvilTwin Attacks
 ![Tool Home](https://dl.dropboxusercontent.com/u/97321327/evil/evil6.3.png)
+![Supported Python versions](https://img.shields.io/badge/python-2.7-blue.svg)
+![Linux OS](https://img.shields.io/badge/Supported%20OS-Linux-green.svg)
+![Release](https://img.shields.io/badge/3vilTwinAttacker-0.6.3%20-orange.svg)
 ---
 ### dependencies:
 * Python-scapy
