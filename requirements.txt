@@ -1,4 +1,4 @@
 Twisted
 scapy
 BeautifulSoup
-nmap
+python-nmap
