@@ -1,19 +1,15 @@
 #!/bin/bash
 #install kali and ubuntu
 #---------------------------------------
-txtund=$(tput sgr 0 1)          
-txtbld=$(tput bold)             
+txtund=$(tput sgr 0 1)
+txtbld=$(tput bold)
 green=$(tput setaf 2)
 bldred=${txtbld}$(tput setaf 1)
-red_color=$(tput setaf 1) 
+red_color=$(tput setaf 1)
 color_y=$(tput setaf 3)
 bldblu=${txtbld}$(tput setaf 4) 
 bldwht=${txtbld}$(tput setaf 7)
-txtrst=$(tput sgr0)             
-info=${bldwht}*${txtrst}       
-pass=${bldblu}*${txtrst}
-warn=${bldred}*${txtrst}
-ques=${bldblu}?${txtrst}
+txtrst=$(tput sgr0)
 #---------------------------------------
 requeries=true
 func_Banner(){
@@ -21,7 +17,7 @@ func_Banner(){
 	echo '   ============================='
 	echo "   |$bldblu 3vilTwinAttacker Installer$txtrst|"
 	echo '   ============================='
-	echo "          Version: $(tput setaf 5)0.5.9 $txtrst"
+	echo "          Version: $(tput setaf 5)0.6.3 $txtrst"
 }
 
 
@@ -66,19 +62,16 @@ func_install(){
 		exit 1
 	fi
 	install_repo
-	sudo apt-get install -y python-qt4 ettercap-graphical xterm python-scapy aircrack-ng php5-cli  python-nmap mdk3
-	sudo pip install BeautifulSoup -y   
+	apt-get install -y python-qt4 ettercap-graphical xterm python-scapy aircrack-ng php5-cli  python-nmap mdk3
+    pip install BeautifulSoup
     File="/etc/apt/sources.list"
     if  grep -q '#Eviltwininstall' $File;then
-	    sudo cp /etc/apt/sources.list.backup /etc/apt/sources.list
+	    cp /etc/apt/sources.list.backup /etc/apt/sources.list
 	    rm /etc/apt/sources.list.backup
     fi
 	echo "----------------------------------------"
 	echo "[=]$bldblu checking dependencies $txtrst "
 	func_check_install "ettercap"
-	func_check_install "xterm"
-	func_check_install "nmap"
-	func_check_install "sslstrip"
 	func_check_install "dhcpd"
 	func_check_install "aircrack-ng"
 	func_check_install "php"
@@ -87,25 +80,25 @@ func_install(){
 	dist=$(tr -s ' \011' '\012' < /etc/issue | head -n 1)
 	echo "[$green+$txtrst] Distribution Name: $dist"
 	if which dhcpd >/dev/null; then
-		echo -e ""
+		echo ""
 	else
 		echo "[$green+$txtrst] dhcpd installer Distribution"
 		if [ "$dist" = "Ubuntu" ]; then
 			check_dhcp=$(program_is_installed dhcpd)
 			if [ $check_dhcp = 0 ]; then
-				sudo apt-get install isc-dhcp-server -y
+				apt-get install isc-dhcp-server -y
 				func_check_install "dhcpd"
 			fi
 		elif [ "$dist" = "Kali" ]; then
 			check_dhcp=$(program_is_installed dhcpd)
 			if [ $check_dhcp = 0 ]; then
-				sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup
+                cp /etc/apt/sources.list /etc/apt/sources.list.backup
 				File="/etc/apt/sources.list"
                 if ! grep -q 'deb http://ftp.de.debian.org/debian wheezy main' $File;then
 				    echo "deb http://ftp.de.debian.org/debian wheezy main" >> /etc/apt/sources.list
 				    apt-get update
 				    apt-get install isc-dhcp-server -y
-				    sudo cp /etc/apt/sources.list.backup /etc/apt/sources.list
+				    cp /etc/apt/sources.list.backup /etc/apt/sources.list
 				    rm /etc/apt/sources.list.backup
 				    func_check_install "dhcpd"
                 fi
@@ -146,12 +139,11 @@ uninstall(){
 		exit 1
 	fi
 	if [  -d "$DIRECTORY" ]; then
-		echo "[$green+$txtrst] delete Path: $DIRECTORY"
+		echo "[$red_color-$txtrst] Delete Path:$bldwht $DIRECTORY $txtrst"
 		rm -r $path_uninstall
-		echo "[$green+$txtrst] delete with success"
 		if [ -f "/usr/bin/3vilTwin-Attacker" ]; then
 			rm /usr/bin/3vilTwin-Attacker
-			echo "[$red_color-$txtrst] 3vilTwinAttacker bin deleted"
+			echo "[$red_color-$txtrst] Deleted Binary:$bldwht/usr/bin/3vilTwin-Attacker $txtrst"
 		fi
 	else
 		echo "[$red_color✘$txtrst] 3vilTwinAttacker not Installed"
