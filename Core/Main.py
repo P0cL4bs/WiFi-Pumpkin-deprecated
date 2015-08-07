@@ -140,6 +140,7 @@ class SubMain(QWidget):
         self.thread         = []
         self.MonitorImport  = frm_deauth()
         self.PortRedirect   = None
+        self.Ap_iface       = None
         self.setGeometry(0, 0, 300, 400)
         self.intGUI()
 
@@ -469,8 +470,8 @@ class SubMain(QWidget):
         'interface':
             [
                 'ifconfig lo up',
-                'ifconfig at0 10.0.0.1 netmask 255.255.255.0',
-                'ifconfig at0 mtu 1400',
+                'ifconfig %s 10.0.0.1 netmask 255.255.255.0'%(self.Ap_iface),
+                'ifconfig %s mtu 1400'%(self.Ap_iface),
                 'route add -net 10.0.0.0 netmask 255.255.255.0 gw 10.0.0.1'
             ],
         'iptables':
@@ -483,7 +484,8 @@ class SubMain(QWidget):
                 'iptables --table nat --delete-chain',
                 'echo 1 > /proc/sys/net/ipv4/ip_forward',
                 'iptables -P FORWARD ACCEPT',
-                'iptables --append FORWARD --in-interface at0 -j ACCEPT',
+                'iptables -t nat -A PREROUTING -p udp -j DNAT --to %s'%(self.EditGateway.text()),
+                'iptables --append FORWARD --in-interface %s -j ACCEPT'%(self.Ap_iface),
                 'iptables --table nat --append POSTROUTING --out-interface '+Refactor.get_interfaces()['activated']+' -j MASQUERADE',
                 #'iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port '+self.PortRedirect,
                 #'iptables -t -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination ' +Refactor.get_interfaces()['IPaddress'],
@@ -505,7 +507,7 @@ class SubMain(QWidget):
             ],
         'dnsmasq':
             [
-                'interface=at0\n',
+                'interface=%s\n'%(self.Ap_iface),
                 'dhcp-range=10.0.0.10,10.0.0.50,12h\n',
                 'server=8.8.8.8\n',
                 'server=8.8.4.4\n',
@@ -556,12 +558,20 @@ class SubMain(QWidget):
         thr_airbase.start()
 
         # settings conf
+        while True:
+            if thr_airbase.process is not None:
+                try:
+                    self.Ap_iface = [x for x in Refactor.get_interfaces()['all'] if search('at',x)][0]
+                    self.config.xmlSettings('netcreds', 'interface',self.Ap_iface,False)
+                    break
+                except:
+                    pass
         p = Process(target=self.CoreSettings,args=())
         p.start(),p.join()
 
         # thread dhcp
         if self.config.xmlSettings('dhcp','dhcp_server',None,False) != 'dnsmasq':
-            Thdhcp = ThRunDhcp(['sudo','dhcpd','-d','-f','-cf','/etc/dhcp/dhcpd.conf','at0'])
+            Thdhcp = ThRunDhcp(['sudo','dhcpd','-d','-f','-cf','/etc/dhcp/dhcpd.conf',self.Ap_iface])
             self.connect(Thdhcp,SIGNAL('Activated ( QString ) '), self.dhcpLog)
             Thdhcp.setObjectName('DHCP')
             self.thread.append(Thdhcp)
