@@ -4,6 +4,7 @@ Framework for EvilTwin Attacks
 ![Supported Python versions](https://img.shields.io/badge/python-2.7-blue.svg)
 ![Linux OS](https://img.shields.io/badge/Supported%20OS-Linux-green.svg)
 ![Release](https://img.shields.io/badge/3vilTwinAttacker-0.6.3%20-orange.svg)
+![MIT License](https://img.shields.io/packagist/l/doctrine/orm.svg)
 ### dependencies:
 * Python-scapy
 * Python-nmap (optional)
@@ -16,8 +17,6 @@ Framework for EvilTwin Attacks
 $ git clone https://github.com/P0cL4bs/3vilTwinAttacker.git
 $ cd 3vilTwinAttacker
 $ sudo chmod +x installer.sh
-```
-```sh
 $ sudo ./installer --install
 ```
 #### install DHCP in  Debian-based
@@ -67,33 +66,4 @@ $ sudo pacman -S dhcp
 
 * DNS Spoof Attack: this module DNS spoofing is the making change in hostname ip-address table, this table tells the route will be that DNS address for that particular IP address, thus changing the address of this table we can redirect wherever we want.
 
-## Videos tutorials:
-[Demo 1](http://www.youtube.com/watch?v=Jrb43KVPIJw)
---
-[Demo 2](http://youtu.be/qVGLGNYyLzg)
---
-[Demo 3](http://youtu.be/rNWvpV6NZoI)
---
-[Demo 4](https://youtu.be/-xP9ZPJUcLA)
---
-The MIT License (MIT)
 
-Copyright (c) 2015 P0cL4bs Team
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
