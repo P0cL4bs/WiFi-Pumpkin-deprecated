@@ -17,7 +17,7 @@ Framework for EvilTwin Attacks
 $ git clone https://github.com/P0cL4bs/3vilTwinAttacker.git
 $ cd 3vilTwinAttacker
 $ sudo chmod +x installer.sh
-$ sudo ./installer --install
+$ sudo ./installer.sh --install
 ```
 #### install DHCP in  Debian-based
 
