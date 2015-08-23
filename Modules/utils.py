@@ -24,7 +24,7 @@ from subprocess import call,check_output,Popen,PIPE,STDOUT
 from re import search,compile,VERBOSE,IGNORECASE
 import socket
 try:
-    from nmap import PortScanners
+    from nmap import PortScanner
 except ImportError:
     pass
 import threading
