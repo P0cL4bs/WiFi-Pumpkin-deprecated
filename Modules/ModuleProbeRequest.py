@@ -16,9 +16,9 @@
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from PyQt4.QtGui import *
 from re import search
-from os import system,geteuid,getuid
+from os import system,geteuid,getuid,popen
 from Core.Settings import frm_Settings
-from Modules.utils import Refactor
+from Modules.utils import Refactor,set_monitor_mode
 from subprocess import Popen,PIPE
 from scapy.all import *
 
@@ -29,17 +29,6 @@ class frm_Probe(QMainWindow):
         self.form_widget = frm_PMonitor(self)
         self.setCentralWidget(self.form_widget)
         self.setWindowIcon(QIcon('rsc/icon.ico'))
-    def closeEvent(self, event):
-        reply = QMessageBox.question(self, 'About Exit',"Are you sure to quit?", QMessageBox.Yes |
-            QMessageBox.No, QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            event.accept()
-            if getuid() == 0:
-                self.deleteLater()
-            else:
-                pass
-        else:
-            event.ignore()
 
 class frm_PMonitor(QWidget):
     def __init__(self, parent=None):
@@ -47,9 +36,8 @@ class frm_PMonitor(QWidget):
         self.Main = QVBoxLayout()
         self.setWindowTitle("Probe Request wifi Monitor")
         self.setWindowIcon(QIcon('rsc/icon.ico'))
-        self.probes = []
         self.config = frm_Settings()
-        self.interface = self.config.xmlSettings("interface", "monitor_mode", None, False)
+        self.interface = str(self.config.xmlSettings("interface", "monitor_mode", None, False))
         self.loadtheme(self.config.XmlThemeSelected())
         self.setupGUI()
 
@@ -90,29 +78,20 @@ class frm_PMonitor(QWidget):
         elif self.time_scan.currentText() == "30s":self.time_control = 600
         if self.get_placa.currentText() == "":
             QMessageBox.information(self, "Network Adapter", 'Network Adapter Not found try again.')
-        else:
-            if not geteuid() == 0:
-                QMessageBox.information(self, "Permission Denied", 'the tool must be run as root try again.')
+            return
+        out = popen('iwconfig').readlines()
+        for i in out:
+            if search('Mode:Monitor', i):
+                self.interface = i.split()[0]
+                sniff(iface=self.interface,prn=self.sniff_probe, count=self.time_control)
             else:
-                comando = "ifconfig"
-                proc = Popen(comando,stdout=PIPE, shell=True)
-                data = proc.communicate()[0]
-                if search(self.interface, data):
-                    sniff(iface=self.interface,prn=self.sniff_probe, count=self.time_control)
-                    system("clear")
-                else:
-                    system("airmon-ng start %s" %(self.get_placa.currentText()))
-                    sniff(iface=self.interface,prn=self.sniff_probe, count=self.time_control)
-                    system("clear")
+                set_monitor_mode(self.get_placa.currentText()).setEnable()
+                sniff(iface=self.interface,prn=self.sniff_probe, count=self.time_control)
 
     def sniff_probe(self,p):
         if (p.haslayer(Dot11ProbeReq)):
                 mac_address=(p.addr2)
                 ssid=p[Dot11Elt].info
                 ssid=ssid.decode('utf-8','ignore')
-                if ssid == "":
-                        ssid="null"
-                else:
-                        print ("[:] Probe Request from %s for SSID '%s'" %(mac_address,ssid))
-                        self.probes.append("[:] Probe Request from %s for SSID '%s'" %(mac_address,ssid))
-                        self.list_probe.addItem("[:] Probe Request from %s for SSID '%s'" %(mac_address,ssid))
+                if ssid == "":ssid="null"
+                self.list_probe.addItem("[:] Probe Request from %s for SSID '%s'" %(mac_address,ssid))

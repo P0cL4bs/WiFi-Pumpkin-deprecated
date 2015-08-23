@@ -5,12 +5,14 @@ Framework for EvilTwin Attacks
 ![Linux OS](https://img.shields.io/badge/Supported%20OS-Linux-green.svg)
 ![Release](https://img.shields.io/badge/3vilTwinAttacker-0.6.3%20-orange.svg)
 ![MIT License](https://img.shields.io/packagist/l/doctrine/orm.svg)
+###Description
+3vilTwinAttacker is security tool that  provide the Rogue access point to Man-In-The-Middle and network attacks. purporting to provide wireless Internet services, but snooping on the traffic. can be used to capture of credentials of unsuspecting users by either snooping the communication by phishing.
+
 ### dependencies:
 * Python-scapy
 * Python-nmap (optional)
 * BeautifulSoup
-* aircrack-ng
-* DHCP-server
+* isc-dhcp-server
 
 #### How to install on Ubuntu or Kali
 ```sh

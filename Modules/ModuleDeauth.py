@@ -22,7 +22,7 @@ import threading
 from os import popen,system,getuid,path,makedirs
 from re import search,compile,match
 from Core.Settings import frm_Settings
-from Modules.utils import Refactor,ProcessThread,airdump_start,get_network_scan
+from Modules.utils import Refactor,ProcessThread,airdump_start,get_network_scan,set_monitor_mode
 from multiprocessing import Process
 from subprocess import Popen,PIPE,STDOUT,call,check_output
 threadloading = {'deauth':[],'mdk3':[]}
@@ -67,7 +67,7 @@ class frm_deauth(QWidget):
         self.Main = QVBoxLayout()
         self.xmlcheck = frm_Settings()
         self.interface = self.xmlcheck.xmlSettings("interface", "monitor_mode", None, False)
-        self.ap_list = []
+        self.ApsCaptured = {}
         self.pacote = []
         self.data = {'Bssid':[], 'Essid':[], 'Channel':[]}
         self.window_qt()
@@ -82,7 +82,6 @@ class frm_deauth(QWidget):
 
     def window_qt(self):
         self.mForm = QFormLayout()
-        self.mForm0 = QFormLayout()
         self.statusbar = QStatusBar()
         system = QLabel("Deauthentication::")
         self.statusbar.addWidget(system)
@@ -155,34 +154,15 @@ class frm_deauth(QWidget):
         self.Grid.addWidget(self.input_client,1,3)
 
 
-        self.mForm0.addRow(self.tables)
+        self.form0  = QGridLayout()
+        self.form0.addWidget(self.tables,0,0)
+
         self.mForm.addRow(self.btn_enviar, self.btn_stop)
         self.mForm.addRow(self.statusbar)
-        self.Main.addLayout(self.mForm0)
+        self.Main.addLayout(self.form0)
         self.Main.addLayout(self.Grid)
         self.Main.addLayout(self.mForm)
         self.setLayout(self.Main)
-
-    def set_monitor_mode(self,interface, enable=True):
-        monitor = None
-        if enable:
-            result = check_output(['airmon-ng', 'start', interface])
-            if not "enabled" in result:
-                QMessageBox.information(self,'error airmon-ng',
-                'airmon-ng could not enable monitor '+
-                'mode on device %s.your card not supports monitor mode.' % interface)
-            try:
-                monitor = re.search(r"monitor mode enabled on (\w+)", result)
-                if monitor != None:
-                    return monitor.group(1)
-                else:
-                    monitor = re.search('on ([^ ]+)',result).group(1).split(']')[1].replace(')\n','')
-            except:
-                pass
-        else:
-            check_output(['airmon-ng', 'stop', interface],shell=False)
-
-        return monitor
 
     def scan_diveces_airodump(self):
         dirpath = "Settings/Dump"
@@ -223,41 +203,19 @@ class frm_deauth(QWidget):
         if self.get_placa.currentText() == "":
             QMessageBox.information(self, "Network Adapter", 'Network Adapter Not found try again.')
         else:
-            if not search(self.interface,check_output('ifconfig')):
-                self.interface = self.set_monitor_mode(self.get_placa.currentText(),True)
-                self.xmlcheck.xmlSettings("interface", "monitor_mode", self.interface, False)
+            self.interface = str(set_monitor_mode(self.get_placa.currentText()).setEnable())
+            self.xmlcheck.xmlSettings("interface", "monitor_mode", self.interface, False)
             if self.time_scan.currentText() == "10s":count = 10
             elif self.time_scan.currentText() == "20s":count = 20
             elif self.time_scan.currentText() == "30s":count = 30
             if self.interface != None:
                 if self.options_scan == "scan_scapy":
-                    sniff(iface=self.interface, prn =self.Scanner_devices, timeout=count)
-                    t = len(self.ap_list) -1
-                    items,cap = [],[]
-                    for i in range(t):
-                        if len(self.ap_list[i]) < len(self.ap_list[i+1]):
-                            if i != 0:
-                                for index in xrange(self.list.count()):
-                                    items.append(self.list.item(index))
-                                if self.ap_list[i] or self.ap_list[i+1] in items:pass
-                                else:
-                                    if not (self.ap_list[i] + " " + self.ap_list[i+1]) in cap:
-                                        cap.append(self.ap_list[i] + " " + self.ap_list[i+1])
-                            else:
-                                if not (self.ap_list[i] + " " + self.ap_list[i+1]) in cap:
-                                    cap.append(self.ap_list[i] + " " + self.ap_list[i+1])
-                        else:
-                            if not (self.ap_list[i+1] + " " + self.ap_list[i]) in cap:
-                                cap.append(self.ap_list[i+1] + " " + self.ap_list[i])
-                        if self.ap_list[i] < i:
-                            pass
-                            break
-                    for i in cap:
-                        dat = i.split()
-                        if Refactor.check_is_mac(dat[3]):
-                            self.data['Channel'].append(dat[0])
-                            self.data['Essid'].append(dat[2])
-                            self.data['Bssid'].append(dat[3])
+                    self.scapy_scan_AP(self.interface,count)
+                    for i in self.ApsCaptured.keys():
+                        if Refactor.check_is_mac(i):
+                            self.data['Channel'].append(self.ApsCaptured[i][0])
+                            self.data['Essid'].append(self.ApsCaptured[i][1])
+                            self.data['Bssid'].append(i)
                             Headers = []
                             for n, key in enumerate(self.data.keys()):
                                 Headers.append(key)
@@ -265,18 +223,16 @@ class frm_deauth(QWidget):
                                     item = QTableWidgetItem(item)
                                     item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
                                     self.tables.setItem(m, n, item)
-                    self.ap_list = []
                 else:
                     self.thread_airodump = threading.Thread(target=self.scan_diveces_airodump)
                     self.thread_airodump.daemon = True
                     self.thread_airodump.start()
 
+    def scapy_scan_AP(self,interface,timeout):
+        sniff(iface=str(interface), prn =self.Scanner_devices, timeout=timeout)
     def Scanner_devices(self,pkt):
         if pkt.type == 0 and pkt.subtype == 8:
-            if pkt.addr2 not in self.ap_list:
-                self.ap_list.append(pkt.addr2)
-                self.ap_list.append(str(int(ord(pkt[Dot11Elt:3].info)))+" | " + pkt.info)
-                print "AP MAC: %s with SSID: %s CH %d"%(pkt.addr2, pkt.info, int(ord(pkt[Dot11Elt:3].info)))
+            self.ApsCaptured[pkt.addr2] = [str(int(ord(pkt[Dot11Elt:3].info))),pkt.info]
 
     def attack_deauth(self):
         global threadloading

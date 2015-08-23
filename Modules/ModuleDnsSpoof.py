@@ -130,7 +130,6 @@ class frm_DnsSpoof(QWidget):
                 '-w100', 'facebook.com'], stdout=PIPE).stdout.read()).split()[2]).replace(')','').replace('(',''),
                 'gmail.com:'+(str(Popen(['/bin/ping','-c1',
                 '-w100', 'gmail.com'], stdout=PIPE).stdout.read()).split()[2]).replace(')','').replace('(',''),
-                'uol.com:200.147.67.142'
             ]
             for i in items:
                 item = QListWidgetItem()

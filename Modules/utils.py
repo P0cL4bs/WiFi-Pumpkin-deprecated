@@ -23,12 +23,16 @@ from BeautifulSoup import BeautifulSoup
 from subprocess import call,check_output,Popen,PIPE,STDOUT
 from re import search,compile,VERBOSE,IGNORECASE
 import socket
-from nmap import PortScanner
+try:
+    from nmap import PortScanners
+except ImportError:
+    pass
 import threading
 from threading import Thread
 from Queue import Queue, Empty
 from scapy.all import *
 from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 import logging
 
 def airdump_start(interface):
@@ -92,10 +96,31 @@ class ThreadScan(QThread):
                 except :
                     pass
 
+class set_monitor_mode(QDialog):
+    def __init__(self,interface,parent = None):
+        super(set_monitor_mode, self).__init__(parent)
+        self.interface = interface
+    def setEnable(self):
+        try:
+            output  = check_output(['ifconfig', self.interface, 'down'])
+            output += check_output(['iwconfig', self.interface, 'mode','monitor'])
+            output += check_output(['ifconfig', self.interface, 'up'])
+            if len(output) > 0:QMessageBox.information(self,'Monitor Mode',
+            'device %s.%s'%(self.interface,output))
+            return self.interface
+        except Exception ,e:
+            QMessageBox.information(self,'Monitor Mode',
+            'mode on device %s.your card not supports monitor mode'%(self.interface))
+    def setDisable(self):
+        Popen(['ifconfig', self.interface, 'down'])
+        Popen(['iwconfig', self.interface, 'mode','managed'])
+        Popen(['ifconfig', self.interface, 'up'])
+
 class ProcessThread(threading.Thread):
     def __init__(self,cmd):
         threading.Thread.__init__(self)
         self.cmd = cmd
+        self.iface = None
         self.process = None
         self.logger = False
 
@@ -110,9 +135,10 @@ class ProcessThread(threading.Thread):
         self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
         for line in iter(self.process.stdout.readline, b''):
             if self.logger:
-                if not search(Refactor.getHwAddr(Refactor.get_interfaces()['activated']),
-                        str(line.rstrip()).lower()):
-                    log_airbase.info(line.rstrip())
+                if search('Created tap interface',line):
+                    Popen(['ifconfig',line.split()[4], 'up'])
+                    self.iface = line.split()[4]
+                log_airbase.info(line.rstrip())
             print (line.rstrip())
 
     def stop(self):
@@ -307,10 +333,11 @@ class Refactor:
     def get_interfaces():
         interfaces = {'activated':None,'all':[],'gateway':None,'IPaddress':None}
         proc = Popen("ls -1 /sys/class/net",stdout=PIPE, shell=True)
+        for i in proc.communicate()[0].split():
+            interfaces['all'].append(i)
         output1 = popen('route | grep default').read().split()
         output2 = popen('/sbin/ip route | grep default').read().split()
         if (output2 and output1) != []:
-            for i in proc.communicate()[0].split():interfaces['all'].append(i)
             if output1 != []:interfaces['gateway'],interfaces['activated'] = output1[1],output1[7]
             elif output2 != []:
                 if path.isfile('/sbin/ip'):
