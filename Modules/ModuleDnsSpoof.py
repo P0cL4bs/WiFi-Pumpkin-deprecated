@@ -242,20 +242,19 @@ class frm_DnsSpoof(QWidget):
                 self.myListDns.takeItem(self.myListDns.currentRow())
         elif action == additem:
             text, resp = QInputDialog.getText(self, 'Add DNS',
-            'Enter the DNS for spoof hosts: ex: facebook.com')
+            'Enter the DNS and IP for spoof hosts: ex: facebook.com:31.13.65.1')
             if resp:
                 try:
-                    getip = str(Popen(['/bin/ping','-c1',
-                    '-w100', text], stdout=PIPE).stdout.read()).replace(')','')
+                    host, ip = text.split(':')
                     itemsexits = []
                     for index in xrange(self.myListDns.count()):
                         itemsexits.append(str(self.myListDns.item(index).text()))
                     for i in itemsexits:
-                        if search(str(text+':'+str(getip.split()[2]).replace('(','')),i):
+                        if search(str(host+':'+ip),i):
                             QMessageBox.information(self,'Dns Rsolver','this DNS already exist on List Attack')
                             return
                     item = QListWidgetItem()
-                    item.setText(text+':'+str(getip.split()[2]).replace('(',''))
+                    item.setText(host+':'+ip)
                     item.setSizeHint(QSize(30,30))
                     self.myListDns.addItem(item)
                 except gaierror,e:
@@ -341,17 +340,20 @@ class frm_DnsSpoof(QWidget):
     def Start_Attack(self):
         self.targets = {}
         if (len(self.txt_target.text()) and  len(self.txt_gateway.text())) == 0:
-            QMessageBox.information(self, 'Error Arp Attacker', 'you need set the input correctly')
+            QMessageBox.warning(self, 'Error Dnsspoof', 'you need set the input correctly')
         else:
             if (len(self.txt_target.text()) and len(self.txt_gateway.text())) and len(self.txt_redirect.text()) != 0:
                 if len(self.txt_redirect.text()) != 0:
                     self.domains = []
+                    if self.myListDns.count() == 0:
+                        QMessageBox.warning(self, 'Error DNS', 'Any host found, you need to add hosts.')
+                        return
                     for index in xrange(self.myListDns.count()):
                         self.domains.append(str(self.myListDns.item(index).text()))
                     for i in self.domains:
                         self.targets[i.split(':')[0]] = (i.split(':')[1]).replace('\n','')
                     self.domains = []
-                    popen('echo 1 > /proc/sys/net/ipv4/ip_forward')
+                    Refactor.set_ip_forward(1)
                     arp_target = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()))
                     arp_target.setName('Arp Posion:: [target]')
                     arp_target.setDaemon(True)
@@ -374,14 +376,13 @@ class frm_DnsSpoof(QWidget):
                     self.StatusMonitor(True,'dns_spoof')
 
     def Reiptables(self):
-            roles = [
-                'echo \'0\' > /proc/sys/net/ipv4/ip_forward',
-                'iptables --flush',
-                'iptables --table nat --flush' ,
-                'iptables --delete-chain',
-                'iptables --table nat --delete-chain'
-                ]
-            for delete in roles: popen(delete)
+        rules = [
+        'iptables --flush',
+        'iptables --table nat --flush' ,
+        'iptables --delete-chain',
+        'iptables --table nat --delete-chain']
+        for delete in rules: popen(delete)
+        Refactor.set_ip_forward(0)
 
     def Start_scan(self):
         self.StatusMonitor(True,'stas_scan')
@@ -389,6 +390,11 @@ class frm_DnsSpoof(QWidget):
         self.tables.clear()
         self.data = {'IPaddress':[], 'Hostname':[], 'MacAddress':[]}
         if threadscan_check == 'Nmap':
+            try:
+                from nmap import PortScanner
+            except ImportError:
+                QMessageBox.information(self,'Error Nmap','The modules python-nmap not installed')
+                return
             if self.txt_gateway.text() != '':
                 self.movie_screen.setDisabled(True)
                 self.tables.setVisible(False)
@@ -420,12 +426,10 @@ class frm_DnsSpoof(QWidget):
     def working(self,ip,lista):
         with open(devnull, 'wb') as limbo:
             result=subprocess.Popen(['ping', '-c', '1', '-n', '-W', '1', ip],
-                                        stdout=limbo, stderr=limbo).wait()
+            stdout=limbo, stderr=limbo).wait()
             if not result:
                 print('online',ip)
                 lista[ip] = ip + '|' + self.network.get_mac(ip)
-            else:
-                print ip,'offline'
 
     def scanner_network(self,gateway):
         scan = ''

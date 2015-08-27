@@ -15,8 +15,4 @@ def check_dependencies():
     for k,g in enumerate(m):
         if m[k] == False:
             if k == 0:
-                print '[%s✘%s] DHCP not %sfound%s.'%(RED,ENDC,YELLOW,ENDC)
-    for c in m:
-        if c == False:
-            exit(1)
-        break
+                print '[%s✘%s] isc-dhcp-server not %sinstalled%s.'%(RED,ENDC,YELLOW,ENDC)

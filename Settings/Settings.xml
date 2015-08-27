@@ -4,7 +4,7 @@
         <dhcp dhcp_server="iscdhcpserver"/>
         <scanner_AP select="scan_scapy"/>
         <mdk3 arguments="a -a"/>
-        <scan rangeIP="100-199"/>
+        <scan rangeIP="0-255"/>
         <themes selected="theme2"/>
     </configure>
 
@@ -16,5 +16,13 @@
         <Iprange range="10.0.0.20 10.0.0.50"/>
         <redirect port="10000"/>
         <netcreds interface="at0"/>
+    </configure>
+
+    <configure>
+        <rules0 value="iptables -P FORWARD ACCEPT"/>
+        <rules1 value="iptables -t nat -A PREROUTING -p udp -j DNAT --to $$ "/>
+        <rules2 value="iptables --append FORWARD --in-interface $$ -j ACCEPT"/>
+        <rules3 value="iptables --table nat --append POSTROUTING --out-interface $$ -j MASQUERADE"/>
+        <rules4 value="iptables -t nat -A POSTROUTING -j MASQUERADE"/>
     </configure>
 </settings>

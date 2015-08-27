@@ -84,9 +84,9 @@ class frm_PMonitor(QWidget):
             if search('Mode:Monitor', i):
                 self.interface = i.split()[0]
                 sniff(iface=self.interface,prn=self.sniff_probe, count=self.time_control)
-            else:
-                set_monitor_mode(self.get_placa.currentText()).setEnable()
-                sniff(iface=self.interface,prn=self.sniff_probe, count=self.time_control)
+                return
+        set_monitor_mode(self.get_placa.currentText()).setEnable()
+        sniff(iface=self.interface,prn=self.sniff_probe, count=self.time_control)
 
     def sniff_probe(self,p):
         if (p.haslayer(Dot11ProbeReq)):

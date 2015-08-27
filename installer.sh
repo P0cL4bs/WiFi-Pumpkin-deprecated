@@ -18,6 +18,7 @@ func_Banner(){
 	echo "   |$bldblu 3vilTwinAttacker Installer$txtrst|"
 	echo '   ============================='
 	echo "          Version: $(tput setaf 5)0.6.3 $txtrst"
+	echo "Options: --install | --uninstall"
 }
 
 

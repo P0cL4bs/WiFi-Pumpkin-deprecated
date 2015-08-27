@@ -1,0 +1,26 @@
+Version 0.6.3
+-----------
+- Netcreds Plugin
+- New DHCP (dnsmasq)
+- New module DNS spoof
+- Beef API Hook on Phishing
+- export html report attack
+- Advanced Settings
+- sslstrip on default
+- Fixed xterm window
+- Credentials Monitor
+- Credentials Phising
+- added support kali 2.0
+- added iptables Settings
+- added function save all Logs
+
+Version 0.5.9
+-----------
+- Added thread fast scan
+- Fixed same bugs
+- added theme 2
+- added airodump scan network
+- fixed error kali 1.1.0
+- added Function DNS Spoof with ettercap
+- added funcion Settings AP
+- added thread and remove xterm window

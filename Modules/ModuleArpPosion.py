@@ -210,7 +210,7 @@ class frm_Arp_Poison(QWidget):
         self.form.addRow(self.form0)
         self.form.addRow(self.grid1)
         self.form.addRow('Target:', self.txt_target)
-        self.form.addRow('GateWay:', self.txt_gateway)
+        self.form.addRow('Gateway:', self.txt_gateway)
         self.form.addRow('MAC address:', self.txt_mac)
         self.form.addRow('Redirect IP:', self.txt_redirect)
         self.form.addRow('IP ranger Scan:',self.ip_range)
@@ -269,6 +269,7 @@ class frm_Arp_Poison(QWidget):
         self.StatusMonitor(False,'stas_arp')
         self.StatusMonitor(False,'stas_phishing')
         self.conf_attack(False)
+        Refactor.set_ip_forward(0)
 
     @pyqtSlot(QModelIndex)
     def check_options(self,index):
@@ -293,6 +294,7 @@ class frm_Arp_Poison(QWidget):
             if (len(self.txt_target.text()) and len(self.txt_gateway.text())) and len(self.txt_mac.text()) != 0:
                 if len(self.txt_redirect.text()) != 0:
                     self.StatusMonitor(True,'stas_arp')
+                    Refactor.set_ip_forward(1)
                     self.conf_attack(True)
                     thr = ThreadAttackPosion(str(self.txt_target.text()),
                                              str(self.txt_gateway.text()),
@@ -308,9 +310,7 @@ class frm_Arp_Poison(QWidget):
             if len(self.ip) != 0:
                 iptables = [
                         'iptables -t nat --flush',
-                        'iptables --zero',
-                        'echo  1 > /proc/sys/net/ipv4/ip_forward',
-                        'iptables -A FORWARD --in-interface '+self.interfaces['gateway']+' -j ACCEPT',
+                        'iptables -A FORWARD --in-interface '+str(self.txt_gateway.text())+' -j ACCEPT',
                         'iptables -t nat --append POSTROUTING --out-interface ' +self.interfaces['activated'] +' -j MASQUERADE',
                         'iptables -t nat -A PREROUTING -p tcp --dport 80 --jump DNAT --to-destination '+self.ip
                             ]
@@ -321,7 +321,7 @@ class frm_Arp_Poison(QWidget):
                 QMessageBox.information(self,'Error Redirect IP','Redirect IP not found')
         else:
             nano = [
-                'echo 0 > /proc/sys/net/ipv4/ip_forward','iptables --flush',
+                'iptables --flush',
                 'iptables --table nat --flush' ,\
                 'iptables --delete-chain', 'iptables --table nat --delete-chain'
                     ]
@@ -333,6 +333,11 @@ class frm_Arp_Poison(QWidget):
         self.tables.clear()
         self.data = {'IPaddress':[], 'Hostname':[], 'MacAddress':[]}
         if threadscan_check == 'Nmap':
+            try:
+                from nmap import PortScanner
+            except ImportError:
+                QMessageBox.information(self,'Error Nmap','The modules python-nmap not installed')
+                return
             if  self.txt_gateway.text() != '':
                 self.movie_screen.setDisabled(True)
                 self.tables.setVisible(False)
@@ -364,12 +369,10 @@ class frm_Arp_Poison(QWidget):
     def working(self,ip,lista):
         with open(devnull, 'wb') as limbo:
             result=subprocess.Popen(['ping', '-c', '1', '-n', '-W', '1', ip],
-                                        stdout=limbo, stderr=limbo).wait()
+            stdout=limbo, stderr=limbo).wait()
             if not result:
                 print('online',ip)
                 lista[ip] = ip + '|' + self.module_network.get_mac(ip)
-            else:
-                print ip,'offline'
 
     def scanner_network(self,gateway):
         scan = ''

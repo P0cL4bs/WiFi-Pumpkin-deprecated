@@ -224,9 +224,13 @@ class frm_deauth(QWidget):
                                     item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
                                     self.tables.setItem(m, n, item)
                 else:
-                    self.thread_airodump = threading.Thread(target=self.scan_diveces_airodump)
-                    self.thread_airodump.daemon = True
-                    self.thread_airodump.start()
+                    if path.isfile(popen('which airodump-ng').read().split("\n")[0]):
+                        self.thread_airodump = threading.Thread(target=self.scan_diveces_airodump)
+                        self.thread_airodump.daemon = True
+                        self.thread_airodump.start()
+                    else:
+                        QMessageBox.information(self,'Error airodump','airodump-ng not installed')
+                        set_monitor_mode(self.get_placa.currentText()).setDisable()
 
     def scapy_scan_AP(self,interface,timeout):
         sniff(iface=str(interface), prn =self.Scanner_devices, timeout=timeout)
@@ -250,11 +254,15 @@ class frm_deauth(QWidget):
                 t.daemon = True
                 t.start()
             else:
-                self.AttackStatus(True)
-                t = ProcessThread(("mdk3 mon0 %s %s"%(self.args,self.bssid)).split())
-                t.name = "mdk3"
-                threadloading['mdk3'].append(t)
-                t.start()
+                if path.isfile(popen('which mdk3').read().split("\n")[0]):
+                    self.AttackStatus(True)
+                    t = ProcessThread(("mdk3 %s %s %s"%(self.interface,self.args,self.bssid)).split())
+                    t.name = "mdk3"
+                    threadloading['mdk3'].append(t)
+                    t.start()
+                else:
+                    QMessageBox.information(self,'Error mdk3','mkd3 not installed')
+                    set_monitor_mode(self.get_placa.currentText()).setDisable()
 
     def AttackStatus(self,bool):
         if bool:
