@@ -18,7 +18,7 @@ from struct import pack
 from fcntl import ioctl
 from time import sleep,asctime
 from random import randint
-from os import popen,path,walk,system,getcwd
+from os import popen,path,walk,system,getpid
 from BeautifulSoup import BeautifulSoup
 from subprocess import call,check_output,Popen,PIPE,STDOUT
 from re import search,compile,VERBOSE,IGNORECASE
@@ -34,7 +34,6 @@ from scapy.all import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import logging
-
 def airdump_start(interface):
     process = ProcessThread(['xterm',
                 '-geometry', '85x15-1+250', '-T',
@@ -403,9 +402,21 @@ class Refactor:
         if checked.match(value) is None:return False
         else:
             return True
+    @staticmethod
+    def threadRoot(sudo_password):
+        call(['sudo','-k'])
+        p = Popen(['sudo', '-S','./3vilTwin-Attacker.py'], stdin=PIPE, stderr=PIPE,
+        universal_newlines=True)
+        waiter().start()
+        p.communicate(str(sudo_password) + '\n')[1]
 
     @staticmethod
     def find(name, paths):
         for root, dirs, files in walk(paths):
             if name in files:
                 return path.join(root, name)
+
+class waiter(threading.Thread):
+    def run(self):
+        sleep(10)
+        call(['kill','-9',str(getpid())])

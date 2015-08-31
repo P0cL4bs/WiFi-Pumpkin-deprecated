@@ -19,10 +19,10 @@ from PyQt4.QtCore import *
 from shutil import move
 from sys import argv
 import logging
-from re import search,compile,VERBOSE,IGNORECASE
+from re import search
 from multiprocessing import Process
 from time import asctime
-from subprocess import Popen,PIPE,STDOUT,call,check_output
+from subprocess import Popen,PIPE,STDOUT,call
 from Modules.ModuleStarvation import frm_dhcp_main
 from Modules.ModuleDeauth import frm_window,frm_deauth
 from Modules.ModuleMacchanger import frm_mac_generator
@@ -44,7 +44,7 @@ if search('/usr/share/',argv[0]):chdir('/usr/share/3vilTwinAttacker/')
 author      = ' @mh4x0f P0cl4bs Team'
 emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
 license     = 'MIT License (MIT)'
-version     = '0.6.3'
+version     = '0.6.4'
 date_create = '18/01/2015'
 update      = '27/07/2015'
 desc        = ['Framework for EvilTwin Attacks']
@@ -126,7 +126,9 @@ class Threadsslstrip(QThread):
         reactor.run(installSignalHandlers=False)
     def stop(self):
         print 'Stop thread:' + self.objectName()
-        reactor.stop()
+        try:
+            reactor.stop()
+        except:pass
 
 
 class SubMain(QWidget):
@@ -263,7 +265,7 @@ class SubMain(QWidget):
         self.EditChannel = QLineEdit(self)
         self.selectCard = QComboBox(self)
         self.ListLoggerDhcp = QListWidget(self)
-        self.ListLoggerDhcp.setFixedHeight(170)
+        self.ListLoggerDhcp.setFixedHeight(150)
         try:
             self.EditGateway.setText([Refactor.get_interfaces()[x] for x in Refactor.get_interfaces().keys() if x == 'gateway'][0])
         except:pass
@@ -287,11 +289,11 @@ class SubMain(QWidget):
         dnsmasq = popen('which dnsmasq').read().split("\n")
         lista = [ '/usr/sbin/airbase-ng', ettercap[0],driftnet[0],dhcpd[0],dnsmasq[0]]
         self.m = []
-        for i in lista:
-            self.m.append(path.isfile(i))
+        for i in lista:self.m.append(path.isfile(i))
 
-        self.form = QFormLayout()
-        self.form2 = QFormLayout()
+        self.FormGroup1 = QFormLayout()
+        self.FormGroup2 = QFormLayout()
+        self.FormGroup3 = QFormLayout()
         hLine = QFrame()
         hLine.setFrameStyle(QFrame.HLine)
         hLine.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Expanding)
@@ -301,40 +303,54 @@ class SubMain(QWidget):
         vbox = QVBoxLayout()
         vbox.setMargin(5)
         vbox.addStretch(20)
-        self.form.addRow(vbox)
+        self.FormGroup1.addRow(vbox)
         self.logo = QPixmap(getcwd() + '/rsc/logo.png')
-        self.imagem = QLabel(self)
+        self.imagem = QLabel()
         self.imagem.setPixmap(self.logo)
-        self.form.addRow(self.imagem)
+        self.FormGroup1.addRow(self.imagem)
 
-        self.form.addRow('Gateway:', self.EditGateway)
-        self.form.addRow('AP Name:', self.EditApName)
-        self.form.addRow('Channel:', self.EditChannel)
+
+        self.GroupAP = QGroupBox()
+        self.GroupAP.setTitle('Access Point::')
+        self.FormGroup3.addRow('Gateway:', self.EditGateway)
+        self.FormGroup3.addRow('AP Name:', self.EditApName)
+        self.FormGroup3.addRow('Channel:', self.EditChannel)
+        self.GroupAP.setLayout(self.FormGroup3)
 
         # grid network adapter fix
         self.btrn_refresh = QPushButton('Refresh')
         self.btrn_refresh.setIcon(QIcon('rsc/refresh.png'))
         self.btrn_refresh.clicked.connect(self.refrash_interface)
-        self.grid = QGridLayout()
-        self.grid.addWidget(QLabel('Network Adapter:'),0,0)
-        self.grid.addWidget(self.selectCard, 0,1)
-        self.grid.addWidget(self.btrn_refresh,0,2)
+
+        self.layout = QFormLayout()
+        self.GroupAdapter = QGroupBox()
+        self.GroupAdapter.setTitle('Network Adapter::')
+        self.layout.addRow(self.selectCard)
+        self.layout.addRow(self.btrn_refresh)
+        self.GroupAdapter.setLayout(self.layout)
+
 
         self.btn_start_attack = QPushButton('Start Attack', self)
         self.btn_start_attack.setIcon(QIcon('rsc/start.png'))
-        self.btn_start_attack.setFixedWidth(160)
         self.btn_cancelar = QPushButton('Stop Attack', self)
         self.btn_cancelar.setIcon(QIcon('rsc/Stop.png'))
-        self.btn_cancelar.setFixedWidth(165)
         self.btn_cancelar.clicked.connect(self.kill)
         self.btn_start_attack.clicked.connect(self.StartApFake)
 
-        self.form2.addRow(self.btn_start_attack, self.btn_cancelar)
-        self.form2.addRow(self.ListLoggerDhcp)
-        self.form2.addRow(self.StatusBar)
-        self.Main.addLayout(self.form)
-        self.Main.addLayout(self.grid)
-        self.Main.addLayout(self.form2)
+        hBox	 = QHBoxLayout()
+        hBox.addWidget(self.btn_start_attack)
+        hBox.addWidget(self.btn_cancelar)
+
+        self.slipt = QHBoxLayout()
+        self.slipt.addWidget(self.GroupAP)
+        self.slipt.addWidget(self.GroupAdapter)
+
+        self.FormGroup2.addRow(hBox)
+        self.FormGroup2.addRow(self.ListLoggerDhcp)
+        self.FormGroup2.addRow(self.StatusBar)
+        self.Main.addLayout(self.FormGroup1)
+        self.Main.addLayout(self.slipt)
+        self.Main.addLayout(self.FormGroup2)
         self.setLayout(self.Main)
 
     def show_arp_posion(self):
@@ -407,6 +423,7 @@ class SubMain(QWidget):
                 self.selectCard.addItem(n[i])
 
     def kill(self):
+        if self.Apthreads['RougeAP'] == []:return
         for i in self.Apthreads['RougeAP']:i.stop()
         terminate = [
         'killall dhcpd',
@@ -415,8 +432,7 @@ class SubMain(QWidget):
         'iptables --flush',
         'iptables --table nat --flush',
         'iptables --delete-chain',
-        'iptables --table nat --delete-chain',
-        'ifconfig %s down'%(self.Ap_iface),]
+        'iptables --table nat --delete-chain']
         for delete in terminate:popen(delete)
         set_monitor_mode(self.interface).setDisable()
         self.Started(False)
@@ -462,8 +478,12 @@ class SubMain(QWidget):
             ],
         'kill':
             [
+                'iptables --flush',
+                'iptables --table nat --flush',
+                'iptables --delete-chain',
+                'iptables --table nat --delete-chain',
                 'killall dhpcd',
-                'killall dnsmasq',
+                'killall dnsmasq'
             ],
         'dhcp-server':
             [
@@ -474,6 +494,7 @@ class SubMain(QWidget):
                 'option routers 10.0.0.1;\n',
                 'option subnet-mask 255.255.255.0;\n',
                 'option domain-name \"%s\";\n'%(str(self.EditApName.text())),
+                'option domain-name-servers 10.0.0.1;\n',
                 'range %s;\n'% range_dhcp,
                 '}',
             ],
@@ -509,7 +530,7 @@ class SubMain(QWidget):
             QMessageBox.warning(self,'Error permission','Run as root ')
             return
         if len(self.selectCard.currentText()) == 0:
-            QMessageBox.warning(self,'Error','Network interface not supported :(')
+            QMessageBox.warning(self,'Error interface','Network interface not supported :(')
             return
         dhcp_select = self.config.xmlSettings('dhcp','dhcp_server',None,False)
         if dhcp_select != 'dnsmasq':
@@ -595,5 +616,6 @@ class SubMain(QWidget):
         elif reason == 2:self.showMinimized()
 
     def about(self):
-        self.Fabout = frmAbout()
+        self.Fabout = frmAbout(author,emails,
+        version,date_create,update,license,desc)
         self.Fabout.show()

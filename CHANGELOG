@@ -1,3 +1,11 @@
+Version 0.6.4
+-------------
+- added support kali 2.0
+- added iptables Settings
+- change design main
+- fixed some bug with AP internet share
+- fixed dhcp install
+
 Version 0.6.3
 -----------
 - Netcreds Plugin
@@ -7,12 +15,8 @@ Version 0.6.3
 - export html report attack
 - Advanced Settings
 - sslstrip on default
-- Fixed xterm window
 - Credentials Monitor
 - Credentials Phising
-- added support kali 2.0
-- added iptables Settings
-- added function save all Logs
 
 Version 0.5.9
 -----------

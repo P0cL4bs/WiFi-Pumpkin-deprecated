@@ -17,8 +17,8 @@ func_Banner(){
 	echo '   ============================='
 	echo "   |$bldblu 3vilTwinAttacker Installer$txtrst|"
 	echo '   ============================='
-	echo "          Version: $(tput setaf 5)0.6.3 $txtrst"
-	echo "Options: --install | --uninstall"
+	echo "          Version: $(tput setaf 5)0.6.4 $txtrst"
+	echo "usage: ./installer.sh --install or --uninstall"
 }
 
 
@@ -79,6 +79,7 @@ func_install(){
 	func_check_install "mdk3"
 	echo "----------------------------------------"
 	dist=$(tr -s ' \011' '\012' < /etc/issue | head -n 1)
+	check_arch=$(uname -m)
 	echo "[$green+$txtrst] Distribution Name: $dist"
 	if which dhcpd >/dev/null; then
 		echo ""
@@ -101,8 +102,19 @@ func_install(){
 				    apt-get install isc-dhcp-server -y
 				    cp /etc/apt/sources.list.backup /etc/apt/sources.list
 				    rm /etc/apt/sources.list.backup
-				    func_check_install "dhcpd"
                 fi
+                check_dhcp=$(program_is_installed dhcpd)
+                if [ $check_dhcp = 0 ]; then
+                    if [ "$check_arch" = "i686" ]; then
+                        wget http://http.kali.org/kali/pool/main/i/isc-dhcp/isc-dhcp-server_4.3.1-6_i386.deb
+                        dpkg -i isc-dhcp-server_4.3.1-6_i386.deb
+                    elif [ "$check_arch" = "x86_64" ]; then
+                        wget http://http.kali.org/kali/pool/main/i/isc-dhcp/isc-dhcp-server_4.3.1-6_amd64.deb
+                        dpkg -i isc-dhcp-server_4.3.1-6_amd64.deb
+                    fi
+                    rm *.deb
+                fi
+                func_check_install "dhcpd"
 			fi
 		fi
 	fi
@@ -128,7 +140,8 @@ func_install(){
 
 bin_install(){
 	if [ ! -f "/usr/bin/3vilTwin-Attacker" ]; then
-		echo "[$green✔$txtrst] Install binary in /usr/bin/"
+	    echo "[$green✔$txtrst] PATH::$DIRECTORY"
+		echo "[$green✔$txtrst] binary::/usr/bin/"
 		echo "'/usr/share/3vilTwinAttacker/3vilTwin-Attacker.py'" >> /usr/bin/3vilTwin-Attacker
 		chmod +x /usr/bin/3vilTwin-Attacker
 	fi

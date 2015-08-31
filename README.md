@@ -1,10 +1,11 @@
-# 3vilTwinAttacker v0.6.3
+# 3vilTwinAttacker v0.6.4
 Framework for EvilTwin Attacks
-![Tool Home](https://dl.dropboxusercontent.com/u/97321327/evil/evil6.3.png)
+![Tool Home](https://dl.dropboxusercontent.com/u/97321327/evil/evil6.4.png)
 ![Supported Python versions](https://img.shields.io/badge/python-2.7-blue.svg)
 ![Linux OS](https://img.shields.io/badge/Supported%20OS-Linux-green.svg)
-![Release](https://img.shields.io/badge/3vilTwinAttacker-0.6.3%20-orange.svg)
+![Release](https://img.shields.io/badge/3vilTwinAttacker-0.6.4%20-orange.svg)
 ![MIT License](https://img.shields.io/packagist/l/doctrine/orm.svg)
+
 ###Description
 3vilTwinAttacker is security tool that  provide the Rogue access point to Man-In-The-Middle and network attacks. purporting to provide wireless Internet services, but snooping on the traffic. can be used to capture of credentials of unsuspecting users by either snooping the communication by phishing.
 
@@ -14,7 +15,7 @@ Framework for EvilTwin Attacks
 * BeautifulSoup
 * isc-dhcp-server
 
-#### How to install on Ubuntu or Kali
+#### How to install on Ubuntu or Kali 2.0
 ```sh
 $ git clone https://github.com/P0cL4bs/3vilTwinAttacker.git
 $ cd 3vilTwinAttacker
@@ -29,11 +30,17 @@ $ sudo ./installer.sh --install
 $ sudo apt-get install isc-dhcp-server
 ```
 
-##### Kali linux
-
+##### Kali 2.0
+----script .sh----
 ```sh
-$ echo "deb http://ftp.de.debian.org/debian wheezy main " >> /etc/apt/sources.list
-$ apt-get update && apt-get install isc-dhcp-server
+check_arch=$(uname -m)
+if [ "$check_arch" = "i686" ]; then
+    wget http://http.kali.org/kali/pool/main/i/isc-dhcp/isc-dhcp-server_4.3.1-6_i386.deb
+    dpkg -i isc-dhcp-server_4.3.1-6_i386.deb
+elif [ "$check_arch" = "x86_64" ]; then
+    wget http://http.kali.org/kali/pool/main/i/isc-dhcp/isc-dhcp-server_4.3.1-6_amd64.deb
+    dpkg -i isc-dhcp-server_4.3.1-6_amd64.deb
+fi
 ```
 
 #### install DHCP in  redhat-based

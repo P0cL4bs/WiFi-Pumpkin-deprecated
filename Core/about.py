@@ -1,15 +1,16 @@
 from PyQt4.QtGui import *
 from Core.Settings import frm_Settings
-author      = ' @mh4x0f P0cl4bs Team'
-emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
-version     = '0.6.3'
-date_create = '18/01/2015'
-update      ='27/07/2015'
-license     = 'MIT License (MIT)'
-desc        = ['Framework for EvilTwin Attacks']
 class frmAbout(QDialog):
-    def __init__(self, parent = None):
+    def __init__(self,author,emails,version,
+        date_create,update,license,desc, parent = None):
         super(frmAbout, self).__init__(parent)
+        self.author      = author
+        self.emails      = emails
+        self.version     = version
+        self.date_create = date_create
+        self.update      = update
+        self.license     = license
+        self.desc        = desc
         self.setWindowTitle("About 3vilTwinAttacker")
         self.Main = QVBoxLayout()
         self.frm = QFormLayout()
@@ -33,8 +34,9 @@ class frmAbout(QDialog):
     def Qui_update(self):
         self.form = QFormLayout(self)
         self.btn_exit = QPushButton("Close")
-        self.license = QTextEdit(self)
-        self.license.setText(
+        self.licenseEdit = QTextEdit(self)
+        self.licenseEdit.setFixedHeight(150)
+        self.licenseEdit.setText(
             '''The MIT License (MIT)
 Copyright (c) 2015-2016 mh4x0f P0cL4bs Team
 Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -52,13 +54,13 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'''
         )
-        ltool  = QLabel('<center>3vilTwin-Attacker v%s</center>'%(version))
-        ldesc = QLabel('<center>'+desc[0]+'</center>')
-        lversion = QLabel('Version:'+version)
-        lupdate = QLabel('Last Update:'+update)
-        lautor = QLabel('author:'+author)
-        lemail = QLabel('Emails:'+emails[0] +" | "+emails[1])
-        licese = QLabel('License:'+license)
+        ltool  = QLabel('<center>3vilTwin-Attacker v%s</center>'%(self.version))
+        ldesc = QLabel('<center>'+self.desc[0]+'</center>')
+        lversion = QLabel('Version:'+self.version)
+        lupdate = QLabel('Last Update:'+self.update)
+        lautor = QLabel('author:'+self.author)
+        lemail = QLabel('Emails:'+self.emails[0] +" | "+self.emails[1])
+        licese = QLabel('License:'+self.license)
         self.form.addRow(ltool)
         self.form.addRow(ldesc)
         self.form.addRow(lversion)
@@ -66,7 +68,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'''
         self.form.addRow(lautor)
         self.form.addRow(lemail)
         self.form.addRow(licese)
-        self.form.addRow(self.license)
+        self.form.addRow(self.licenseEdit)
         self.btn_exit.clicked.connect(self.deleteLater)
         self.form.addRow(self.btn_exit)
         self.Main.addLayout(self.form)

@@ -1,21 +1,9 @@
 from PyQt4.QtGui import *
 from subprocess import Popen, PIPE
 from Core.Settings import frm_Settings
-from os import popen,getpid
+from os import popen
 from re import search
-import threading
 import getpass
-from time import sleep
-global sudo_prompt
-sudo_prompt = None
-
-class waiter(threading.Thread):
-    def run(self):
-        for i in range(2):
-            sleep(5)
-        if sudo_prompt == None:
-            #popen("kill -9 %i"%(getpid()))
-            pass
 
 class frm_privelege(QDialog):
     def __init__(self, parent = None):
@@ -62,28 +50,19 @@ class frm_privelege(QDialog):
         self.setLayout(self.Main)
 
     def function_ok(self):
-        out = self.password_check(self.Editpassword.text())
+        self.hide()
+        out = self.thread(str(self.Editpassword.text()))
         if search("1 incorrect password attemp",out):
-            QMessageBox.information(self, "Sudo Password check", "[sudo] password for %s: Sorry, try again."%(getpass.getuser()))
+            QMessageBox.information(self, "Sudo Password check",
+            "[sudo] password for %s: Sorry, try again."%(getpass.getuser()))
             self.show()
             self.Editpassword.clear()
-        else:
-            self.close()
-
-    def password_check(self,sudo_password):
-        self.hide()
-        self.th = threading.Thread(target=self.thread, args=(sudo_password,))
-        self.th.daemon = True
-        self.th.start()
-        waiter().start()
-        self.th.join()
-        return sudo_prompt
+            return
+        self.close()
 
     def thread(self,sudo_password):
         popen("sudo -k")
-        sudo_password = self.Editpassword.text()
-        command = 'python functions.py'.split()
-        p = Popen(['sudo', '-S'] + command, stdin=PIPE, stderr=PIPE,
-          universal_newlines=True)
-        global sudo_prompt
-        sudo_prompt = p.communicate(str(sudo_password) + '\n')[1]
+        p = Popen(['sudo', '-S','|','ls'], stdin=PIPE, stderr=PIPE,
+        universal_newlines=True)
+        output = p.communicate(str(sudo_password) + '\n')[1]
+        return output
