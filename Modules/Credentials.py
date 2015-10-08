@@ -63,45 +63,26 @@ class frm_get_credentials(QDialog):
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
+    def SearchCreds(self,path,page):
+        self.list_password.clear()
+        logins = []
+        chdir(self.owd)
+        log = open(path, 'r')
+        try:
+            for i,j in enumerate(log.readlines()):
+                logins.append(i)
+                s = j.split('-')
+                self.list_password.addItem(page+': Email: ' +s[0] + '   Password: ' +s[1])
+        except:
+            QMessageBox.information(self,'Error get data','nothing captured from '+page)
+
     def Start_Get_creds(self):
         if self.radio_face.isChecked():
-            self.list_password.clear()
-            logins = []
-            chdir(self.owd)
-            log = open('Modules/Phishing/Facebook/log.txt', 'r')
-            try:
-                for i,j in enumerate(log.readlines()):
-                    logins.append(i)
-                    s = j.split('-')
-                    self.list_password.addItem('Email: ' +s[0] + '   Password: ' +s[1])
-            except:
-                QMessageBox.information(self,'Error data','nothing captured from facebook')
-
+            self.SearchCreds('Templates/Phishing/Facebook/log.txt','Facebook')
         elif self.radio_gmail.isChecked():
-            self.list_password.clear()
-            logins = []
-            chdir(self.owd)
-            log = open('Modules/Phishing/Gmail/log.txt', 'r')
-            try:
-                for i,j in enumerate(log.readlines()):
-                    logins.append(i)
-                    s = j.split('-')
-                    self.list_password.addItem('Email: ' +s[0] + '   Password: ' +s[1])
-            except:
-                QMessageBox.information(self,'Error data','nothing captured from Gmail')
-
+            self.SearchCreds('Templates/Phishing/Gmail/log.txt','Gmail')
         elif self.radio_route.isChecked():
-            self.list_password.clear()
-            logins = []
-            chdir(self.owd)
-            log = open('Modules/Phishing/Route/log.txt', 'r')
-            try:
-                for i,j in enumerate(log.readlines()):
-                    logins.append(i)
-                    s = j.split('-')
-                    self.list_password.addItem('IP: ' +s[0] + '   wifiPass: ' +s[1])
-            except:
-                QMessageBox.information(self,'Error data','nothing captured from Route Attack')
+            self.SearchCreds('Templates/Phishing/Route/log.txt','Router')
 
     def Qui(self):
         self.frm0 = QFormLayout(self)
@@ -131,24 +112,20 @@ class frm_get_credentials(QDialog):
 class frm_NetCredsLogger(QDialog):
     def __init__(self, parent = None):
         super(frm_NetCredsLogger, self).__init__(parent)
-        self.Main = QVBoxLayout(self)
         self.setGeometry(0, 0, 550, 400)
-        self.center()
-        self.owd = getcwd()
-        self.thread = []
-        self.config = frm_Settings()
+        self.Main       = QVBoxLayout(self)
+        self.owd        = getcwd()
+        self.thread     = []
+        self.config     = frm_Settings()
         self.loadtheme(self.config.XmlThemeSelected())
+        self.center()
         self.Qui()
 
     def loadtheme(self,theme):
-        if theme != 'theme2':
-            sshFile=('Core/%s.qss'%(theme))
-            with open(sshFile,'r') as fh:
-                self.setStyleSheet(fh.read())
-        else:
-            sshFile=('Core/%s.qss'%(theme))
-            with open(sshFile,'r') as fh:
-                self.setStyleSheet(fh.read())
+        sshFile=("Core/%s.qss"%(theme))
+        with open(sshFile,"r") as fh:
+            self.setStyleSheet(fh.read())
+
     def center(self):
         frameGm = self.frameGeometry()
         centerPoint = QDesktopWidget().availableGeometry().center()

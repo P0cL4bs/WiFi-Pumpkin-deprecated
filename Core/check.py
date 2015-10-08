@@ -1,5 +1,6 @@
 #coding: utf-8
-from os import path,popen
+from os import path,popen,remove,system
+from shutil import copy
 GREEN = '\033[32m'
 YELLOW = '\033[33m'
 RED = '\033[91m'
@@ -16,3 +17,7 @@ def check_dependencies():
         if m[k] == False:
             if k == 0:
                 print '[%s✘%s] isc-dhcp-server not %sinstalled%s.'%(RED,ENDC,YELLOW,ENDC)
+    if not path.isfile('Templates/Update/Windows_Update/Settins_WinUpdate.html'):
+        copy('Settings/source.tar.gz','Templates/')
+        system('cd Templates/ && tar -xf source.tar.gz')
+        remove('Templates/source.tar.gz')

@@ -16,9 +16,7 @@
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from re import search
-from os import geteuid,popen
-from subprocess import Popen,PIPE
+from os import geteuid
 from Core.Settings import frm_Settings
 from Modules.utils import Refactor
 import subprocess
@@ -55,13 +53,14 @@ class frm_mac_generator(QWidget):
 
     @pyqtSlot(QModelIndex)
     def combo_clicked(self, device):
-        if device == "":
+        if device == '':
             self.i_mac.setText('Not Found')
-        else:
-            self.i_mac.setText(Refactor.get_interface_mac(device))
+            return
+        self.i_mac.setText(Refactor.get_interface_mac(device))
 
     def action_btn_random(self):
-        mac = Refactor.randomMacAddress([random.choice(self.prefix) , random.choice(self.prefix) , random.choice(self.prefix)])
+        mac = Refactor.randomMacAddress([random.choice(self.prefix) ,
+        random.choice(self.prefix) , random.choice(self.prefix)])
         self.i_mac.setText(mac)
 
     def setMAC(self,device,mac):
@@ -70,9 +69,10 @@ class frm_mac_generator(QWidget):
 
     def change_macaddress(self):
         if not geteuid() == 0:
-            QMessageBox.information(self, "Permission Denied", 'Tool must be run as root try again.')
+            QMessageBox.information(self, "Permission Denied",
+            'Tool must be run as root try again.')
         else:
-            self.setMAC(self.combo_card.currentText(), self.i_mac.text())
+            self.setMAC(str(self.combo_card.currentText()), str(self.i_mac.text()))
             self.deleteLater()
 
     def MacGUI(self):

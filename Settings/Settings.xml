@@ -3,7 +3,7 @@
         <deauth select="packets_scapy"/>
         <dhcp dhcp_server="iscdhcpserver"/>
         <scanner_AP select="scan_scapy"/>
-        <mdk3 arguments="a -a"/>
+        <mdk3 arguments="a -a m -t"/>
         <scan rangeIP="0-255"/>
         <themes selected="theme2"/>
     </configure>

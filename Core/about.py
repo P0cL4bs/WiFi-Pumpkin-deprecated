@@ -2,12 +2,11 @@ from PyQt4.QtGui import *
 from Core.Settings import frm_Settings
 class frmAbout(QDialog):
     def __init__(self,author,emails,version,
-        date_create,update,license,desc, parent = None):
+        update,license,desc, parent = None):
         super(frmAbout, self).__init__(parent)
         self.author      = author
         self.emails      = emails
         self.version     = version
-        self.date_create = date_create
         self.update      = update
         self.license     = license
         self.desc        = desc
@@ -58,7 +57,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'''
         ldesc = QLabel('<center>'+self.desc[0]+'</center>')
         lversion = QLabel('Version:'+self.version)
         lupdate = QLabel('Last Update:'+self.update)
-        lautor = QLabel('author:'+self.author)
+        lautor = QLabel('Author:'+self.author)
         lemail = QLabel('Emails:'+self.emails[0] +" | "+self.emails[1])
         licese = QLabel('License:'+self.license)
         self.form.addRow(ltool)

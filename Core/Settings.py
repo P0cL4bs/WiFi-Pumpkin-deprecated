@@ -133,6 +133,13 @@ class frm_Settings(QDialog):
             item.setText('iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 10.0.0.1:80')
             item.setSizeHint(QSize(30,30))
             self.ListRules.addItem(item)
+            return
+        rules = []
+        for index in xrange(self.ListRules.count()):
+            rules.append(str(self.ListRules.item(index).text()))
+        for i,j in enumerate(rules):
+            if search('--to-destination 10.0.0.1:80',j):
+                self.ListRules.takeItem(i)
     def addrulesSslstrip(self):
         item = QListWidgetItem()
         if self.checkssltripPort.isChecked():
@@ -140,7 +147,13 @@ class frm_Settings(QDialog):
             self.xmlSettings('redirect', 'port', None, False))
             item.setSizeHint(QSize(30,30))
             self.ListRules.addItem(item)
-
+            return
+        rules = []
+        for index in xrange(self.ListRules.count()):
+            rules.append(str(self.ListRules.item(index).text()))
+        for i,j in enumerate(rules):
+            if search('tcp --destination-port 80 -j REDIRECT --to-port',j):
+                self.ListRules.takeItem(i)
     def Qui(self):
         self.form = QFormLayout(self)
         self.tabcontrol = QTabWidget(self)

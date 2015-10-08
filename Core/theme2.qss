@@ -599,7 +599,7 @@ QAbstractSpinBox::down-arrow,QAbstractSpinBox::down-arrow:disabled,QAbstractSpin
 }
 QAbstractSpinBox::down-arrow:hover
 {
-    image: url(rsc/down_arrow.png);
+    image: url(rsc/down_arrow_theme2.png);
 }
 
 
@@ -906,7 +906,7 @@ QToolButton:checked, QToolButton:pressed, QToolButton::menu-button:pressed {
 
 /* the subcontrol below is used only in the InstantPopup or DelayedPopup mode */
 QToolButton::menu-indicator {
-    image: url(rsc/down_arrow.png);
+    image: url(rsc/down_arrow_theme2.png);
     top: -7px; left: -2px; /* shift it a bit */
 }
 
@@ -921,7 +921,7 @@ QToolButton::menu-button {
 }
 
 QToolButton::menu-arrow {
-    image: url(rsc/down_arrow.png);
+    image: url(rsc/down_arrow_theme2.png);
 }
 
 QToolButton::menu-arrow:open {
@@ -1005,7 +1005,7 @@ QHeaderView::section:checked
 
  /* style the sort indicator */
 QHeaderView::down-arrow {
-    image: url(rsc/down_arrow.png);
+    image: url(rsc/down_arrow_theme2.png);
 }
 
 QHeaderView::up-arrow {

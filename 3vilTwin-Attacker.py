@@ -22,20 +22,18 @@ from Core.Privilege import frm_privelege
 from Core.Main import Initialize
 from Core.check import check_dependencies
 from Modules.utils import Refactor
-
-def ExecRootApp():
-    check_dependencies()
-    root = QApplication(argv)
+def ExecRootApp(root):
     app = Initialize()
     app.setWindowIcon(QIcon('rsc/icon.ico'))
     app.center(),app.show()
     exit(root.exec_())
 
 if __name__ == '__main__':
+    check_dependencies()
+    main = QApplication(argv)
     if not getuid() == 0:
-        app2 = QApplication(argv)
         priv = frm_privelege()
         priv.setWindowIcon(QIcon('rsc/icon.ico'))
-        priv.show(),app2.exec_()
+        priv.show(),main.exec_()
         exit(Refactor.threadRoot(priv.Editpassword.text()))
-    ExecRootApp()
+    ExecRootApp(main)

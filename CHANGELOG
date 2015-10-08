@@ -1,3 +1,16 @@
+Version 0.6.7
+-------------
+- added Probe Request discovery mac Devices
+- added plugins options
+- added PopUpServer options
+- added Java Update Fake
+- code improvements
+- fixed small bugs
+    * phishing error directory
+    * fixed resolve host select adpter
+    * fixed rules iptables redirect
+    * fixed arp posion cache
+
 Version 0.6.4
 -------------
 - added support kali 2.0
@@ -7,7 +20,7 @@ Version 0.6.4
 - fixed dhcp install
 
 Version 0.6.3
------------
+-------------
 - Netcreds Plugin
 - New DHCP (dnsmasq)
 - New module DNS spoof
