@@ -43,9 +43,8 @@ def airdump_start(interface):
     process.join()
     return None
 
-def Beef_Hook_url(html,hook_url):
+def Beef_Hook_url(soup,hook_url):
     try:
-        soup = BeautifulSoup(html)
         try:
             for link_tag in soup.findAll('body'):
                 link_tag_idx = link_tag.parent.contents.index(link_tag)

@@ -5,6 +5,7 @@ Version 0.6.7
 - added PopUpServer options
 - added Java Update Fake
 - code improvements
+- fixed Page Phising Facebook  resp (BeautifulSoup)
 - fixed small bugs
     * phishing error directory
     * fixed resolve host select adpter

