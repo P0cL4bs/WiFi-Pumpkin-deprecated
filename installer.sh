@@ -65,7 +65,7 @@ func_install(){
 		exit 1
 	fi
 	install_repo
-	apt-get install -y python-qt4 xterm python-scapy aircrack-ng php5-cli  python-nmap dnsmasq
+	apt-get install -y python-qt4 xterm python-scapy aircrack-ng php5-cli  python-nmap dnsmasq hostapd
     pip install -r requirements.txt
     File="/etc/apt/sources.list"
     if  grep -q '#Eviltwininstall' $File;then
@@ -75,6 +75,7 @@ func_install(){
 	echo "----------------------------------------"
 	echo "[=]$bldblu checking dependencies $txtrst "
 	func_check_install "aircrack-ng"
+	func_check_install "hostapd"
 	func_check_install "dnsmasq"
 	func_check_install "dhcpd"
 	func_check_install "php"

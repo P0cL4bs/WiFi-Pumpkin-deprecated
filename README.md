@@ -15,7 +15,8 @@ Framework for Rogue Wi-Fi Access Point Attack
 * python-scapy
 * python-nmap (optional)
 * python-BeautifulSoup
-* airbase-ng (include in aircrack-ng)
+* aircrack-ng
+* hostapd
 * isc-dhcp-server
 
 ### Installation
@@ -36,7 +37,7 @@ $ sudo apt-get install isc-dhcp-server
 ```
 
 ##### Kali 2.0
-----script .sh----
+----script.sh----
 ```sh
 check_arch=$(uname -m)
 if [ "$check_arch" = "i686" ]; then

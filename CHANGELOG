@@ -11,6 +11,9 @@ Version 0.6.7
     * fixed resolve host select adpter
     * fixed rules iptables redirect
     * fixed arp posion cache
+- added support hostapd to create AP
+- added (settings -> hostapd) options
+- changed hostapd for default 
 
 Version 0.6.4
 -------------

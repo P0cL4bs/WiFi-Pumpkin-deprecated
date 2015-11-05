@@ -42,6 +42,10 @@ class frm_Settings(QDialog):
         return firstchild.attributes[data].value
 
     def save_settings(self):
+        if self.AP_0.isChecked():
+            self.xmlSettings('accesspoint','actived','hostapd',False)
+        elif self.AP_1.isChecked():
+            self.xmlSettings('accesspoint','actived','airbase-ng',False)
         if self.d_scapy.isChecked():
             self.xmlSettings('deauth','select','packets_scapy',False)
         elif self.d_mdk.isChecked():
@@ -71,6 +75,8 @@ class frm_Settings(QDialog):
         self.xmlSettings('channel', 'mchannel', str(self.channel.value()), False)
         self.xmlSettings('redirect', 'port', str(self.redirectport.text()), False)
         self.xmlSettings('netcreds', 'interface', str(self.InterfaceNetCreds.text()), False)
+        with open('Settings/hostapdExtra.conf','w') as apconf:
+            apconf.write(self.ListHostapd.toPlainText())
         self.close()
 
 
@@ -162,30 +168,34 @@ class frm_Settings(QDialog):
         self.tab1 = QWidget(self)
         self.tab2 = QWidget(self)
         self.tab3 = QWidget(self)
+        self.tab4 = QWidget(self)
 
         self.page_1 = QFormLayout(self.tab1)
         self.page_2 = QFormLayout(self.tab2)
         self.page_3 = QFormLayout(self.tab3)
+        self.page_4 = QFormLayout(self.tab4)
 
         self.tabcontrol.addTab(self.tab1, 'General')
         self.tabcontrol.addTab(self.tab2, 'Advanced')
         self.tabcontrol.addTab(self.tab3,'Iptables')
+        self.tabcontrol.addTab(self.tab4,'hostpad')
 
         self.btn_save = QPushButton('Save')
         self.btn_save.clicked.connect(self.save_settings)
         self.btn_save.setFixedWidth(80)
         self.btn_save.setIcon(QIcon('rsc/Save.png'))
 
+        self.GruPag0=QButtonGroup()
         self.GruPag1=QButtonGroup()
         self.GruPag2=QButtonGroup()
         self.GruPag3=QButtonGroup()
         self.GruPag4=QButtonGroup()
 
         self.gruButtonPag2 = QButtonGroup()
-
         #page general
-        self.txt_ranger = QLineEdit(self)
-        self.txt_arguments = QLineEdit(self)
+
+        self.AP_0 = QRadioButton('hostapd')
+        self.AP_1 = QRadioButton('airbase-ng')
         self.d_scapy = QRadioButton('Scapy Deauth')
         self.d_mdk = QRadioButton('mdk3 Deauth')
         self.scan_scapy = QRadioButton('Scan from scapy')
@@ -196,6 +206,8 @@ class frm_Settings(QDialog):
         self.theme2 = QRadioButton('theme Dark blur')
 
         #page Adavanced
+        self.txt_ranger = QLineEdit(self)
+        self.txt_arguments = QLineEdit(self)
         self.scan1 = QRadioButton('Ping Scan:: Very fast scan IP')
         self.scan2 = QRadioButton('Python-Nmap:: Get hostname from IP')
         self.interface = QLineEdit(self)
@@ -226,7 +238,15 @@ class frm_Settings(QDialog):
         self.checkssltripPort.clicked.connect(self.addrulesSslstrip)
         self.check_redirect.clicked.connect(self.redirectAP)
 
+        # page hostpad
+        self.ListHostapd = QTextEdit(self)
+        self.ListHostapd.setFixedHeight(300)
+        with open('Settings/hostapdExtra.conf','r') as apconf:
+            self.ListHostapd.setText(apconf.read())
+
         #grup page 1
+        self.GruPag0.addButton(self.AP_0)
+        self.GruPag0.addButton(self.AP_1)
         self.GruPag1.addButton(self.d_scapy)
         self.GruPag1.addButton(self.d_mdk)
         self.GruPag2.addButton(self.dhcp1)
@@ -241,6 +261,7 @@ class frm_Settings(QDialog):
         self.gruButtonPag2.addButton(self.scan2)
 
         #page 1
+        self.AP_check = self.xmlSettings('accesspoint','actived',None,False)
         self.deauth_check = self.xmlSettings('deauth','select',None,False)
         self.scan_AP_check = self.xmlSettings('scanner_AP', 'select', None, False)
         self.dhcp_check = self.xmlSettings('dhcp', 'dhcp_server', None, False)
@@ -255,6 +276,8 @@ class frm_Settings(QDialog):
         elif self.scanIP_selected == 'Nmap':
             self.scan2.setChecked(True)
             self.scan1.setChecked(False)
+        if self.AP_check == "hostapd":self.AP_0.setChecked(True)
+        elif self.AP_check == "airbase-ng":self.AP_1.setChecked(True)
 
         if self.deauth_check == 'packets_mdk3':self.d_mdk.setChecked(True)
         else:self.d_scapy.setChecked(True)
@@ -272,22 +295,21 @@ class frm_Settings(QDialog):
             self.theme2.setChecked(True)
 
         # tab general
-        self.page_1.addWidget(QLabel('Configure deauth Attacker:'))
-        self.page_1.addWidget(self.d_scapy)
-        self.page_1.addWidget(self.d_mdk)
-        self.page_1.addWidget(QLabel('Configure Scan diveces Attacker:'))
-        self.page_1.addWidget(self.scan_scapy)
-        self.page_1.addWidget(self.scan_airodump)
-        self.page_1.addWidget(QLabel('mdk3 Arguments:'))
-        self.page_1.addWidget(self.txt_arguments)
-        self.page_1.addWidget(QLabel('Configure Dhcp Attacker:'))
-        self.page_1.addWidget(self.dhcp1)
-        self.page_1.addWidget(self.dhcp2)
-        self.page_1.addWidget(QLabel('Configure Range ARP Posion:'))
-        self.page_1.addWidget(self.txt_ranger)
-        self.page_1.addWidget(QLabel('3vilTwinAttacker Themes:'))
-        self.page_1.addWidget(self.theme1)
-        self.page_1.addWidget(self.theme2)
+        self.page_1.addRow(QLabel('AccessPoint:'))
+        self.page_1.addRow(self.AP_0)
+        self.page_1.addRow(self.AP_1)
+        self.page_1.addRow(QLabel('Deauth Options:'))
+        self.page_1.addRow(self.d_scapy)
+        self.page_1.addRow(self.d_mdk)
+        self.page_1.addRow(QLabel('Scan diveces:'))
+        self.page_1.addRow(self.scan_scapy)
+        self.page_1.addRow(self.scan_airodump)
+        self.page_1.addRow(QLabel('DHCP:'))
+        self.page_1.addRow(self.dhcp1)
+        self.page_1.addRow(self.dhcp2)
+        self.page_1.addRow(QLabel('3vilTwinAttacker Themes:'))
+        self.page_1.addRow(self.theme1)
+        self.page_1.addRow(self.theme2)
 
         #settings tab Advanced
         self.interface.setText(self.xmlSettings('interface', 'monitor_mode', None, False))
@@ -307,13 +329,18 @@ class frm_Settings(QDialog):
         self.page_2.addRow('DHCP Range:',self.rangeIP)
         self.page_2.addRow('Port sslstrip:',self.redirectport)
         self.page_2.addRow('NetCreds Interface:',self.InterfaceNetCreds)
-
+        self.page_2.addRow(QLabel('mdk3 Args:'),self.txt_arguments)
+        self.page_2.addRow(QLabel('Range ARP Posion:'),self.txt_ranger)
 
         #add tab iptables
         self.page_3.addWidget(QLabel('Iptables:'))
         self.page_3.addRow(self.ListRules)
         self.page_3.addRow(self.check_redirect)
         self.page_3.addRow(self.checkssltripPort)
+
+        #add tab hostpad
+        self.page_4.addWidget(QLabel('Settings hostapd:'))
+        self.page_4.addRow(self.ListHostapd)
 
         self.form.addRow(self.tabcontrol)
         self.form.addRow(self.btn_save)

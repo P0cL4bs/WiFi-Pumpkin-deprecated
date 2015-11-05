@@ -45,7 +45,7 @@ author      = ' @mh4x0f P0cl4bs Team'
 emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
 license     = 'MIT License (MIT)'
 version     = '0.6.7'
-update      = '10/07/2015'
+update      = '11/05/2015'
 desc        = ['Framework for Rogue Wi-Fi Access Point Attacks']
 
 class Initialize(QMainWindow):
@@ -223,7 +223,7 @@ class PopUpServer(QWidget):
         self.ComboIface.clear()
         n = Refactor.get_interfaces()['all']
         for i,j in enumerate(n):
-            if search('at',j):
+            if search('at',j) or search('wlan',j):
                 self.ComboIface.addItem(n[i])
                 self.discoveryIface()
 
@@ -365,7 +365,7 @@ class SubMain(QWidget):
         Menu_issue.triggered.connect(self.issue)
         Menu_extra.addAction(Menu_issue)
         Menu_extra.addAction(Menu_about)
-        
+
 
         self.EditGateway = QLineEdit(self)
         self.EditApName = QLineEdit(self)
@@ -533,7 +533,8 @@ class SubMain(QWidget):
         ettercap = popen('which ettercap').read().split('\n')
         dhcpd = popen('which dhcpd').read().split("\n")
         dnsmasq = popen('which dnsmasq').read().split("\n")
-        lista = [ '/usr/sbin/airbase-ng', ettercap[0],driftnet[0],dhcpd[0],dnsmasq[0]]
+        hostapd = popen('which hostapd').read().split("\n")
+        lista = [ '/usr/sbin/airbase-ng', ettercap[0],driftnet[0],dhcpd[0],dnsmasq[0],hostapd[0]]
         for i in lista:self.ProgramCheck.append(path.isfile(i))
 
     def exportHTML(self):
@@ -543,6 +544,7 @@ class SubMain(QWidget):
         if len(filename) != 0:
             with open(str(filename[0]),'w') as filehtml:
                 filehtml.write(contents),filehtml.close()
+            QMessageBox.information(self, '3vilTwinAttacker', 'file has been saved with success.')
 
     def refrash_interface(self):
         self.selectCard.clear()
@@ -606,6 +608,13 @@ class SubMain(QWidget):
                 'killall dhpcd',
                 'killall dnsmasq'
             ],
+        'hostapd':
+            [
+                'interface={}\n'.format(str(self.selectCard.currentText())),
+                'driver=nl80211\n',
+                'ssid={}\n'.format(str(self.EditApName.text())),
+                'channel={}\n'.format(str(self.EditChannel.text())),
+            ],
         'dhcp-server':
             [
                 'authoritative;\n',
@@ -622,10 +631,9 @@ class SubMain(QWidget):
         'dnsmasq':
             [
                 'interface=%s\n'%(self.Ap_iface),
-                'dhcp-range=10.0.0.10,10.0.0.50,12h\n',
+                'dhcp-range=10.0.0.1,10.0.0.50,12h\n',
                 'dhcp-option=3, 10.0.0.1\n',
                 'dhcp-option=6, 10.0.0.1\n',
-                'no-hosts\n'
                 'addn-hosts='+ getcwd() + '/Settings/dnsmasq.hosts\n'
             ]
         }
@@ -654,31 +662,53 @@ class SubMain(QWidget):
             return QMessageBox.warning(self,'Error interface','Network interface not supported :(')
         if len(self.EditGateway.text()) == 0:
             return QMessageBox.warning(self,'Error Gateway','gateway not found')
-
+        if not self.ProgramCheck[5]:
+            return QMessageBox.information(self,'Error Hostapd','hostapd not installed')
         dhcp_select = self.FSettings.xmlSettings('dhcp','dhcp_server',None,False)
-        if dhcp_select != 'dnsmasq':
+        if dhcp_select == 'iscdhcpserver':
             if not self.ProgramCheck[3]:
                 return QMessageBox.warning(self,'Error dhcp','isc-dhcp-server not installed')
-        else:
+        elif dhcp_select == 'dnsmasq':
             if not self.ProgramCheck[4]:
                 return QMessageBox.information(self,'Error dhcp','dnsmasq not installed')
-        self.interface = str(set_monitor_mode(self.selectCard.currentText()).setEnable())
-        self.FSettings.xmlSettings('interface', 'monitor_mode',self.interface,False)
-        # airbase thread
-        Thread_airbase = ProcessThread(['airbase-ng',
-        '-c', str(self.EditChannel.text()), '-e', self.EditApName.text(),
-        '-F', 'Logs/Caplog/'+asctime(),self.interface])
-        Thread_airbase.name = 'Airbase-ng'
-        self.Apthreads['RougeAP'].append(Thread_airbase)
-        Thread_airbase.start()
 
-        # settings
-        while True:
-            if Thread_airbase.iface != None:
-                self.Ap_iface = [x for x in Refactor.get_interfaces()['all'] if search('at',x)][0]
-                self.FSettings.xmlSettings('netcreds', 'interface',self.Ap_iface,False)
-                break
-        self.CoreSettings()
+
+        self.APactived = self.FSettings.xmlSettings('accesspoint','actived',None,False)
+        if self.APactived == 'airbase-ng':
+            self.interface = str(set_monitor_mode(self.selectCard.currentText()).setEnable())
+            self.FSettings.xmlSettings('interface', 'monitor_mode',self.interface,False)
+            # airbase thread
+            Thread_airbase = ProcessThread(['airbase-ng',
+            '-c', str(self.EditChannel.text()), '-e', self.EditApName.text(),
+            '-F', 'Logs/Caplog/'+asctime(),self.interface])
+            Thread_airbase.name = 'Airbase-ng'
+            self.Apthreads['RougeAP'].append(Thread_airbase)
+            Thread_airbase.start()
+            # settings
+            while True:
+                if Thread_airbase.iface != None:
+                    self.Ap_iface = [x for x in Refactor.get_interfaces()['all'] if search('at',x)][0]
+                    self.FSettings.xmlSettings('netcreds', 'interface',self.Ap_iface,False)
+                    break
+            self.CoreSettings()
+        elif self.APactived == 'hostapd':
+            self.FSettings.xmlSettings('netcreds','interface',
+            str(self.selectCard.currentText()),False)
+            self.Ap_iface = str(self.selectCard.currentText())
+            call(['airmon-ng', 'check' ,'kill'])
+            self.CoreSettings()
+            ignore = ('interface=','driver=','ssid=','channel=')
+            with open('Settings/hostapd.conf','w') as apconf:
+                for i in self.SettingsAP['hostapd']:apconf.write(i)
+                for config in str(self.FSettings.ListHostapd.toPlainText()).split('\n'):
+                    if not config.startswith('#') and len(config) > 0:
+                        if not config.startswith(ignore):
+                            apconf.write(config+'\n')
+                apconf.close()
+            Thread_hostapd = ProcessThread(['hostapd','Settings/hostapd.conf'])
+            Thread_hostapd.name = 'hostapd'
+            self.Apthreads['RougeAP'].append(Thread_hostapd)
+            Thread_hostapd.start()
 
         # thread dhcp
         selected_dhcp = self.FSettings.xmlSettings('dhcp','dhcp_server',None,False)

@@ -134,13 +134,22 @@ class ProcessThread(threading.Thread):
             log_airbase.info('---[ Start Airbase-ng '+asctime()+']---')
             log_airbase.info('-'*52)
             self.logger = True
+        elif self.name == 'hostapd':
+            setup_logger('hostapd', './Logs/requestAP.log')
+            log_hostapd = logging.getLogger('hostapd')
+            log_hostapd.info('---[ Start Hostapd '+asctime()+']---')
+            log_hostapd.info('-'*52)
+            self.logger = True
         self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
         for line in iter(self.process.stdout.readline, b''):
             if self.logger:
-                if search('Created tap interface',line):
-                    Popen(['ifconfig',line.split()[4], 'up'])
-                    self.iface = line.split()[4]
-                log_airbase.info(line.rstrip())
+                if self.name == 'Airbase-ng':
+                    if search('Created tap interface',line):
+                        Popen(['ifconfig',line.split()[4], 'up'])
+                        self.iface = line.split()[4]
+                    log_airbase.info(line.rstrip())
+                elif self.name == 'hostapd':
+                    log_hostapd.info(line.rstrip())
             print (line.rstrip())
 
     def stop(self):
