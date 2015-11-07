@@ -39,7 +39,7 @@ from twisted.internet import reactor
 from Plugins.sslstrip.StrippingProxy import StrippingProxy
 from Plugins.sslstrip.URLMonitor import URLMonitor
 from Plugins.sslstrip.CookieCleaner import CookieCleaner
-from os import geteuid,system,path,getcwd,chdir,popen,listdir
+from os import geteuid,system,path,getcwd,chdir,popen,listdir,mkdir
 if search('/usr/share/',argv[0]):chdir('/usr/share/3vilTwinAttacker/')
 author      = ' @mh4x0f P0cl4bs Team'
 emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
@@ -647,6 +647,7 @@ class SubMain(QWidget):
                 dhcp.close()
                 if path.isfile('/etc/dhcp/dhcpd.conf'):
                     system('rm /etc/dhcp/dhcpd.conf')
+                if not path.isdir('/etc/dhcp/'):mkdir('/etc/dhcp')
                 move('Settings/dhcpd.conf', '/etc/dhcp/')
         else:
             with open('Settings/dnsmasq.conf','w') as dhcp:

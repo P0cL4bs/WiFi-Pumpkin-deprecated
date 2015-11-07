@@ -6,7 +6,7 @@ Framework for Rogue Wi-Fi Access Point Attack
 ![Supported Python versions](https://img.shields.io/badge/python-2.7-blue.svg)
 ![Linux OS](https://img.shields.io/badge/Version-0.6.7-red.svg)
 ![Linux OS](https://img.shields.io/badge/Supported%20OS-Linux-green.svg)
-![build](https://travis-ci.org/P0cL4bs/3vilTwinAttacker.svg)
+[![build](https://travis-ci.org/P0cL4bs/3vilTwinAttacker.svg)](https://travis-ci.org/P0cL4bs/3vilTwinAttacker/)
 ### Description
 3vilTwinAttacker is security tool that  provide the Rogue access point to Man-In-The-Middle and network attacks. purporting to provide wireless Internet services, but snooping on the traffic. can be used to capture of credentials of unsuspecting users by either snooping the communication by phishing.
 
@@ -18,6 +18,11 @@ Framework for Rogue Wi-Fi Access Point Attack
 * aircrack-ng
 * hostapd
 * isc-dhcp-server
+
+### Tested On
+* Kali linux 2.0
+* WifiSlax 4.11.1 VMware Edition
+* Ubuntu 14.04.3 LTS
 
 ### Installation
 
@@ -68,7 +73,7 @@ $ sudo pacman -S dhcp
 * Windows Update Attack
 * Templates phishing
 * Dump credentials phishing
-* Support airodump sacan
+* Support airodump scan
 * Support mkd3 deauth
 * beef hook support
 * Report Logs html

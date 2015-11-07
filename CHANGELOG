@@ -13,7 +13,8 @@ Version 0.6.7
     * fixed arp posion cache
 - added support hostapd to create AP
 - added (settings -> hostapd) options
-- changed hostapd for default 
+- changed hostapd for default
+- fixed bug path dhcp.conf
 
 Version 0.6.4
 -------------
