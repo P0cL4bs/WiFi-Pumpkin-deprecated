@@ -15,6 +15,10 @@ Version 0.6.7
 - added (settings -> hostapd) options
 - changed hostapd for default
 - fixed bug path dhcp.conf
+- fixed network card as wifi hotspot,some improvements
+    * remove aircrack-ng dependency
+    * added plus conf hostapd
+    * fixed deauth Attack (o exercito BR deu like kkkk)
 
 Version 0.6.4
 -------------

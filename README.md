@@ -15,7 +15,6 @@ Framework for Rogue Wi-Fi Access Point Attack
 * python-scapy
 * python-nmap (optional)
 * python-BeautifulSoup
-* aircrack-ng
 * hostapd
 * isc-dhcp-server
 

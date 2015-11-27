@@ -8,7 +8,7 @@ class frm_Settings(QDialog):
         self.setWindowTitle('Settings 3vilTwinAttacker')
         self.Main = QVBoxLayout()
         self.frm = QFormLayout()
-        self.setGeometry(0, 0, 400, 300)
+        self.setGeometry(0, 0, 420, 300)
         self.center()
         self.loadtheme(self.XmlThemeSelected())
         self.Qui()

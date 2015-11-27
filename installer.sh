@@ -7,7 +7,7 @@ green=$(tput setaf 2)
 bldred=${txtbld}$(tput setaf 1)
 red_color=$(tput setaf 1)
 color_y=$(tput setaf 3)
-bldblu=${txtbld}$(tput setaf 4) 
+bldblu=${txtbld}$(tput setaf 4)
 bldwht=${txtbld}$(tput setaf 7)
 txtrst=$(tput sgr0)
 #---------------------------------------
@@ -18,25 +18,9 @@ func_Banner(){
 	echo "   |$bldblu 3vilTwinAttacker Installer$txtrst|"
 	echo '   ============================='
 	echo "          Version: $(tput setaf 5)0.6.7 $txtrst"
-	echo "usage: ./installer.sh --install or --uninstall"
+	echo "usage: ./installer.sh --install | --uninstall"
 }
 
-
-install_repo(){
-	dist=$(tr -s ' \011' '\012' < /etc/issue | head -n 1)
-	if [ $dist = "Ubuntu" ]; then
-	    sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup
-        File="/etc/apt/sources.list"
-        if ! grep -q 'deb http://http.kali.org/kali kali main non-free contrib' $File;then
-            echo "#Eviltwininstall" >> /etc/apt/sources.list
-		    echo "deb http://http.kali.org/kali kali main non-free contrib" >> /etc/apt/sources.list
-		    echo "deb http://security.kali.org/kali-security kali/updates main contrib non-free" >> /etc/apt/sources.list
-		    sudo apt-get update
-		fi
-	else
-		apt-get update
-	fi
-}
 
 usage(){
 	echo "usage: ./installer.sh --install | --uninstall"
@@ -56,7 +40,7 @@ function program_is_installed {
 	local return_=1
 	type $1 >/dev/null 2>&1 || { local return_=0; }
 	echo "$return_"
-} 
+}
 
 func_install(){
 	func_Banner
@@ -64,8 +48,8 @@ func_install(){
 		echo -e "$(tput setaf 6)[-] This script must be run as root$(tput sgr0)" 1>&2
 		exit 1
 	fi
-	install_repo
-	apt-get install -y python-qt4 xterm python-scapy aircrack-ng php5-cli  python-nmap dnsmasq hostapd
+	apt-get update
+	apt-get install -y python-qt4 xterm python-scapy php5-cli dnsmasq hostapd
     pip install -r requirements.txt
     File="/etc/apt/sources.list"
     if  grep -q '#Eviltwininstall' $File;then
@@ -74,7 +58,6 @@ func_install(){
     fi
 	echo "----------------------------------------"
 	echo "[=]$bldblu checking dependencies $txtrst "
-	func_check_install "aircrack-ng"
 	func_check_install "hostapd"
 	func_check_install "dnsmasq"
 	func_check_install "dhcpd"

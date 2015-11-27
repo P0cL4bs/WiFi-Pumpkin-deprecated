@@ -21,7 +21,7 @@ import threading
 from os import popen,path,makedirs
 from re import search
 from Core.Settings import frm_Settings
-from Modules.utils import Refactor,ProcessThread,airdump_start,get_network_scan,set_monitor_mode
+from Modules.utils import Refactor,ProcessThread,airdump_start,get_network_scan,set_monitor_mode,ThreadDeauth
 from multiprocessing import Process
 threadloading = {'deauth':[],'mdk3':[]}
 
@@ -105,7 +105,7 @@ class frm_deauth(QWidget):
 
         self.linetarget = QLineEdit(self)
         self.input_client = QLineEdit(self)
-        self.input_client.setText("FF:FF:FF:FF:FF:FF")
+        self.input_client.setText("ff:ff:ff:ff:ff:ff")
         self.btn_enviar = QPushButton("Send Attack", self)
         self.btn_enviar.clicked.connect(self.attack_deauth)
         self.btn_scan = QPushButton(" Network Scan ", self)
@@ -187,8 +187,7 @@ class frm_deauth(QWidget):
 
     def kill_thread(self):
         global threadloading
-        for i in threadloading['deauth']:
-            i.terminate()
+        for i in threadloading['deauth']:i.stop()
         for i in threadloading['mdk3']:
             i.stop(),i.join()
         self.AttackStatus(False)
@@ -244,11 +243,11 @@ class frm_deauth(QWidget):
             self.interface = str(set_monitor_mode(self.get_placa.currentText()).setEnable())
             if self.deauth_check == 'packets_scapy':
                 self.AttackStatus(True)
-                t = Process(target=self.deauth_attacker, args=(self.bssid,
-                str(self.input_client.text()),self.interface))
-                threadloading['deauth'].append(t)
-                t.daemon = True
-                t.start()
+                threadDeauth = ThreadDeauth(self.bssid,str(self.input_client.text()),self.interface)
+                print self.bssid,str(self.input_client.text()),self.interface
+                threadloading['deauth'].append(threadDeauth)
+                threadDeauth.setObjectName('Deauth scapy')
+                threadDeauth.start()
             else:
                 if path.isfile(popen('which mdk3').read().split("\n")[0]):
                     self.AttackStatus(True)
