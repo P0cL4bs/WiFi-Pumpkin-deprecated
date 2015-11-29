@@ -54,20 +54,21 @@ class frm_DnsSpoof(QWidget):
         self.GUI()
 
     def closeEvent(self, event):
-        if len(self.ThreadDirc['dns_spoof']) != 0:
-            reply = QMessageBox.question(self, 'About Exit Dns spoof',
-                'Are you sure to close Dns spoof?', QMessageBox.Yes |
-                QMessageBox.No, QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                event.accept()
-                for i in self.ThreadDirc['dns_spoof']:
-                    i.stop(),i.terminate()
+        reply = QMessageBox.question(self, 'About Exit Dns spoof',
+            'Are you sure to close Dns spoof?', QMessageBox.Yes |
+            QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            event.accept()
+            if len(self.ThreadDirc['dns_spoof']) != 0:
+                for i in self.ThreadDirc['dns_spoof']:i.stop()
                 for i in threadloading['template']:
                     i.stop(),i.join()
                     threadloading['template'] = []
+                if self.configure.xmlSettings('statusAP','value',None,False) == 'False':
+                    Refactor.set_ip_forward(0)
                 self.deleteLater()
-                return
-            event.ignore()
+            return
+        event.ignore()
 
     def loadtheme(self,theme):
         sshFile=("Core/%s.qss"%(theme))
@@ -270,6 +271,8 @@ class frm_DnsSpoof(QWidget):
 
     def discoveryIface(self):
         iface = str(self.ComboIface.currentText())
+        if self.configure.xmlSettings('statusAP','value',None,False) == 'True':
+            self.txt_gateway.setText('10.0.0.1')
         ip = Refactor.get_Ipaddr(iface)
         self.txt_redirect.setText(ip)
 
@@ -312,25 +315,18 @@ class frm_DnsSpoof(QWidget):
         self.FormTemplate.show()
 
     def kill_attack(self):
-        for i in self.ThreadDirc['dns_spoof']:
-            try:
-                i.stop()
-                i.terminate()
-            except:
-                pass
-        self.FormTemplate.killThread()
-        for i in threadloading['arps']:i.stop()
-        try:
+        if hasattr(self, 'FormTemplate'):
+            self.FormTemplate.killThread()
+        if hasattr(self,'ThreadScanner'):
             self.ThreadScanner.terminate()
-        except:
-            pass
+        for i in self.ThreadDirc['dns_spoof']:i.stop()
+        for i in threadloading['arps']:i.stop()
         threadloading['template'] = []
         threadloading['arps'] = []
         self.ThreadDirc['dns_spoof'] = []
         chdir(self.owd)
         self.StatusMonitor(False,'dns_spoof')
         self.StatusMonitor(False,'stas_phishing')
-        self.Reiptables()
 
     @pyqtSlot(QModelIndex)
     def check_options(self,index):
@@ -364,36 +360,30 @@ class frm_DnsSpoof(QWidget):
                     for i in self.domains:
                         self.targets[i.split(':')[0]] = (i.split(':')[1]).replace('\n','')
                     self.domains = []
-                    Refactor.set_ip_forward(1)
-                    arp_target = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()),
-                    get_if_hwaddr(str(self.ComboIface.currentText())))
-                    arp_target.setObjectName('Arp Posion:: [target]')
-                    threadloading['arps'].append(arp_target)
-                    arp_target.start()
+                    if self.configure.xmlSettings('statusAP','value',None,False) == 'False':
+                        Refactor.set_ip_forward(1)
+                        arp_target = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()),
+                        get_if_hwaddr(str(self.ComboIface.currentText())))
+                        arp_target.setObjectName('Arp Posion:: [target]')
+                        threadloading['arps'].append(arp_target)
+                        arp_target.start()
 
-                    arp_gateway = ThARP_posion(str(self.txt_target.text()),str(self.txt_gateway.text()),
-                    get_if_hwaddr(str(self.ComboIface.currentText())))
-                    arp_gateway.setObjectName('Arp Posion:: [gateway]')
-                    threadloading['arps'].append(arp_gateway)
-                    arp_gateway.start()
+                        arp_gateway = ThARP_posion(str(self.txt_target.text()),str(self.txt_gateway.text()),
+                        get_if_hwaddr(str(self.ComboIface.currentText())))
+                        arp_gateway.setObjectName('Arp Posion:: [gateway]')
+                        threadloading['arps'].append(arp_gateway)
+                        arp_gateway.start()
 
                     thr = ThSpoofAttack(self.targets,
                     str(self.ComboIface.currentText()),'udp port 53',True,str(self.txt_redirect.text()))
-                    thr.redirection()
+                    if self.configure.xmlSettings('statusAP','value',None,False) == 'False':thr.redirection()
+                    else:thr.redirectionAP()
                     self.connect(thr,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
                     thr.setObjectName('Dns Spoof')
                     self.ThreadDirc['dns_spoof'].append(thr)
                     thr.start()
                     self.StatusMonitor(True,'dns_spoof')
 
-    def Reiptables(self):
-        rules = [
-        'iptables --flush',
-        'iptables --table nat --flush' ,
-        'iptables --delete-chain',
-        'iptables --table nat --delete-chain']
-        for delete in rules: popen(delete)
-        Refactor.set_ip_forward(0)
 
     def Start_scan(self):
         self.StatusMonitor(True,'stas_scan')

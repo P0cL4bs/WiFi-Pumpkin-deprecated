@@ -19,6 +19,7 @@ Version 0.6.7
     * remove aircrack-ng dependency
     * added plus conf hostapd
     * fixed deauth Attack (o exercito BR deu like kkkk)
+- fixed run modules (ARPposion,DNSspoof) on AP started
 
 Version 0.6.4
 -------------

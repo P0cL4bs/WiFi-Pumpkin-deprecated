@@ -555,6 +555,7 @@ class SubMain(QWidget):
 
     def kill(self):
         if self.Apthreads['RougeAP'] == []:return
+        self.FSettings.xmlSettings('statusAP','value','False',False)
         for i in self.Apthreads['RougeAP']:i.stop()
         for kill in self.SettingsAP['kill']:popen(kill)
         set_monitor_mode(self.interface).setDisable()
@@ -744,6 +745,7 @@ class SubMain(QWidget):
             Thread_dhcp .start()
         else:return QMessageBox.information(self,'DHCP',selected_dhcp + ' not found.')
         self.Started(True)
+        self.FSettings.xmlSettings('statusAP','value','True',False)
 
         # thread plugins
         if self.PopUpPlugins.check_sslstrip.isChecked():
