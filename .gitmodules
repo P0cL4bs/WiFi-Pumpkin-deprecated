@@ -1,0 +1,3 @@
+[submodule "Plugins/dns2proxy"]
+	path = Plugins/dns2proxy
+	url = https://github.com/singe/dns2proxy
