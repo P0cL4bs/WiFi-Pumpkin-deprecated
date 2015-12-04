@@ -21,10 +21,15 @@
     </configure>
 
     <configure>
+        <sslstrip_plugin status="True"/>
+        <netcreds_plugin status="True"/>
+        <dns2proxy_plugin status="True"/>
+    </configure>
+
+    <configure>
         <rules0 value="iptables -P FORWARD ACCEPT"/>
-        <rules1 value="iptables -t nat -A PREROUTING -p udp -j DNAT --to $$ "/>
-        <rules2 value="iptables --append FORWARD --in-interface $$ -j ACCEPT"/>
-        <rules3 value="iptables --table nat --append POSTROUTING --out-interface $$ -j MASQUERADE"/>
-        <rules4 value="iptables -t nat -A POSTROUTING -j MASQUERADE"/>
+        <rules1 value="iptables --append FORWARD --in-interface $$ -j ACCEPT"/>
+        <rules2 value="iptables --table nat --append POSTROUTING --out-interface $$ -j MASQUERADE"/>
+        <rules3 value="iptables -t nat -A POSTROUTING -j MASQUERADE"/>
     </configure>
 </settings>

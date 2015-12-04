@@ -116,12 +116,13 @@ class set_monitor_mode(QDialog):
         Popen(['ifconfig', self.interface, 'up'])
 
 class ProcessThread(threading.Thread):
-    def __init__(self,cmd):
+    def __init__(self,cmd,):
         threading.Thread.__init__(self)
         self.cmd = cmd
         self.iface = None
         self.process = None
         self.logger = False
+        self.prompt = True
 
     def run(self):
         print 'Starting Thread:' + self.name
@@ -137,6 +138,12 @@ class ProcessThread(threading.Thread):
             log_hostapd.info('---[ Start Hostapd '+asctime()+']---')
             log_hostapd.info('-'*52)
             self.logger = True
+        elif self.name == 'Dns2Proxy':
+            setup_logger('dns2proxy', './Logs/dns2proxy.log')
+            log_dns2proxy = logging.getLogger('dns2proxy')
+            log_dns2proxy.info('---[ Start dns2proxy '+asctime()+']---')
+            log_dns2proxy.info('-'*52)
+            self.logger = True
         self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
         for line in iter(self.process.stdout.readline, b''):
             if self.logger:
@@ -147,7 +154,11 @@ class ProcessThread(threading.Thread):
                     log_airbase.info(line.rstrip())
                 elif self.name == 'hostapd':
                     log_hostapd.info(line.rstrip())
-            print (line.rstrip())
+                elif self.name == 'Dns2Proxy':
+                    log_dns2proxy.info(line.rstrip())
+                    self.prompt = False
+            if self.prompt:
+                print (line.rstrip())
 
     def stop(self):
         print 'Stop thread:' + self.name
@@ -440,7 +451,8 @@ class Refactor:
          'dhcp':{'Logs/dhcp.log':[]},
          'urls':{'Logs/urls.log':[]},
          'credentials': {'Logs/credentials.log':[]},
-         'requestAP':{'Logs/requestAP.log':[]}}
+         'requestAP':{'Logs/requestAP.log':[]},
+         'dns2proxy':{'Logs/dns2proxy.log':[]}}
         for i in readFile.keys():
             for j in readFile[i]:
                 with open(j,'r') as file:
@@ -460,6 +472,8 @@ class Refactor:
         HTML += readFile['credentials']['Logs/credentials.log']
         HTML += '</span><span class="s2">--------[   FakeAP Logger ]--------</span><span class="s1">\n'
         HTML += readFile['requestAP']['Logs/requestAP.log']
+        HTML += '</span><span class="s2">--------[   Dns2proxy Logger  ]--------</span><span class="s1">\n'
+        HTML += readFile['dns2proxy']['Logs/dns2proxy.log']
         HTML += '</span><span class="s4">-----------------------------------</span><span class="s1">\n'
         HTML += '</span></pre>\n'+'</body>\n'+'</html>\n'
         return HTML

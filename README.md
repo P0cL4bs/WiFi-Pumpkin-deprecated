@@ -4,7 +4,7 @@
 Framework for Rogue Wi-Fi Access Point Attack
 
 ![Supported Python versions](https://img.shields.io/badge/python-2.7-blue.svg)
-![Linux OS](https://img.shields.io/badge/Version-0.6.7-red.svg)
+![Linux OS](https://img.shields.io/badge/Version-0.6.8-red.svg)
 ![Linux OS](https://img.shields.io/badge/Supported%20OS-Linux-green.svg)
 [![build](https://travis-ci.org/P0cL4bs/3vilTwinAttacker.svg)](https://travis-ci.org/P0cL4bs/3vilTwinAttacker/)
 ### Description
@@ -21,7 +21,7 @@ Framework for Rogue Wi-Fi Access Point Attack
 ### Tested On
 * Kali linux 2.0
 * WifiSlax 4.11.1 VMware Edition
-* Ubuntu 14.04.3 LTS
+* Ubuntu 14.04 LTS
 
 ### Installation
 
@@ -71,6 +71,7 @@ $ sudo pacman -S dhcp
 * Crendentials Monitor
 * Windows Update Attack
 * Templates phishing
+* Partial bypass HSTS
 * Dump credentials phishing
 * Support airodump scan
 * Support mkd3 deauth
@@ -82,12 +83,13 @@ $ sudo pacman -S dhcp
 * Plugins
     - net-creds
     - sslstrip
+    - dns2proxy
 * Tools
     - ettercap
 	- driftnet
 
 ### Screenshot
-![Tool Home](https://dl.dropboxusercontent.com/u/97321327/evil/evil6.7.png)
+![Tool Home](https://dl.dropboxusercontent.com/u/97321327/evil/evil6.8.png)
 
 ### Issues
 Find a bug? Want more features?  Let us know! Please send [file an issue](https://github.com/P0cL4bs/3vilTwinAttacker/issues/new) 

@@ -63,8 +63,8 @@ class frm_Arp_Poison(QWidget):
                 except:pass
                 if self.configure.xmlSettings('statusAP','value',None,False) == 'False':
                     Refactor.set_ip_forward(0)
-                self.deleteLater()
-                return
+            self.deleteLater()
+            return
         event.ignore()
 
     def loadtheme(self,theme):

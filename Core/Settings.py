@@ -33,10 +33,6 @@ class frm_Settings(QDialog):
         firstchild = country[0]
         if bool != None:
             firstchild.attributes[data].value = bool
-        if show == True:
-            print '---------------------------'
-            print 'Settings:' + data + '=>'+ firstchild.attributes[data].value
-            print '---------------------------'
         xmldoc.writexml( open('Settings/Settings.xml', 'w'))
 
         return firstchild.attributes[data].value
@@ -146,20 +142,6 @@ class frm_Settings(QDialog):
         for i,j in enumerate(rules):
             if search('--to-destination 10.0.0.1:80',j):
                 self.ListRules.takeItem(i)
-    def addrulesSslstrip(self):
-        item = QListWidgetItem()
-        if self.checkssltripPort.isChecked():
-            item.setText('iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port '+
-            self.xmlSettings('redirect', 'port', None, False))
-            item.setSizeHint(QSize(30,30))
-            self.ListRules.addItem(item)
-            return
-        rules = []
-        for index in xrange(self.ListRules.count()):
-            rules.append(str(self.ListRules.item(index).text()))
-        for i,j in enumerate(rules):
-            if search('tcp --destination-port 80 -j REDIRECT --to-port',j):
-                self.ListRules.takeItem(i)
     def Qui(self):
         self.form = QFormLayout(self)
         self.tabcontrol = QTabWidget(self)
@@ -226,16 +208,13 @@ class frm_Settings(QDialog):
         self.ListRules.connect(self.ListRules,
         SIGNAL('customContextMenuRequested(QPoint)'),
         self.listItemclicked)
-        for i in range(5):
+        for i in range(4):
             j = self.xmlSettings('rules'+str(i),'value',None,False)
             item = QListWidgetItem()
             item.setText(j)
             item.setSizeHint(QSize(30,30))
             self.ListRules.addItem(item)
         self.check_redirect = QCheckBox('add Redirect all Port 80 to ipaddress::10.0.0.1')
-        self.checkssltripPort = QCheckBox('add Rules port sslstrip:'+
-        self.xmlSettings('redirect','port', None, False))
-        self.checkssltripPort.clicked.connect(self.addrulesSslstrip)
         self.check_redirect.clicked.connect(self.redirectAP)
 
         # page hostpad
@@ -318,7 +297,6 @@ class frm_Settings(QDialog):
         self.rangeIP.setText(self.xmlSettings('Iprange', 'range', None, False))
         self.redirectport.setText(self.xmlSettings('redirect', 'port', None, False))
         self.InterfaceNetCreds.setText(self.xmlSettings('netcreds', 'interface', None, False))
-
         #add tab Advanced
         self.page_2.addRow(QLabel('Thread ScanIP:'))
         self.page_2.addRow(self.scan1)
@@ -336,7 +314,6 @@ class frm_Settings(QDialog):
         self.page_3.addWidget(QLabel('Iptables:'))
         self.page_3.addRow(self.ListRules)
         self.page_3.addRow(self.check_redirect)
-        self.page_3.addRow(self.checkssltripPort)
 
         #add tab hostpad
         self.page_4.addWidget(QLabel('Settings hostapd:'))

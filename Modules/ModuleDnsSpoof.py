@@ -66,7 +66,7 @@ class frm_DnsSpoof(QWidget):
                     threadloading['template'] = []
                 if self.configure.xmlSettings('statusAP','value',None,False) == 'False':
                     Refactor.set_ip_forward(0)
-                self.deleteLater()
+            self.deleteLater()
             return
         event.ignore()
 
