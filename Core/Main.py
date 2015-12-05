@@ -614,8 +614,10 @@ class SubMain(QWidget):
         for kill in self.SettingsAP['kill']:popen(kill)
         set_monitor_mode(self.interface).setDisable()
         self.Started(False)
-        self.FormPopup.Ftemplates.killThread()
-        self.FormPopup.StatusServer(False)
+        try:
+            self.FormPopup.Ftemplates.killThread()
+            self.FormPopup.StatusServer(False)
+        except:pass
         self.btn_start_attack.setDisabled(False)
         Refactor.set_ip_forward(0)
         self.ListLoggerDhcp.clear()
