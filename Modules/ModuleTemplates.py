@@ -53,11 +53,14 @@ class frm_template(QDialog):
         self.check_face     = QCheckBox('Facebook')
         self.check_gmail    = QCheckBox('Gmail')
         self.check_route    = QCheckBox('Router')
+        self.check_custom   = QCheckBox('Custom index.html')
+        self.check_server   = QCheckBox('Custom Directory')
         self.check_beef     = QCheckBox('Beef')
-        self.check_custom   = QCheckBox('Custom Phishing')
         self.EditBeef       = QLineEdit(self)
         self.txt_html       = QTextEdit(self)
+        self.EditDirectory  = QLineEdit('/var/www')
         self.EditBeef.setEnabled(False)
+        self.EditDirectory.setEnabled(False)
         self.txt_html.setPlainText('<html>\n<head>\n<title>3vilTwinAttacker Phishing </title>'
         '\n</head>\n<body>\n'
         '\n<h3 align=\'center\'>3vilTwinAttacker Framework</h3>\n'
@@ -71,6 +74,7 @@ class frm_template(QDialog):
         self.check_route.clicked.connect(self.check_options)
         self.check_beef.clicked.connect(self.check_options)
         self.check_custom.clicked.connect(self.check_options)
+        self.check_server.clicked.connect(self.check_options)
 
         self.txt_redirect =  QLineEdit(self)
         self.btn_start_template = QPushButton('Start Server HTTP')
@@ -80,12 +84,14 @@ class frm_template(QDialog):
         self.frm0.addRow(self.check_gmail)
         self.frm0.addRow(self.check_route)
         self.frm0.addRow(self.check_custom)
+        self.frm0.addRow(self.check_server)
         h = QFrame(self)
         h.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Expanding)
         self.frm0.addRow(h)
         self.frm0.addRow(self.check_beef)
         self.frm0.addRow(QLabel('IPAddress:'),self.txt_redirect)
         self.frm0.addRow("Beef Hook URL:",self.EditBeef)
+        self.frm0.addRow("SetEnv PATH  :",self.EditDirectory)
         self.frm0.addRow(self.btn_start_template)
 
         layout = QHBoxLayout()
@@ -115,6 +121,10 @@ class frm_template(QDialog):
             self.EditBeef.setEnabled(True)
         else:
             self.EditBeef.setEnabled(False)
+        if self.check_server.isChecked():
+            self.EditDirectory.setEnabled(True)
+        else:
+            self.EditDirectory.setEnabled(False)
 
     def start_server(self):
         sock = None
@@ -137,6 +147,8 @@ class frm_template(QDialog):
             self.control = 'route'
         elif self.check_custom.isChecked():
             self.control = 'custom'
+        elif self.check_server.isChecked():
+            self.control = 'custom_path'
         else:
             QMessageBox.information(self,'Error','checkbox not checked.')
 
@@ -179,6 +191,9 @@ class frm_template(QDialog):
                 chdir(path)
                 self.html = self.txt_html.toPlainText()
                 self.CheckHookInjection(self.html)
+            elif choice == 'custom_path':
+                path = str(self.EditDirectory.text())
+                chdir(path)
             elif choice == 'gmail':
                 path = 'Templates/Phishing/Gmail/'
                 try:

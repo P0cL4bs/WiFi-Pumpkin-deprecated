@@ -10,6 +10,7 @@ Version 0.6.8
 - removed rule  iptables dns gateway local
 - added view->Monitor dns2proxy
 - removed (add redirect rules) button
+- added custom directory on Templates Phishing fixed #10
 
 Version 0.6.7
 -------------
