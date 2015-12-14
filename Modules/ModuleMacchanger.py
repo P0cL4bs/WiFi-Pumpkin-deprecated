@@ -64,8 +64,9 @@ class frm_mac_generator(QWidget):
         self.i_mac.setText(mac)
 
     def setMAC(self,device,mac):
+        subprocess.check_call(["ifconfig",device, "down"])
+        subprocess.call(["ifconfig",device, "hw", "ether",mac])
         subprocess.check_call(["ifconfig",device, "up"])
-        subprocess.check_call(["ifconfig",device, "hw", "ether",mac])
 
     def change_macaddress(self):
         if not geteuid() == 0:

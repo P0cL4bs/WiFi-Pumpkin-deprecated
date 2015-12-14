@@ -21,7 +21,8 @@ import threading
 from os import popen,path,makedirs
 from re import search
 from Core.Settings import frm_Settings
-from Modules.utils import Refactor,ProcessThread,airdump_start,get_network_scan,set_monitor_mode,ThreadDeauth
+from Modules.utils import Refactor,ProcessThread,airdump_start,\
+get_network_scan,set_monitor_mode,ThreadDeauth,ThreadScannerAP
 from multiprocessing import Process
 threadloading = {'deauth':[],'mdk3':[]}
 
@@ -65,7 +66,6 @@ class frm_deauth(QWidget):
         self.xmlcheck       = frm_Settings()
         self.interface      = self.xmlcheck.xmlSettings("interface", "monitor_mode", None, False)
         self.ApsCaptured    = {}
-        self.pacote         = []
         self.data           = {'Bssid':[], 'Essid':[], 'Channel':[]}
         self.window_qt()
 
@@ -108,23 +108,22 @@ class frm_deauth(QWidget):
         self.input_client.setText("ff:ff:ff:ff:ff:ff")
         self.btn_enviar = QPushButton("Send Attack", self)
         self.btn_enviar.clicked.connect(self.attack_deauth)
-        self.btn_scan = QPushButton(" Network Scan ", self)
-        self.btn_scan.clicked.connect(self.SettingsScan)
+        self.btn_scan_start = QPushButton("Start scan", self)
+        self.btn_scan_start.clicked.connect(self.SettingsScan)
         self.btn_stop = QPushButton("Stop  Attack ", self)
         self.btn_stop.clicked.connect(self.kill_thread)
+        self.btn_scan_stop = QPushButton('Stop scan',self)
+        self.btn_scan_stop.clicked.connect(self.kill_scanAP)
         self.btn_enviar.setFixedWidth(170)
         self.btn_stop.setFixedWidth(170)
-        self.btn_scan.setFixedWidth(120)
+        self.btn_scan_stop.setEnabled(False)
 
         #icons
-        self.btn_scan.setIcon(QIcon("rsc/network.png"))
+        self.btn_scan_start.setIcon(QIcon("rsc/network.png"))
+        self.btn_scan_stop.setIcon(QIcon('rsc/network_off.png'))
         self.btn_enviar.setIcon(QIcon("rsc/start.png"))
         self.btn_stop.setIcon(QIcon("rsc/Stop.png"))
 
-        self.time_scan = QComboBox(self)
-        self.time_scan.addItem("10s")
-        self.time_scan.addItem("20s")
-        self.time_scan.addItem("30s")
 
         self.get_placa = QComboBox(self)
 
@@ -136,16 +135,13 @@ class frm_deauth(QWidget):
         #grid options
         self.Grid = QGridLayout()
         self.options_scan = self.xmlcheck.xmlSettings("scanner_AP", "select", None, False)
-        if self.options_scan != "scan_scapy":self.time_scan.setEnabled(False)
 
-        self.Grid.addWidget(QLabel("Time:"),0,0)
-        self.Grid.addWidget(self.time_scan,0,1)
-        self.Grid.addWidget(self.get_placa,0,2)
-        self.Grid.addWidget(self.btn_scan,0,3)
-        self.Grid.addWidget(self.btn_scan,0,3)
+        self.Grid.addWidget(self.get_placa,0,1)
+        self.Grid.addWidget(self.btn_scan_start,0,2)
+        self.Grid.addWidget(self.btn_scan_stop,0,3)
 
         self.Grid.addWidget(QLabel("bssid:"),1,0)
-        self.Grid.addWidget(QLabel("          Client:"),1,2)
+        self.Grid.addWidget(QLabel("{0:>20}".format('Client:')),1,2)
         self.Grid.addWidget(self.linetarget,1,1)
         self.Grid.addWidget(self.input_client,1,3)
 
@@ -185,6 +181,12 @@ class frm_deauth(QWidget):
                                 self.tables.setItem(m, n, item)
                     self.cap =[]
 
+    def kill_scanAP(self):
+        if hasattr(self,'thread_airodump'):popen('killall airodump-ng')
+        if hasattr(self,'threadScanAP'):self.threadScanAP.stop()
+        self.btn_scan_stop.setEnabled(False)
+        self.btn_scan_start.setEnabled(True)
+
     def kill_thread(self):
         global threadloading
         for i in threadloading['deauth']:i.stop()
@@ -192,31 +194,38 @@ class frm_deauth(QWidget):
             i.stop(),i.join()
         self.AttackStatus(False)
 
+    def monitorThreadScan(self,apData):
+        apData = list(apData.split('|'))
+        if not str(apData[0]) in self.ApsCaptured.keys():
+            self.ApsCaptured[str(apData[0])] = apData
+            if Refactor.check_is_mac(str(apData[0])):
+               self.data['Channel'].append(self.ApsCaptured[str(apData[0])][1])
+               self.data['Essid'].append(self.ApsCaptured[str(apData[0])][2])
+               self.data['Bssid'].append(str(apData[0]))
+               Headers = []
+               for n, key in enumerate(self.data.keys()):
+                   Headers.append(key)
+                   for m, item in enumerate(self.data[key]):
+                       item = QTableWidgetItem(item)
+                       item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+                       self.tables.setItem(m, n, item)
+
     def SettingsScan(self):
+        self.ApsCaptured    = {}
         self.data = {'Bssid':[], 'Essid':[], 'Channel':[]}
         if self.get_placa.currentText() == "":
             QMessageBox.information(self, "Network Adapter", 'Network Adapter Not found try again.')
         else:
             self.interface = str(set_monitor_mode(self.get_placa.currentText()).setEnable())
             self.xmlcheck.xmlSettings("interface", "monitor_mode", self.interface, False)
-            if self.time_scan.currentText() == "10s":count = 10
-            elif self.time_scan.currentText() == "20s":count = 20
-            elif self.time_scan.currentText() == "30s":count = 30
+            self.btn_scan_stop.setEnabled(True)
+            self.btn_scan_start.setEnabled(False)
             if self.interface != None:
                 if self.options_scan == "scan_scapy":
-                    self.scapy_scan_AP(self.interface,count)
-                    for i in self.ApsCaptured.keys():
-                        if Refactor.check_is_mac(i):
-                            self.data['Channel'].append(self.ApsCaptured[i][0])
-                            self.data['Essid'].append(self.ApsCaptured[i][1])
-                            self.data['Bssid'].append(i)
-                            Headers = []
-                            for n, key in enumerate(self.data.keys()):
-                                Headers.append(key)
-                                for m, item in enumerate(self.data[key]):
-                                    item = QTableWidgetItem(item)
-                                    item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
-                                    self.tables.setItem(m, n, item)
+                    self.threadScanAP = ThreadScannerAP(self.interface)
+                    self.connect(self.threadScanAP,SIGNAL('Activated ( QString ) '), self.monitorThreadScan)
+                    self.threadScanAP.setObjectName('Thread Scanner AP::scapy')
+                    self.threadScanAP.start()
                 else:
                     if path.isfile(popen('which airodump-ng').read().split("\n")[0]):
                         self.thread_airodump = threading.Thread(target=self.scan_diveces_airodump)
@@ -226,11 +235,6 @@ class frm_deauth(QWidget):
                         QMessageBox.information(self,'Error airodump','airodump-ng not installed')
                         set_monitor_mode(self.get_placa.currentText()).setDisable()
 
-    def scapy_scan_AP(self,interface,timeout):
-        sniff(iface=str(interface), prn =self.Scanner_devices, timeout=timeout)
-    def Scanner_devices(self,pkt):
-        if pkt.type == 0 and pkt.subtype == 8:
-            self.ApsCaptured[pkt.addr2] = [str(int(ord(pkt[Dot11Elt:3].info))),pkt.info]
 
     def attack_deauth(self):
         global threadloading
@@ -244,7 +248,6 @@ class frm_deauth(QWidget):
             if self.deauth_check == 'packets_scapy':
                 self.AttackStatus(True)
                 threadDeauth = ThreadDeauth(self.bssid,str(self.input_client.text()),self.interface)
-                print self.bssid,str(self.input_client.text()),self.interface
                 threadloading['deauth'].append(threadDeauth)
                 threadDeauth.setObjectName('Deauth scapy')
                 threadDeauth.start()
@@ -267,9 +270,6 @@ class frm_deauth(QWidget):
             self.Controlador.setText('[OFF]')
             self.Controlador.setStyleSheet("QLabel {  color : red; }")
         self.statusbar.addWidget(self.Controlador)
-
-    def deauth_attacker(self,bssid, client,interface):
-        Refactor.deauth(bssid,client,interface)
 
     @pyqtSlot(QModelIndex)
     def list_clicked(self, index):

@@ -806,8 +806,11 @@ class SubMain(QWidget):
         else:return QMessageBox.information(self,'DHCP',selected_dhcp + ' not found.')
         self.Started(True)
         self.FSettings.xmlSettings('statusAP','value','True',False)
-        if self.FSettings.check_redirect.isChecked():
+
+        if self.FSettings.check_redirect.isChecked() or not self.PopUpPlugins.check_sslstrip.isChecked():
             popen('iptables -t nat -A PREROUTING -p udp -j DNAT --to {}'.format(str(self.EditGateway.text())))
+            self.FSettings.xmlSettings('sslstrip_plugin','status','False',False)
+            self.PopUpPlugins.check_sslstrip.setChecked(False)
             self.PopUpPlugins.unset_Rules('sslstrip')
 
         # thread plugins
@@ -834,13 +837,10 @@ class SubMain(QWidget):
         for index in xrange(self.FSettings.ListRules.count()):
            iptables.append(str(self.FSettings.ListRules.item(index).text()))
         for rules in iptables:
-            if search('PREROUTING -p udp -j DNAT --to',rules):
-                popen(rules.replace('$$',str(self.EditGateway.text())))
-            elif search('--append FORWARD --in-interface',rules):popen(rules.replace('$$',self.Ap_iface))
+            if search('--append FORWARD --in-interface',rules):popen(rules.replace('$$',self.Ap_iface))
             elif search('--append POSTROUTING --out-interface',rules):
                 popen(rules.replace('$$',str(Refactor.get_interfaces()['activated'])))
-            else:
-                popen(rules)
+            else:popen(rules)
 
     def create_sys_tray(self):
         self.sysTray = QSystemTrayIcon(self)

@@ -28,7 +28,7 @@ except ImportError:
     pass
 import threading
 from threading import Thread
-from Queue import Queue, Empty
+import Queue
 from scapy.all import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -166,6 +166,46 @@ class ProcessThread(threading.Thread):
             self.process.terminate()
             self.process = None
 
+class ThreadScannerAP(QThread):
+    def __init__(self,interface):
+        QThread.__init__(self)
+        self.interface  = interface
+        self.stopped    = False
+
+    def run(self):
+        print 'Starting Thread:' + self.objectName()
+        self.LoopScanmer()
+
+    def scannerAP(self,q):
+        while not self.stopped:
+            try:
+                sniff(iface=self.interface, prn =lambda x : q.put(x), timeout=20)
+            except:pass
+            if self.stopped:
+                break
+
+    def LoopScanmer(self):
+        q = Queue.Queue()
+        sniff = Thread(target =self.scannerAP, args = (q,))
+        sniff.daemon = True
+        sniff.start()
+        while (not self.stopped):
+            try:
+                pkt = q.get(timeout = 1)
+                self.Scanner_devices(pkt)
+            except Queue.Empty:
+              pass
+
+    def Scanner_devices(self,pkt):
+        if pkt.type == 0 and pkt.subtype == 8:
+            self.emit(SIGNAL('Activated( QString )'),'{}|{}|{}'.format(pkt.addr2,
+            str(int(ord(pkt[Dot11Elt:3].info))),pkt.info))
+
+    def stop(self):
+        self.started = True
+        print 'Stop thread:' + self.objectName()
+
+
 class ThreadDeauth(QThread):
     def __init__(self,bssid, client,interface):
         QThread.__init__(self)
@@ -266,7 +306,7 @@ class ThreadProbeScan(QThread):
             if self.finished:break
 
     def ProbeResqest(self):
-        q = Queue()
+        q = Queue.Queue()
         sniff = Thread(target =self.Startprobe, args = (q,))
         sniff.daemon = True
         sniff.start()
@@ -274,7 +314,7 @@ class ThreadProbeScan(QThread):
             try:
                 pkt = q.get(timeout = 1)
                 self.sniff_probe(pkt)
-            except Empty:
+            except Queue.Empty:
               pass
     def sniff_probe(self,p):
         if (p.haslayer(Dot11ProbeReq)):
@@ -331,7 +371,7 @@ class ThSpoofAttack(QThread):
             count = 10, filter = self.filter, prn = lambda x : q.put(x))
 
     def sniff(self):
-        q = Queue()
+        q = Queue.Queue()
         sniffer = Thread(target =self.StartSpoof, args = (q,))
         sniffer.daemon = True
         sniffer.start()
@@ -339,7 +379,7 @@ class ThSpoofAttack(QThread):
             try:
                 pkt = q.get(timeout = 1)
                 self.Poisoning(pkt)
-            except Empty:
+            except Queue.Empty:
               pass
 
     def Poisoning(self,packet):

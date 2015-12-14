@@ -11,6 +11,7 @@ Version 0.6.8
 - added view->Monitor dns2proxy
 - removed (add redirect rules) button
 - added custom directory on Templates Phishing fixed #10
+- added Qthread on scanner AP functions
 
 Version 0.6.7
 -------------
