@@ -16,18 +16,18 @@
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from Core.Settings import frm_Settings
-from Modules.ModuleUpdateFake import frm_update_attack
-from Modules.utils import Refactor,ThSpoofAttack,ThARP_posion
-from Modules.ModuleArpPosion import ThreadScan
-from Modules.ModuleTemplates import frm_template
-from os import popen,chdir,getcwd,devnull
+from os import chdir,getcwd,devnull
 from scapy.all import *
 import threading
 from multiprocessing import Process,Manager
 from socket import gaierror
 from subprocess import Popen,PIPE
 from re import search
+from Core.config.Settings import frm_Settings
+from Modules.servers.UpdateFake import frm_update_attack
+from Modules.utils import Refactor,ThSpoofAttack,ThARP_posion
+from Modules.poisoners.ArpPosion import ThreadScan
+from Modules.servers.Templates import frm_template
 threadloading = {'template':[],'dnsspoof':[],'arps':[]}
 
 class MainDnsSpoof(QMainWindow):

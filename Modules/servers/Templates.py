@@ -14,13 +14,14 @@
 #COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 #IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from Core.Settings import frm_Settings
-from Modules.utils import ProcessThread,Beef_Hook_url
 from os import popen,chdir,getcwd
 from urllib2 import urlopen,URLError
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
 from BeautifulSoup import BeautifulSoup
+from Core.config.Settings import frm_Settings
+from Modules.utils import ProcessThread,Beef_Hook_url
+
 threadloading = {'template':[],'posion':[]}
 class frm_template(QDialog):
     def __init__(self, parent = None):

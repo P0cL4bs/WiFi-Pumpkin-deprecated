@@ -7,7 +7,7 @@
         <scanner_AP select="scan_scapy"/>
         <mdk3 arguments="a -a m -t"/>
         <scan rangeIP="0-255"/>
-        <themes selected="theme2"/>
+        <themes selected="themes/theme2"/>
     </configure>
 
     <configure>

@@ -1,9 +1,12 @@
-from PyQt4.QtGui import *
 from subprocess import Popen, PIPE
-from Core.Settings import frm_Settings
 from os import popen
 from re import search
 import getpass
+
+from PyQt4.QtGui import *
+
+from Core.config.Settings import frm_Settings
+
 
 class frm_privelege(QDialog):
     def __init__(self, parent = None):

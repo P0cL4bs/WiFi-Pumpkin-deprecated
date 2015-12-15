@@ -69,6 +69,27 @@ def get_network_scan():
     except IOError:
         return None
 
+class ThreadPopen(QThread):
+    def __init__(self,cmd):
+        QThread.__init__(self)
+        self.cmd = cmd
+        self.process = None
+
+    def run(self):
+        print 'Starting Thread:' + self.objectName()
+        self.process = Popen(self.cmd,
+        stdout=PIPE,
+            stderr=STDOUT)
+        for line in iter(self.process.stdout.readline, b''):
+            self.emit(SIGNAL('Activated( QString )'),line.rstrip())
+
+    def stop(self):
+        print 'Stop thread:' + self.objectName()
+        if self.process is not None:
+            self.process.terminate()
+            self.process = None
+
+
 class ThreadScan(QThread):
     def __init__(self,gateway):
         QThread.__init__(self)

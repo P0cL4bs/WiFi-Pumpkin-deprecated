@@ -1,5 +1,8 @@
 from PyQt4.QtGui import *
-from Core.Settings import frm_Settings
+
+from Core.config.Settings import frm_Settings
+
+
 class frmAbout(QDialog):
     def __init__(self,author,emails,version,
         update,license,desc, parent = None):

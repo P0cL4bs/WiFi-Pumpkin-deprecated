@@ -14,13 +14,17 @@
 #COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 #IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
 from os import geteuid
-from Core.Settings import frm_Settings
-from Modules.utils import Refactor
 import subprocess
 import random
+
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+
+from Core.config.Settings import frm_Settings
+from Modules.utils import Refactor
+
+
 class frm_mac_changer(QMainWindow):
     def __init__(self, parent=None):
         super(frm_mac_changer, self).__init__(parent)

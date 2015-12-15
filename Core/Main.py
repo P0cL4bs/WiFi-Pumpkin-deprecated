@@ -22,27 +22,30 @@ import logging
 from re import search
 from time import asctime
 from ast import literal_eval
-from subprocess import Popen,PIPE,STDOUT,call,check_output,CalledProcessError
-from Modules.ModuleStarvation import frm_dhcp_main
-from Modules.ModuleDeauth import frm_window
-from Modules.ModuleMacchanger import frm_mac_generator
-from Modules.ModuleProbeRequest import frm_PMonitor
-from Modules.ModuleUpdateFake import frm_update_attack
-from Modules.ModuleArpPosion import frm_Arp_Poison
-from Modules.Credentials import frm_get_credentials,frm_NetCredsLogger,frm_dns2proxy
-from Modules.ModuleDnsSpoof import frm_DnsSpoof
-from Modules.ModuleTemplates import frm_template
+from Modules.systems.dhcpStarvation import frm_dhcp_main
+from Modules.systems.Macchanger import frm_mac_generator
+from Modules.wireless.ProbeRequest import frm_PMonitor
+from Modules.wireless.WirelessDeauth import frm_wifideauth
+from Modules.poisoners.ArpPosion import frm_Arp_Poison
+from Modules.poisoners.DnsSpoof import frm_DnsSpoof
+from Modules.monitors.Credentials import frm_get_credentials
+from Modules.monitors.dns2proxy import frm_dns2proxy
+from Modules.monitors.netcreds import frm_NetCredsLogger
+from Modules.servers.Templates import frm_template
+from Modules.servers.UpdateFake import frm_update_attack
 from Modules.utils import ProcessThread,Refactor,setup_logger,set_monitor_mode
-from Core.Settings import frm_Settings
-from Core.about import frmAbout
+from Core.config.Settings import frm_Settings
+from Core.helpers.about import frmAbout
 from twisted.web import http
 from twisted.internet import reactor
 from Plugins.sslstrip.StrippingProxy import StrippingProxy
 from Plugins.sslstrip.URLMonitor import URLMonitor
 from Plugins.sslstrip.CookieCleaner import CookieCleaner
 from os import geteuid,system,path,getcwd,chdir,popen,listdir,mkdir
+from subprocess import Popen,PIPE,STDOUT,call,check_output,CalledProcessError
 if search('/usr/share/',argv[0]):chdir('/usr/share/3vilTwinAttacker/')
-author      = 'Marcos Nesster @mh4x0f P0cl4bs Team'
+
+author      = 'Marcos Nesster (@mh4x0f)  P0cl4bs Team'
 emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
 license     = 'MIT License (MIT)'
 version     = '0.6.8'
@@ -520,7 +523,7 @@ class SubMain(QWidget):
         self.Fprobe.show()
 
     def formDauth(self):
-        self.Fdeauth = frm_window()
+        self.Fdeauth = frm_wifideauth()
         self.Fdeauth.setGeometry(QRect(100, 100, 200, 200))
         self.Fdeauth.show()
 
@@ -618,6 +621,7 @@ class SubMain(QWidget):
             self.FormPopup.Ftemplates.killThread()
             self.FormPopup.StatusServer(False)
         except:pass
+        self.Apthreads['RougeAP'] = []
         self.btn_start_attack.setDisabled(False)
         Refactor.set_ip_forward(0)
         self.ListLoggerDhcp.clear()
@@ -700,7 +704,6 @@ class SubMain(QWidget):
                 'dhcp-range=10.0.0.1,10.0.0.50,12h\n',
                 'dhcp-option=3, 10.0.0.1\n',
                 'dhcp-option=6, 10.0.0.1\n',
-                'addn-hosts='+ getcwd() + '/Settings/dnsmasq.hosts\n'
             ]
         }
         Refactor.set_ip_forward(1)
@@ -716,7 +719,7 @@ class SubMain(QWidget):
                 if not path.isdir('/etc/dhcp/'):mkdir('/etc/dhcp')
                 move('Settings/dhcpd.conf', '/etc/dhcp/')
         else:
-            with open('Settings/dnsmasq.conf','w') as dhcp:
+            with open('Core/config/dnsmasq.conf','w') as dhcp:
                 for i in self.SettingsAP['dnsmasq']:
                     dhcp.write(i)
                 dhcp.close()
@@ -798,7 +801,7 @@ class SubMain(QWidget):
             Thread_dhcp.start()
 
         elif selected_dhcp == 'dnsmasq':
-            Thread_dhcp = ThRunDhcp(['dnsmasq','-C','Settings/dnsmasq.conf','-d'])
+            Thread_dhcp = ThRunDhcp(['dnsmasq','-C','Core/config/dnsmasq.conf','-d'])
             self.connect(Thread_dhcp ,SIGNAL('Activated ( QString ) '), self.dhcpLog)
             Thread_dhcp .setObjectName('DHCP')
             self.Apthreads['RougeAP'].append(Thread_dhcp)

@@ -12,6 +12,7 @@ Version 0.6.8
 - removed (add redirect rules) button
 - added custom directory on Templates Phishing fixed #10
 - added Qthread on scanner AP functions
+- changed structure files
 
 Version 0.6.7
 -------------

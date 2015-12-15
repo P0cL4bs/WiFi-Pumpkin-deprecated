@@ -16,8 +16,10 @@
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from Core.Settings import frm_Settings
+
+from Core.config.Settings import frm_Settings
 from Modules.utils import Refactor,ThreadAttackStar
+
 
 class frm_dhcp_main(QMainWindow):
     def __init__(self, parent=None):

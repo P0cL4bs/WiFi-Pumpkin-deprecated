@@ -28,12 +28,12 @@ class frm_Settings(QDialog):
         self.move(frameGm.topLeft())
 
     def xmlSettings(self,id,data,bool,show):
-        xmldoc = minidom.parse('Settings/Settings.xml')
+        xmldoc = minidom.parse('Core/config/Settings.xml')
         country = xmldoc.getElementsByTagName(id)
         firstchild = country[0]
         if bool != None:
             firstchild.attributes[data].value = bool
-        xmldoc.writexml( open('Settings/Settings.xml', 'w'))
+        xmldoc.writexml( open('Core/config/Settings.xml', 'w'))
 
         return firstchild.attributes[data].value
 
@@ -57,9 +57,9 @@ class frm_Settings(QDialog):
         elif self.dhcp2.isChecked():
             self.xmlSettings('dhcp','dhcp_server','dnsmasq',False)
         if self.theme1.isChecked():
-            self.xmlSettings('themes','selected','theme1',False)
+            self.xmlSettings('themes','selected','themes/theme1',False)
         elif self.theme2.isChecked():
-            self.xmlSettings('themes','selected','theme2',False)
+            self.xmlSettings('themes','selected','themes/theme2',False)
         if self.scan1.isChecked():
             self.xmlSettings('advanced','Function_scan','Ping',False)
         elif self.scan2.isChecked():
@@ -71,7 +71,7 @@ class frm_Settings(QDialog):
         self.xmlSettings('channel', 'mchannel', str(self.channel.value()), False)
         self.xmlSettings('redirect', 'port', str(self.redirectport.text()), False)
         self.xmlSettings('netcreds', 'interface', str(self.InterfaceNetCreds.text()), False)
-        with open('Settings/hostapdExtra.conf','w') as apconf:
+        with open('Core/config/hostapd+.conf','w') as apconf:
             apconf.write(self.ListHostapd.toPlainText())
         self.close()
 
@@ -220,7 +220,7 @@ class frm_Settings(QDialog):
         # page hostpad
         self.ListHostapd = QTextEdit(self)
         self.ListHostapd.setFixedHeight(300)
-        with open('Settings/hostapdExtra.conf','r') as apconf:
+        with open('Core/config/hostapd+.conf','r') as apconf:
             self.ListHostapd.setText(apconf.read())
 
         #grup page 1
@@ -268,7 +268,7 @@ class frm_Settings(QDialog):
         else:self.scan_airodump.setChecked(True)
 
         self.theme_selected = self.xmlSettings('themes', 'selected', None, False)
-        if self.theme_selected == 'theme1':
+        if self.theme_selected == 'themes/theme1':
             self.theme1.setChecked(True)
         else:
             self.theme2.setChecked(True)

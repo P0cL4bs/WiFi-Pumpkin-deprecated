@@ -16,14 +16,14 @@
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from Core.Settings import frm_Settings
-from Modules.ModuleUpdateFake import frm_update_attack
-from Modules.ModuleTemplates import frm_template
-from Modules.utils import Refactor,ThreadScan,ThARP_posion,ThSpoofAttack
-from os import popen,chdir,getcwd,getuid,devnull,system
+from os import chdir,getcwd, devnull
 from scapy.all import *
 import threading
 from multiprocessing import Process,Manager
+from Core.config.Settings import frm_Settings
+from Modules.servers.UpdateFake import frm_update_attack
+from Modules.servers.Templates import frm_template
+from Modules.utils import Refactor,ThreadScan,ThARP_posion,ThSpoofAttack
 threadloading = {'template':[],'posion':[]}
 
 class frm_Arp(QMainWindow):

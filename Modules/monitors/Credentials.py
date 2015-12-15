@@ -16,29 +16,9 @@
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from Core.Settings import frm_Settings
+from Core.config.Settings import frm_Settings
+from Modules.utils import ThreadPopen
 from os import chdir,getcwd,path
-from subprocess import Popen,PIPE,STDOUT
-
-class ThreadPopen(QThread):
-    def __init__(self,cmd):
-        QThread.__init__(self)
-        self.cmd = cmd
-        self.process = None
-
-    def run(self):
-        print 'Starting Thread:' + self.objectName()
-        self.process = Popen(self.cmd,
-        stdout=PIPE,
-            stderr=STDOUT)
-        for line in iter(self.process.stdout.readline, b''):
-            self.emit(SIGNAL('Activated( QString )'),line.rstrip())
-
-    def stop(self):
-        print 'Stop thread:' + self.objectName()
-        if self.process is not None:
-            self.process.terminate()
-            self.process = None
 
 class frm_get_credentials(QDialog):
     def __init__(self, parent = None):
@@ -65,12 +45,10 @@ class frm_get_credentials(QDialog):
 
     def SearchCreds(self,path,page):
         self.list_password.clear()
-        logins = []
         chdir(self.owd)
         log = open(path, 'r')
         try:
             for i,j in enumerate(log.readlines()):
-                logins.append(i)
                 s = j.split('-')
                 self.list_password.addItem(page+': Email: ' +s[0] + '   Password: ' +s[1])
         except:

@@ -17,10 +17,10 @@
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from sys import argv,exit
 from os import getuid
-from PyQt4.QtGui import QApplication,QIcon
-from Core.Privilege import frm_privelege
 from Core.Main import Initialize
-from Core.check import check_dependencies
+from PyQt4.QtGui import QApplication,QIcon
+from Core.loaders.Privilege import frm_privelege
+from Core.loaders.check import check_dependencies
 from Modules.utils import Refactor
 def ExecRootApp(root):
     app = Initialize()

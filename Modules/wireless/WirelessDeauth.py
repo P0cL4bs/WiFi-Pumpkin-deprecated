@@ -14,22 +14,20 @@
 #COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 #IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from scapy.all import *
 import threading
 from os import popen,path,makedirs
 from re import search
-from Core.Settings import frm_Settings
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+from Core.config.Settings import frm_Settings
 from Modules.utils import Refactor,ProcessThread,airdump_start,\
 get_network_scan,set_monitor_mode,ThreadDeauth,ThreadScannerAP
-from multiprocessing import Process
 threadloading = {'deauth':[],'mdk3':[]}
 
 
-class frm_window(QMainWindow):
+class frm_wifideauth(QMainWindow):
     def __init__(self, parent=None):
-        super(frm_window, self).__init__(parent)
+        super(frm_wifideauth, self).__init__(parent)
         self.form_widget = frm_deauth(self)
         self.setCentralWidget(self.form_widget)
         self.setWindowTitle("Deauth Attack wireless Route")

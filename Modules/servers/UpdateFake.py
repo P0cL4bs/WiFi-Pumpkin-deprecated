@@ -14,14 +14,15 @@
 #COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 #IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 #CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
 from os import getcwd,popen,chdir,path,remove
-from Modules.utils import Refactor
-from Core.Settings import frm_Settings
 from shutil import copyfile
 from subprocess import Popen,PIPE,STDOUT
 from datetime import date
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+from Modules.utils import Refactor
+from Core.config.Settings import frm_Settings
+
 threadloading = {'server':[]}
 
 class mThreadServer(QThread):
