@@ -223,7 +223,7 @@ class ThreadScannerAP(QThread):
             str(int(ord(pkt[Dot11Elt:3].info))),pkt.info))
 
     def stop(self):
-        self.started = True
+        self.stopped = True
         print 'Stop thread:' + self.objectName()
 
 

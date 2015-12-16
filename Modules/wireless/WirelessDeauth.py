@@ -115,6 +115,7 @@ class frm_deauth(QWidget):
         self.btn_enviar.setFixedWidth(170)
         self.btn_stop.setFixedWidth(170)
         self.btn_scan_stop.setEnabled(False)
+        self.btn_stop.setEnabled(False)
 
         #icons
         self.btn_scan_start.setIcon(QIcon("rsc/network.png"))
@@ -190,6 +191,8 @@ class frm_deauth(QWidget):
         for i in threadloading['deauth']:i.stop()
         for i in threadloading['mdk3']:
             i.stop(),i.join()
+        self.btn_enviar.setEnabled(True)
+        self.btn_stop.setEnabled(False)
         self.AttackStatus(False)
 
     def monitorThreadScan(self,apData):
@@ -236,6 +239,14 @@ class frm_deauth(QWidget):
 
     def attack_deauth(self):
         global threadloading
+        if hasattr(self,'threadScanAP'):
+            if not self.threadScanAP.stopped:
+                return QMessageBox.warning(self,'scanner','you need to stop the scanner Access Point')
+        if hasattr(self,'thread_airodump'):
+            if self.thread_airodump.isAlive():
+                return QMessageBox.warning(self,'scanner','you need to stop the scanner Access Point')
+        self.btn_stop.setEnabled(True)
+        self.btn_enviar.setEnabled(False)
         if self.linetarget.text() == '':
             QMessageBox.information(self, 'Target Error', 'Please, first select Target for attack')
         else:
