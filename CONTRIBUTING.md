@@ -24,4 +24,4 @@ If the feature is well discuss and there are some +1 or the project owner approv
 Some projects won't use the pull request system. Check with the author or mailing list on the best way to get your code back into the project.
 
 **IMPORTANT**: By submitting a patch, you agree to allow the project
-owners to license your work under the terms of the [MIT License](LICENSE).
+owners to license your work under the terms of the [GPL3](LICENSE).

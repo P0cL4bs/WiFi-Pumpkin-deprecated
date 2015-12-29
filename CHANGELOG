@@ -1,3 +1,11 @@
+Version 0.7.1
+-------------
+- added update commits from repository
+- added QTableWidget filter (mac,ip,hostname) clients connected on AP.
+- added count of clients connected no AP.
+- changed name Tool Wifi-Pumpkin
+- locked dnsmasq support  temporarily
+
 Version 0.6.8
 -------------
 - fixed network card as wifi hotspot,some improvements

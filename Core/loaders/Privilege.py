@@ -2,9 +2,7 @@ from subprocess import Popen, PIPE
 from os import popen
 from re import search
 import getpass
-
 from PyQt4.QtGui import *
-
 from Core.config.Settings import frm_Settings
 
 

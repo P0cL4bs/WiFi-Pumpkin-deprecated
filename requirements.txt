@@ -3,3 +3,6 @@ scapy
 BeautifulSoup
 python-nmap
 netaddr
+config
+dnspython
+isc_dhcp_leases

@@ -1,5 +1,4 @@
 #!/bin/bash
-#install kali and ubuntu
 #---------------------------------------
 txtund=$(tput sgr 0 1)
 txtbld=$(tput bold)
@@ -15,9 +14,9 @@ requeries=true
 func_Banner(){
 	clear
 	echo '   ============================='
-	echo "   |$bldblu 3vilTwinAttacker Installer$txtrst|"
+	echo "   |$bldblu wifi-pumpkin Installer$txtrst|"
 	echo '   ============================='
-	echo "          Version: $(tput setaf 5)0.6.7 $txtrst"
+	echo "          Version: $(tput setaf 5)0.7.1 $txtrst"
 	echo "usage: ./installer.sh --install | --uninstall"
 }
 
@@ -49,17 +48,17 @@ func_install(){
 		exit 1
 	fi
 	apt-get update
-	apt-get install -y python-qt4 xterm python-scapy php5-cli dnsmasq hostapd
+	apt-get install -y python-qt4 xterm python-scapy php5-cli hostapd rfkill
     pip install -r requirements.txt
     File="/etc/apt/sources.list"
-    if  grep -q '#Eviltwininstall' $File;then
+    if  grep -q '#Wifi Pumpkin' $File;then
 	    cp /etc/apt/sources.list.backup /etc/apt/sources.list
 	    rm /etc/apt/sources.list.backup
     fi
 	echo "----------------------------------------"
 	echo "[=]$bldblu checking dependencies $txtrst "
 	func_check_install "hostapd"
-	func_check_install "dnsmasq"
+	#func_check_install "dnsmasq"
 	func_check_install "dhcpd"
 	func_check_install "php"
 	echo "----------------------------------------"
@@ -104,31 +103,31 @@ func_install(){
 		fi
 	fi
 	echo "----------------------------------------"
-	echo "[=] $bldblu Install 3vilTwinAttacker$txtrst"
+	echo "[=] $bldblu Install WiFi-Pumpkin $txtrst"
 	if [ ! -d "$DIRECTORY" ]; then
 		mkdir $DIRECTORY
-		cp -r $path_install /usr/share/3vilTwinAttacker/
+		cp -r $path_install /usr/share/WiFi-Pumpkin/
 		bin_install
-		echo "[$green✔$txtrst] 3vilTwinAttacker installed with success"
-		echo "[$green✔$txtrst] execute $bldred 3vilTwin-Attacker$txtrst in terminal"
+		echo "[$green✔$txtrst] wifi-pumpkin installed with success"
+		echo "[$green✔$txtrst] execute $bldred wifipumpkin$txtrst in terminal"
 	else
 		rm -r $DIRECTORY
 		mkdir $DIRECTORY
-		cp -r $path_install /usr/share/3vilTwinAttacker/
+		cp -r $path_install /usr/share/WiFi-Pumpkin/
 		bin_install
-		echo "[$green✔$txtrst] 3vilTwinAttacker installed with success"
-		echo "[$green✔$txtrst] execute $bldred 3vilTwin-Attacker$txtrst in terminal"
+		echo "[$green✔$txtrst] wifi-pumpkin installed with success"
+		echo "[$green✔$txtrst] execute $bldred wifi-pumpkin$txtrst in terminal"
 	fi
 	echo "[$green+$txtrst]$color_y P0cL4bs Team CopyRight 2015$txtrst"
 	echo "[$green+$txtrst] Enjoy"
 }
 
 bin_install(){
-	if [ ! -f "/usr/bin/3vilTwin-Attacker" ]; then
+	if [ ! -f "/usr/bin/wifi-pumpkin" ]; then
 	    echo "[$green✔$txtrst] PATH::$DIRECTORY"
 		echo "[$green✔$txtrst] binary::/usr/bin/"
-		echo "'/usr/share/3vilTwinAttacker/3vilTwin-Attacker.py'" >> /usr/bin/3vilTwin-Attacker
-		chmod +x /usr/bin/3vilTwin-Attacker
+		echo "'/usr/share/WiFi-Pumpkin/wifi-pumpkin.py'" >> /usr/bin/wifi-pumpkin
+		chmod +x /usr/bin/wifi-pumpkin
 	fi
 }
 
@@ -140,16 +139,16 @@ uninstall(){
 	if [  -d "$DIRECTORY" ]; then
 		echo "[$red_color-$txtrst] Delete Path:$bldwht $DIRECTORY $txtrst"
 		rm -r $path_uninstall
-		if [ -f "/usr/bin/3vilTwin-Attacker" ]; then
-			rm /usr/bin/3vilTwin-Attacker
-			echo "[$red_color-$txtrst] Deleted Binary:$bldwht/usr/bin/3vilTwin-Attacker $txtrst"
+		if [ -f "/usr/bin/wifi-pumpkin" ]; then
+			rm /usr/bin/wifi-pumpkin
+			echo "[$red_color-$txtrst] Deleted Binary:$bldwht/usr/bin/wifi-pumpkin $txtrst"
 		fi
 	else
-		echo "[$red_color✘$txtrst] 3vilTwinAttacker not Installed"
+		echo "[$red_color✘$txtrst] wifi-pumpkin not Installed"
 	fi
 }
 func_Banner
-DIRECTORY="/usr/share/3vilTwinAttacker"
+DIRECTORY="/usr/share/WiFi-Pumpkin"
 Dir_isntall=$(pwd)
 path_install=$Dir_isntall"/*"
 path_uninstall=$DIRECTORY"/"

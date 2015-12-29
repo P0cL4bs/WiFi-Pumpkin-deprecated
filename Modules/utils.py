@@ -1,19 +1,4 @@
-#The MIT License (MIT)
-#Copyright (c) 2015-2016 mh4x0f P0cL4bs Team
-#Permission is hereby granted, free of charge, to any person obtaining a copy of
-#this software and associated documentation files (the "Software"), to deal in
-#the Software without restriction, including without limitation the rights to
-#use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-#the Software, and to permit persons to whom the Software is furnished to do so,
-#subject to the following conditions:
-#The above copyright notice and this permission notice shall be included in all
-#copies or substantial portions of the Software.
-#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-#FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-#COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-#IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-#CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+from sys import exit
 from struct import pack
 from time import sleep,asctime,strftime
 from random import randint
@@ -33,6 +18,28 @@ from scapy.all import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import logging
+
+"""
+Description:
+    This program is a core for modules wifi-pumpkin.py. file which includes all Implementation
+    for modules.
+
+Copyright:
+    Copyright (C) 2015 Marcos Nesster P0cl4bs Team
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>
+"""
+
 def airdump_start(interface):
     process = ProcessThread(['xterm',
                 '-geometry', '85x15-1+250', '-T',
@@ -136,6 +143,33 @@ class set_monitor_mode(QDialog):
         Popen(['iwconfig', self.interface, 'mode','managed'])
         Popen(['ifconfig', self.interface, 'up'])
 
+class ProcessHostapd(QThread):
+    statusAP_connected = pyqtSignal(object)
+    def __init__(self,cmd):
+        QThread.__init__(self)
+        self.cmd = cmd
+
+    def run(self):
+        print 'Starting Thread:' + self.objectName()
+        self.makeLogger()
+        self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
+        for line in iter(self.process.stdout.readline, b''):
+            #self.log_hostapd.info(line.rstrip())
+            if self.objectName() == 'hostapd':
+                if 'AP-STA-DISCONNECTED' in line.rstrip() or 'inactivity (timer DEAUTH/REMOVE)' in line.rstrip():
+                    self.statusAP_connected.emit(line.split()[2])
+
+    def makeLogger(self):
+        setup_logger('hostapd', './Logs/requestAP.log')
+        self.log_hostapd = logging.getLogger('hostapd')
+
+    def stop(self):
+        print 'Stop thread:' + self.objectName()
+        if self.process is not None:
+            self.process.terminate()
+            self.process = None
+
+
 class ProcessThread(threading.Thread):
     def __init__(self,cmd,):
         threading.Thread.__init__(self)
@@ -150,20 +184,14 @@ class ProcessThread(threading.Thread):
         if self.name == 'Airbase-ng':
             setup_logger('airbase', './Logs/requestAP.log')
             log_airbase = logging.getLogger('airbase')
-            log_airbase.info('---[ Start Airbase-ng '+asctime()+']---')
-            log_airbase.info('-'*52)
             self.logger = True
         elif self.name == 'hostapd':
             setup_logger('hostapd', './Logs/requestAP.log')
             log_hostapd = logging.getLogger('hostapd')
-            log_hostapd.info('---[ Start Hostapd '+asctime()+']---')
-            log_hostapd.info('-'*52)
             self.logger = True
         elif self.name == 'Dns2Proxy':
             setup_logger('dns2proxy', './Logs/dns2proxy.log')
             log_dns2proxy = logging.getLogger('dns2proxy')
-            log_dns2proxy.info('---[ Start dns2proxy '+asctime()+']---')
-            log_dns2proxy.info('-'*52)
             self.logger = True
         self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
         for line in iter(self.process.stdout.readline, b''):
@@ -218,9 +246,10 @@ class ThreadScannerAP(QThread):
               pass
 
     def Scanner_devices(self,pkt):
-        if pkt.type == 0 and pkt.subtype == 8:
-            self.emit(SIGNAL('Activated( QString )'),'{}|{}|{}'.format(pkt.addr2,
-            str(int(ord(pkt[Dot11Elt:3].info))),pkt.info))
+        if pkt.haslayer(Dot11):
+            if pkt.type == 0 and pkt.subtype == 8:
+                self.emit(SIGNAL('Activated( QString )'),'{}|{}|{}'.format(pkt.addr2,
+                str(int(ord(pkt[Dot11Elt:3].info))),pkt.info))
 
     def stop(self):
         self.stopped = True
@@ -519,7 +548,7 @@ class Refactor:
                 with open(j,'r') as file:
                     readFile[i][j] = file.read()
 
-        contenthtml = Refactor.htmlContent('3vilTwinAttacker Report')
+        contenthtml = Refactor.htmlContent('WiFi-Pumpkin Report')
         HTML = ''
         for i in contenthtml['htmlheader']:
             HTML += i+"\n"
@@ -629,7 +658,7 @@ class Refactor:
     @staticmethod
     def threadRoot(sudo_password):
         call(['sudo','-k'])
-        p = Popen(['sudo', '-S','./3vilTwin-Attacker.py'], stdin=PIPE, stderr=PIPE,
+        p = Popen(['sudo', '-S','./wifi-pumpkin.py'], stdin=PIPE, stderr=PIPE,
         universal_newlines=True)
         waiter().start()
         p.communicate(str(sudo_password) + '\n')[1]

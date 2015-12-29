@@ -1,8 +1,5 @@
 from PyQt4.QtGui import *
-
 from Core.config.Settings import frm_Settings
-
-
 class frmAbout(QDialog):
     def __init__(self,author,emails,version,
         update,license,desc, parent = None):
@@ -13,7 +10,7 @@ class frmAbout(QDialog):
         self.update      = update
         self.license     = license
         self.desc        = desc
-        self.setWindowTitle("About 3vilTwinAttacker")
+        self.setWindowTitle("About WiFi-Pumpkin")
         self.Main = QVBoxLayout()
         self.frm = QFormLayout()
         self.setGeometry(0, 0, 400, 300)
@@ -38,25 +35,8 @@ class frmAbout(QDialog):
         self.btn_exit = QPushButton("Close")
         self.licenseEdit = QTextEdit(self)
         self.licenseEdit.setFixedHeight(150)
-        self.licenseEdit.setText(
-            '''The MIT License (MIT)
-Copyright (c) 2015-2016 mh4x0f P0cL4bs Team
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'''
-        )
-        ltool  = QLabel('<center>3vilTwin-Attacker v%s</center>'%(self.version))
+        self.licenseEdit.setText(open('LICENSE','r').read())
+        ltool  = QLabel('<center>WiFi-Pumpkin v%s</center>'%(self.version))
         ldesc = QLabel('<center>'+self.desc[0]+'</center>')
         lversion = QLabel('Version:'+self.version)
         lupdate = QLabel('Last Update:'+self.update)

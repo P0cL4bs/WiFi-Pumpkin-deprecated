@@ -1015,8 +1015,4 @@ if __name__ == "__main__":
     setup_logger('credentials', './Logs/credentials.log')
     url = logging.getLogger('netcreds')
     creds = logging.getLogger('credentials')
-    url.info('---[ Start Urls Capture '+asctime()+']---')
-    url.info('-'*52)
-    creds.info('---[ Start Credentials '+asctime()+']---')
-    creds.info('-'*52)
     main(parse_args())

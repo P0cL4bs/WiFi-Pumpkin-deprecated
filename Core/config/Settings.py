@@ -2,10 +2,31 @@ from PyQt4.QtGui import *
 from xml.dom import minidom
 from PyQt4.QtCore import *
 from re import search
+
+"""
+Description:
+    This program is a module for wifi-pumpkin.py.
+
+Copyright:
+    Copyright (C) 2015 Marcos Nesster P0cl4bs Team
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>
+"""
+
 class frm_Settings(QDialog):
     def __init__(self, parent = None):
         super(frm_Settings, self).__init__(parent)
-        self.setWindowTitle('Settings 3vilTwinAttacker')
+        self.setWindowTitle('Settings WiFi-Pompkin')
         self.Main = QVBoxLayout()
         self.frm = QFormLayout()
         self.setGeometry(0, 0, 420, 300)
@@ -184,6 +205,7 @@ class frm_Settings(QDialog):
         self.scan_airodump = QRadioButton('Scan from airodump-ng')
         self.dhcp1 = QRadioButton('iscdhcpserver')
         self.dhcp2 = QRadioButton('dnsmasq')
+        self.dhcp2.setDisabled(True)
         self.theme1 = QRadioButton('theme Dark Orange')
         self.theme2 = QRadioButton('theme Dark blur')
 
@@ -286,7 +308,7 @@ class frm_Settings(QDialog):
         self.page_1.addRow(QLabel('DHCP:'))
         self.page_1.addRow(self.dhcp1)
         self.page_1.addRow(self.dhcp2)
-        self.page_1.addRow(QLabel('3vilTwinAttacker Themes:'))
+        self.page_1.addRow(QLabel('Pumpkin Themes:'))
         self.page_1.addRow(self.theme1)
         self.page_1.addRow(self.theme2)
 

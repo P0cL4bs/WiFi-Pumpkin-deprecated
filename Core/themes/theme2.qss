@@ -28,6 +28,13 @@ QProgressBar:horizontal {
     padding: 1px;
     background: #201F1F;
 }
+QProgressBar::chunk
+{
+    background-color: #d7801a;
+    width: 2.15px;
+    margin: 0.5px;
+}
+
 QProgressBar::chunk:horizontal {
     background-color: qlineargradient(spread:reflect, x1:1, y1:0.545, x2:1, y2:0, stop:0 rgba(28, 66, 111, 255), stop:1 rgba(37, 87, 146, 255));
 }
