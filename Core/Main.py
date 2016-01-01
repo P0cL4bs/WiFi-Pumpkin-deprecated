@@ -635,7 +635,7 @@ class SubMain(QWidget):
                             hostname = item[data[4]]
                     except:
                         hostname = 'unknown'
-                    if hotname == None:hostname = 'unknown'
+                    if hostname == None:hostname = 'unknown'
                     self.APclients[data[4]] = {'IP': data[2],'device': hostname,'in_tables': False,}
                     print self.APclients
         Headers = []
