@@ -2,7 +2,7 @@ from os import getcwd,path
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from Core.config.Settings import frm_Settings
-from Modules.utils import ThreadPopen
+from Core.Utils import ThreadPopen
 
 
 class frm_dns2proxy(QDialog):
@@ -31,8 +31,8 @@ class frm_dns2proxy(QDialog):
     def Start_Get_creds(self):
         self.listDns.clear()
         # Thread Capture logs
-        if path.exists('Logs/dns2proxy.log'):
-            dns = ThreadPopen(['tail','-f','Logs/dns2proxy.log'])
+        if path.exists('Logs/AccessPoint/dns2proxy.log'):
+            dns = ThreadPopen(['tail','-f','Logs/AccessPoint/dns2proxy.log'])
             self.connect(dns,SIGNAL('Activated ( QString ) '), self.loggerdns)
             dns.setObjectName('Dns2proxy::Capture')
             self.thread.append(dns)

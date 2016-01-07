@@ -1,11 +1,16 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
 from shutil import move
 from sys import argv
 import logging
 from re import search
 from time import asctime
 from ast import literal_eval
+from twisted.web import http
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+from twisted.internet import reactor
+from os import system,path,getcwd,chdir,popen,listdir,mkdir
+from subprocess import Popen,PIPE,STDOUT,call,check_output,CalledProcessError
+from isc_dhcp_leases.iscdhcpleases import IscDhcpLeases
 from Modules.systems.dhcpStarvation import frm_dhcp_main
 from Modules.systems.Macchanger import frm_mac_generator
 from Modules.wireless.ProbeRequest import frm_PMonitor
@@ -15,20 +20,15 @@ from Modules.poisoners.DnsSpoof import frm_DnsSpoof
 from Modules.monitors.Credentials import frm_get_credentials
 from Modules.monitors.dns2proxy import frm_dns2proxy
 from Modules.monitors.netcreds import frm_NetCredsLogger
-from Modules.servers.Templates import frm_template
+from Modules.servers.PhishingManager import frm_PhishingManager
 from Modules.servers.UpdateFake import frm_update_attack
-from Modules.utils import ProcessThread,Refactor,setup_logger,set_monitor_mode,ProcessHostapd
+from Core.Utils import ProcessThread,Refactor,setup_logger,set_monitor_mode,ProcessHostapd
 from Core.helpers.update import frm_githubUpdate
 from Core.config.Settings import frm_Settings
 from Core.helpers.about import frmAbout
-from twisted.web import http
-from twisted.internet import reactor
 from Plugins.sslstrip.StrippingProxy import StrippingProxy
 from Plugins.sslstrip.URLMonitor import URLMonitor
 from Plugins.sslstrip.CookieCleaner import CookieCleaner
-from os import geteuid,system,path,getcwd,chdir,popen,listdir,mkdir
-from subprocess import Popen,PIPE,STDOUT,call,check_output,CalledProcessError
-from isc_dhcp_leases.iscdhcpleases import Lease, IscDhcpLeases
 if search('/usr/share/',argv[0]):chdir('/usr/share/WiFi-Pumpkin/')
 
 """
@@ -104,7 +104,7 @@ class ThRunDhcp(QThread):
         print 'Starting Thread:' + self.objectName()
         self.process = Popen(self.args,
         stdout=PIPE,stderr=STDOUT)
-        setup_logger('dhcp', './Logs/dhcp.log')
+        setup_logger('dhcp', './Logs/AccessPoint/dhcp.log')
         loggerDhcp = logging.getLogger('dhcp')
         loggerDhcp.info('---[ Start DHCP '+asctime()+']---')
         for line,data in enumerate(iter(self.process.stdout.readline, b'')):
@@ -112,7 +112,7 @@ class ThRunDhcp(QThread):
                 self.sendRequest.emit(data.split())
             elif 'DHCPACK on' in data.rstrip():
                 self.sendRequest.emit(data.split())
-            #loggerDhcp.info(data.rstrip())
+            loggerDhcp.info(data.rstrip())
 
     def stop(self):
         print 'Stop thread:' + self.objectName()
@@ -213,12 +213,13 @@ class PopUpServer(QWidget):
     def __init__(self,FSettings):
         QWidget.__init__(self)
         self.FSettings  = FSettings
+        self.Ftemplates = frm_PhishingManager()
         self.layout     = QVBoxLayout(self)
         self.FormLayout = QFormLayout()
         self.GridForm   = QGridLayout()
         self.StatusLabel        = QLabel(self)
         self.title              = QLabel('::Server-HTTP::')
-        self.btntemplates       = QPushButton('Templates')
+        self.btntemplates       = QPushButton('Phishing M.')
         self.btnStopServer      = QPushButton('Stop Server')
         self.btnRefresh         = QPushButton('ReFresh')
         self.txt_IP             = QLineEdit(self)
@@ -278,9 +279,7 @@ class PopUpServer(QWidget):
         self.txt_IP.setText(ip)
 
     def show_template_dialog(self):
-        self.Ftemplates = frm_template()
         self.connect(self.Ftemplates,SIGNAL('Activated ( QString ) '), self.emit_template)
-        self.Ftemplates.setWindowTitle('Templates Phishing Attack')
         self.Ftemplates.txt_redirect.setText(self.txt_IP.text())
         self.Ftemplates.show()
 
@@ -312,14 +311,14 @@ class SubMain(QWidget):
         self.StatusDhcp = QLabel('')
         self.StatusBar.addWidget(self.StatusDhcp)
         self.Started(False)
-        self.StatusBar.addWidget(QLabel("                     "))
+        self.StatusBar.addWidget(QLabel(" "*21))
         self.StatusBar.addWidget(QLabel("::Clients::"))
         self.connectedCount.setText("0")
         self.connectedCount.setStyleSheet("QLabel {  color : yellow; }")
         self.StatusBar.addWidget(self.connectedCount)
 
         Menu_file = self.myQMenuBar.addMenu('&File')
-        exportAction = QAction('exportToHtml', self)
+        exportAction = QAction('Export Html', self)
         deleteAction = QAction('Clear Logger', self)
         exitAction = QAction('Exit', self)
         exitAction.setIcon(QIcon('rsc/close-pressed.png'))
@@ -372,6 +371,7 @@ class SubMain(QWidget):
         btn_winup = QAction('Windows Update',self)
         btn_arp = QAction('Arp Posion Attack',self)
         btn_dns = QAction('Dns Spoof Attack',self)
+        btn_phishing = QAction('Phishing Manager',self)
         action_settings = QAction('Settings',self)
 
         # Shortcut modules
@@ -382,6 +382,7 @@ class SubMain(QWidget):
         btn_winup.setShortcut('Ctrl+N')
         btn_dns.setShortcut('ctrl+D')
         btn_arp.setShortcut('ctrl+Q')
+        btn_phishing.setShortcut('ctrl+Z')
         action_settings.setShortcut('Ctrl+X')
 
         #connect buttons
@@ -392,6 +393,7 @@ class SubMain(QWidget):
         btn_winup.triggered.connect(self.show_windows_update)
         btn_arp.triggered.connect(self.show_arp_posion)
         btn_dns.triggered.connect(self.show_dns_spoof)
+        btn_phishing.triggered.connect(self.show_PhishingManager)
         action_settings.triggered.connect(self.show_settings)
 
         #icons Modules
@@ -402,6 +404,7 @@ class SubMain(QWidget):
         btn_probe.setIcon(QIcon('rsc/probe.png'))
         btn_deauth.setIcon(QIcon('rsc/deauth.png'))
         btn_dns.setIcon(QIcon('rsc/dns_spoof.png'))
+        btn_phishing.setIcon(QIcon('rsc/page.png'))
         action_settings.setIcon(QIcon('rsc/setting.png'))
 
         # add modules menu
@@ -412,6 +415,7 @@ class SubMain(QWidget):
         Menu_module.addAction(btn_winup)
         Menu_module.addAction(btn_arp)
         Menu_module.addAction(btn_dns)
+        Menu_module.addAction(btn_phishing)
         Menu_module.addAction(action_settings)
 
         #menu extra
@@ -576,9 +580,14 @@ class SubMain(QWidget):
         self.Fdns.setGeometry(QRect(100, 100, 450, 300))
         self.Fdns.show()
 
+    def show_PhishingManager(self):
+        self.FPhishingManager = self.FormPopup.Ftemplates
+        self.FPhishingManager.txt_redirect.setText('0.0.0.0')
+        self.FPhishingManager.show()
+
     def credentials(self):
         self.Fcredentials = frm_get_credentials()
-        self.Fcredentials.setWindowTitle('Get credentials Phishing')
+        self.Fcredentials.setWindowTitle('Phishing Logger')
         self.Fcredentials.show()
 
     def logsnetcreds(self):
@@ -609,18 +618,22 @@ class SubMain(QWidget):
             self.StatusDhcp.setText("[OFF]")
             self.StatusDhcp.setStyleSheet("QLabel {  color : red; }")
 
+    def StatusDHCPRequests(self,key):
+        print('Connected::[{}] hostname::[{}]'.format(key,self.APclients[key]['device']))
 
     def GetDHCPRequests(self,data):
         if len(data) == 8:
             if Refactor.check_is_mac(data[4]):
                 if data[4] not in self.APclients.keys():
-                    self.APclients[data[4]] = {'IP': data[2],'device': data[5],'in_tables': False,}
-                print self.APclients
+                    self.APclients[data[4]] = {'IP': data[2],'device': data[5],
+                    'in_tables': False,}
+                    self.StatusDHCPRequests(data[4])
         elif len(data) == 9:
             if Refactor.check_is_mac(data[5]):
                 if data[5] not in self.APclients.keys():
-                    self.APclients[data[5]] = {'IP': data[2],'device': data[6],'in_tables': False,}
-                print self.APclients
+                    self.APclients[data[5]] = {'IP': data[2],'device': data[6],
+                    'in_tables': False,}
+                    self.StatusDHCPRequests(data[5])
         elif len(data) == 7:
             if Refactor.check_is_mac(data[4]):
                 if data[4] not in self.APclients.keys():
@@ -635,9 +648,11 @@ class SubMain(QWidget):
                             hostname = item[data[4]]
                     except:
                         hostname = 'unknown'
-                    if hotname == None:hostname = 'unknown'
-                    self.APclients[data[4]] = {'IP': data[2],'device': hostname,'in_tables': False,}
-                    print self.APclients
+                    if hostname == None:hostname = 'unknown'
+                    self.APclients[data[4]] = {'IP': data[2],'device': hostname,
+                    'in_tables': False,}
+                    self.StatusDHCPRequests(data[4])
+
         Headers = []
         for mac in self.APclients.keys():
             if self.APclients[mac]['in_tables'] == False:
@@ -656,15 +671,16 @@ class SubMain(QWidget):
 
 
     def GetHostapdStatus(self,data):
+        if self.APclients != {}:
+            if data in self.APclients.keys():
+                print('Disconnected::[{}] hostname::[{}]'.format(data,self.APclients[data]['device']))
         for row in xrange(0,self.TabInfoAP.rowCount()):
             if self.TabInfoAP.item(row,1) != None:
                 if self.TabInfoAP.item(row,1).text() == data:
                     self.TabInfoAP.removeRow(row)
                     if data in self.APclients.keys():
                         del self.APclients[data]
-        if self.APclients != {}:
-            if data not in self.APclients.keys():
-                print self.APclients
+        for mac_tables in self.APclients.keys():self.APclients[mac_tables]['in_tables'] = False
         self.THeaders = {'ip-address':[], 'device':[], 'mac-address':[]}
         self.connectedCount.setText(str(len(self.APclients.keys())))
 
@@ -693,7 +709,7 @@ class SubMain(QWidget):
         'Save File Logger HTML','report.html','HTML (*.html)')
         if len(filename) != 0:
             with open(str(filename[0]),'w') as filehtml:
-                filehtml.write(contents),filehtml.close()
+                filehtml.write(contents['HTML']),filehtml.close()
             QMessageBox.information(self, 'WiFi Pumpkin', 'file has been saved with success.')
 
     def refrash_interface(self):
@@ -704,7 +720,7 @@ class SubMain(QWidget):
                 self.selectCard.addItem(n[i])
 
     def kill(self):
-        if self.Apthreads['RougeAP'] == []:return
+        if self.Apthreads['RougeAP'] == []: return
         self.FSettings.xmlSettings('statusAP','value','False',False)
         for i in self.Apthreads['RougeAP']:i.stop()
         for kill in self.SettingsAP['kill']:popen(kill)
@@ -724,13 +740,16 @@ class SubMain(QWidget):
             print e
 
     def delete_logger(self):
+        content = Refactor.exportHtml()
         if listdir('Logs')!= '':
             resp = QMessageBox.question(self, 'About Delete Logger',
                 'do you want to delete Logs?',QMessageBox.Yes |
                     QMessageBox.No, QMessageBox.No)
             if resp == QMessageBox.Yes:
-                system('rm Logs/*.log')
                 system('rm Logs/Caplog/*.cap')
+                for keyFile in content['Files']:
+                    with open(keyFile,'w') as f:
+                        f.write(''),f.close()
 
     def start_etter(self):
         if self.ConfigTwin['ProgCheck'][1]:
@@ -822,7 +841,6 @@ class SubMain(QWidget):
                 dhcp.close()
 
     def StartApFake(self):
-        self.btn_start_attack.setDisabled(True)
         if len(self.selectCard.currentText()) == 0:
             return QMessageBox.warning(self,'Error interface','Network interface not supported :(')
         if len(self.EditGateway.text()) == 0:
@@ -839,7 +857,7 @@ class SubMain(QWidget):
         if str(Refactor.get_interfaces()['activated']).startswith('wlan'):
             return QMessageBox.information(self,'Error network card',
                 'You are connected with interface wireless, try again with local connection')
-
+        self.btn_start_attack.setDisabled(True)
         self.APactived = self.FSettings.xmlSettings('accesspoint','actived',None,False)
         if self.APactived == 'airbase-ng':
             self.ConfigTwin['interface'] = str(set_monitor_mode(self.selectCard.currentText()).setEnable())
@@ -936,7 +954,8 @@ class SubMain(QWidget):
         for index in xrange(self.FSettings.ListRules.count()):
            iptables.append(str(self.FSettings.ListRules.item(index).text()))
         for rules in iptables:
-            if search('--append FORWARD --in-interface',rules):popen(rules.replace('$$',self.ConfigTwin['AP_iface']))
+            if search('--append FORWARD --in-interface',
+            rules):popen(rules.replace('$$',self.ConfigTwin['AP_iface']))
             elif search('--append POSTROUTING --out-interface',rules):
                 popen(rules.replace('$$',str(Refactor.get_interfaces()['activated'])))
             else:popen(rules)

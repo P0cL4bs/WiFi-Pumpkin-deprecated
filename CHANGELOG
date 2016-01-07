@@ -5,6 +5,7 @@ Version 0.7.1
 - added count of clients connected no AP.
 - changed name Tool Wifi-Pumpkin
 - locked dnsmasq support  temporarily
+- added new modules Phishing Manager
 
 Version 0.6.8
 -------------

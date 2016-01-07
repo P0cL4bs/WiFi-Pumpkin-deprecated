@@ -1,11 +1,11 @@
 #!/usr/bin/env python2.7
 from sys import argv,exit
 from os import getuid
-from Core.Main import Initialize
 from PyQt4.QtGui import QApplication,QIcon
+from Core.Main import Initialize
 from Core.loaders.Privilege import frm_privelege
 from Core.loaders.check import check_dependencies
-from Modules.utils import Refactor
+from Core.Utils import Refactor
 
 """
 Author : Marcos Nesster - mh4root@gmail.com  PocL4bs Team

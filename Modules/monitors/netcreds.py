@@ -2,7 +2,7 @@ from os import getcwd,path
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from Core.config.Settings import frm_Settings
-from Modules.utils import ThreadPopen
+from Core.Utils import ThreadPopen
 
 
 class frm_NetCredsLogger(QDialog):
@@ -32,16 +32,16 @@ class frm_NetCredsLogger(QDialog):
         self.listDns.clear()
         self.list_creds.clear()
         # Thread Capture logs
-        creds = ThreadPopen(['tail','-f','Logs/credentials.log'])
+        creds = ThreadPopen(['tail','-f','Logs/AccessPoint/credentials.log'])
         self.connect(creds,SIGNAL('Activated ( QString ) '), self.loggercreds)
         creds.setObjectName('Netcreds::Credentials')
-        urls = ThreadPopen(['tail','-f','Logs/urls.log'])
+        urls = ThreadPopen(['tail','-f','Logs/AccessPoint/urls.log'])
         self.connect(urls,SIGNAL('Activated ( QString ) '), self.loggerurls)
         urls.setObjectName('Netcreds::Urls')
-        if path.exists('Logs/credentials.log'):
+        if path.exists('Logs/AccessPoint/credentials.log'):
             self.thread.append(creds)
             creds.start()
-        if path.exists('Logs/urls.log'):
+        if path.exists('Logs/AccessPoint/urls.log'):
             self.thread.append(urls)
             urls.start()
         if not urls.isRunning():

@@ -4,7 +4,7 @@ from re import search
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from Core.config.Settings import frm_Settings
-from Modules.utils import Refactor,ProcessThread,airdump_start,\
+from Core.Utils import Refactor,ProcessThread,airdump_start,\
 get_network_scan,set_monitor_mode,ThreadDeauth,ThreadScannerAP
 threadloading = {'deauth':[],'mdk3':[]}
 

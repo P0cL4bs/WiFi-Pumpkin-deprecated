@@ -1011,8 +1011,8 @@ def main(args):
 
 
 if __name__ == "__main__":
-    setup_logger('netcreds', './Logs/urls.log')
-    setup_logger('credentials', './Logs/credentials.log')
+    setup_logger('netcreds', './Logs/AccessPoint/urls.log')
+    setup_logger('credentials', './Logs/AccessPoint/credentials.log')
     url = logging.getLogger('netcreds')
     creds = logging.getLogger('credentials')
     main(parse_args())

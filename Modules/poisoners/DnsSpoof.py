@@ -1,5 +1,3 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
 from os import chdir,getcwd,devnull
 from scapy.all import *
 import threading
@@ -7,11 +5,13 @@ from multiprocessing import Process,Manager
 from socket import gaierror
 from subprocess import Popen,PIPE
 from re import search
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
 from Core.config.Settings import frm_Settings
 from Modules.servers.UpdateFake import frm_update_attack
-from Modules.utils import Refactor,ThSpoofAttack,ThARP_posion
+from Core.Utils import Refactor,ThSpoofAttack,ThARP_posion
 from Modules.poisoners.ArpPosion import ThreadScan
-from Modules.servers.Templates import frm_template
+from Modules.servers.PhishingManager import frm_PhishingManager
 threadloading = {'template':[],'dnsspoof':[],'arps':[]}
 
 """
@@ -50,6 +50,7 @@ class frm_DnsSpoof(QWidget):
         self.owd        = getcwd()
         self.control    = False
         self.interfaces = Refactor.get_interfaces()
+        self.FormTemplate = frm_PhishingManager()
         self.configure  = frm_Settings()
         self.loadtheme(self.configure.XmlThemeSelected())
         self.network    = Refactor
@@ -149,7 +150,7 @@ class frm_DnsSpoof(QWidget):
         self.btn_stop_scanner = QPushButton('Stop')
         self.btn_Attack_Posion = QPushButton('Start Attack')
         self.btn_Stop_Posion = QPushButton('Stop Attack')
-        self.btn_server = QPushButton('Templates')
+        self.btn_server = QPushButton('Phishing M.')
         self.btn_windows_update = QPushButton('Fake Update')
         self.btn_server.setFixedHeight(22)
         self.btn_stop_scanner.setFixedWidth(100)
@@ -313,9 +314,7 @@ class frm_DnsSpoof(QWidget):
             self.StatusMonitor(True,'stas_phishing')
 
     def show_template_dialog(self):
-        self.FormTemplate = frm_template()
         self.connect(self.FormTemplate,SIGNAL('Activated ( QString ) '), self.emit_template)
-        self.FormTemplate.setWindowTitle('Templates Phishing Attack')
         self.FormTemplate.txt_redirect.setText(self.txt_redirect.text())
         self.FormTemplate.show()
 

@@ -1,13 +1,13 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
 from os import chdir,getcwd, devnull
 from scapy.all import *
 import threading
 from multiprocessing import Process,Manager
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
 from Core.config.Settings import frm_Settings
 from Modules.servers.UpdateFake import frm_update_attack
-from Modules.servers.Templates import frm_template
-from Modules.utils import Refactor,ThreadScan,ThARP_posion,ThSpoofAttack
+from Modules.servers.PhishingManager import frm_PhishingManager
+from Core.Utils import Refactor,ThreadScan,ThARP_posion,ThSpoofAttack
 threadloading = {'template':[],'posion':[]}
 
 """
@@ -48,6 +48,7 @@ class frm_Arp_Poison(QWidget):
         self.control        = False
         self.interfaces     = Refactor.get_interfaces()
         self.configure      = frm_Settings()
+        self.Ftemplates = frm_PhishingManager()
         self.module_network = Refactor
         self.loadtheme(self.configure.XmlThemeSelected())
         self.data = {'IPaddress':[], 'Hostname':[], 'MacAddress':[]}
@@ -122,7 +123,7 @@ class frm_Arp_Poison(QWidget):
         self.btn_stop_scanner = QPushButton('Stop')
         self.btn_Attack_Posion = QPushButton('Start Attack')
         self.btn_Stop_Posion = QPushButton('Stop Attack')
-        self.btn_server = QPushButton('Templates')
+        self.btn_server = QPushButton('Phishing M.')
         self.btn_windows_update = QPushButton('Fake Update')
         self.btn_server.setFixedHeight(22)
         self.btn_stop_scanner.setFixedWidth(100)
@@ -245,9 +246,7 @@ class frm_Arp_Poison(QWidget):
             self.StatusMonitor(True,'stas_phishing')
 
     def show_template_dialog(self):
-        self.Ftemplates = frm_template()
         self.connect(self.Ftemplates,SIGNAL('Activated ( QString ) '), self.emit_template)
-        self.Ftemplates.setWindowTitle('Templates Phishing Attack')
         self.Ftemplates.txt_redirect.setText(self.txt_redirect.text())
         self.Ftemplates.show()
 

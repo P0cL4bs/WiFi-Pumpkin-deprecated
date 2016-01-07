@@ -1,7 +1,7 @@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from Core.config.Settings import frm_Settings
-from Modules.utils import Refactor,ThreadAttackStar
+from Core.Utils import Refactor,ThreadAttackStar
 
 """
 Description:

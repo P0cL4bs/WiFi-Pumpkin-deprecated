@@ -8,7 +8,7 @@ WiFi-Pumpkin is security tool that  provide the Rogue access point to Man-In-The
 
 ### Installation
 
-Ubuntu/Kali 2.0/WifiSlax 4.11.1/Parrot 2.0.5
+Kali 2.0/WifiSlax 4.11.1/Parrot 2.0.5
 
 ```sh
  git clone https://github.com/P0cL4bs/WiFi-Pumpkin.git
@@ -16,20 +16,19 @@ Ubuntu/Kali 2.0/WifiSlax 4.11.1/Parrot 2.0.5
  chmod +x installer.sh
  ./installer.sh --install
 ```
+refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Installation)
 
 ### Features
 * Rouge Wi-Fi Access Point
-* Deauth Clients AP 
+* Deauth Attack Clients AP 
 * Probe Request Monitor
 * DHCP Starvation Attack
 * Crendentials Monitor
 * Windows Update Attack
-* Templates phishing
+* Phishing Manager
 * Partial bypass HSTS
 * Dump credentials phishing
-* Support airodump scan
-* Support mkd3 deauth
-* beef hook support
+* Support beef hook
 * Report Logs html
 * Mac Changer 
 * ARP Posion 

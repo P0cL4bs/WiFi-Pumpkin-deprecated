@@ -4,7 +4,7 @@ import random
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from Core.config.Settings import frm_Settings
-from Modules.utils import Refactor
+from Core.Utils import Refactor
 
 """
 Description:

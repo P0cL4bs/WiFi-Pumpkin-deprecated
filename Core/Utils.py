@@ -1,13 +1,13 @@
-from sys import exit
+from sys import exit,stdout
 from struct import pack
 from time import sleep,asctime,strftime
 from random import randint
 from os import popen,path,walk,system,getpid,stat
 from subprocess import call,check_output,Popen,PIPE,STDOUT
 from re import search,compile,VERBOSE,IGNORECASE
+from BeautifulSoup import BeautifulSoup
+from netaddr import EUI
 try:
-    from BeautifulSoup import BeautifulSoup
-    from netaddr import EUI
     from nmap import PortScanner
 except ImportError:
     pass
@@ -160,7 +160,7 @@ class ProcessHostapd(QThread):
                     self.statusAP_connected.emit(line.split()[2])
 
     def makeLogger(self):
-        setup_logger('hostapd', './Logs/requestAP.log')
+        setup_logger('hostapd', './Logs/AccessPoint/requestAP.log')
         self.log_hostapd = logging.getLogger('hostapd')
 
     def stop(self):
@@ -168,6 +168,24 @@ class ProcessHostapd(QThread):
         if self.process is not None:
             self.process.terminate()
             self.process = None
+
+class ThreadPhishingServer(QThread):
+    send = pyqtSignal(str)
+    def __init__(self,cmd,):
+        QThread.__init__(self)
+        self.cmd     = cmd
+        self.process = None
+
+    def run(self):
+        print 'Starting Thread:' + self.objectName()
+        self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
+        for line in iter(self.process.stdout.readline, b''):
+            self.send.emit(line.rstrip())
+
+    def stop(self):
+        print 'Stop thread:' + self.objectName()
+        if self.process is not None:
+            self.process.terminate()
 
 
 class ProcessThread(threading.Thread):
@@ -182,15 +200,11 @@ class ProcessThread(threading.Thread):
     def run(self):
         print 'Starting Thread:' + self.name
         if self.name == 'Airbase-ng':
-            setup_logger('airbase', './Logs/requestAP.log')
+            setup_logger('airbase', './Logs/AccessPoint/requestAP.log')
             log_airbase = logging.getLogger('airbase')
             self.logger = True
-        elif self.name == 'hostapd':
-            setup_logger('hostapd', './Logs/requestAP.log')
-            log_hostapd = logging.getLogger('hostapd')
-            self.logger = True
         elif self.name == 'Dns2Proxy':
-            setup_logger('dns2proxy', './Logs/dns2proxy.log')
+            setup_logger('dns2proxy', './Logs/AccessPoint/dns2proxy.log')
             log_dns2proxy = logging.getLogger('dns2proxy')
             self.logger = True
         self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
@@ -497,18 +511,14 @@ class ThSpoofAttack(QThread):
 '''http://stackoverflow.com/questions/17035077/python-logging-to-multiple-log-files-from-different-classes'''
 def setup_logger(logger_name, log_file, level=logging.INFO):
     l = logging.getLogger(logger_name)
+    formatter = logging.StreamHandler(stdout)
     formatter = logging.Formatter('%(asctime)s : %(message)s')
     fileHandler = logging.FileHandler(log_file, mode='a')
     fileHandler.setFormatter(formatter)
-    streamHandler = logging.StreamHandler()
-    streamHandler.setFormatter(formatter)
-
-    l.setLevel(level)
+    l.setLevel(logging.INFO)
     l.addHandler(fileHandler)
-    l.addHandler(streamHandler)
 
 class Refactor:
-
     @staticmethod
     def htmlContent(title):
         html = {'htmlheader':[
@@ -538,35 +548,32 @@ class Refactor:
     @staticmethod
     def exportHtml():
         readFile = {
-         'dhcp':{'Logs/dhcp.log':[]},
-         'urls':{'Logs/urls.log':[]},
-         'credentials': {'Logs/credentials.log':[]},
-         'requestAP':{'Logs/requestAP.log':[]},
-         'dns2proxy':{'Logs/dns2proxy.log':[]}}
+         'dhcp': {'Logs/AccessPoint/dhcp.log':[]},
+         'urls': {'Logs/AccessPoint/urls.log':[]},
+         'credentials': {'Logs/AccessPoint/credentials.log':[]},
+         'requestAP': {'Logs/AccessPoint/requestAP.log':[]},
+         'dns2proxy': {'Logs/AccessPoint/dns2proxy.log':[]},
+         'phishing': {'Logs/Phishing/Webclone.log':[]},}
         for i in readFile.keys():
             for j in readFile[i]:
                 with open(j,'r') as file:
                     readFile[i][j] = file.read()
 
-        contenthtml = Refactor.htmlContent('WiFi-Pumpkin Report')
-        HTML = ''
-        for i in contenthtml['htmlheader']:
-            HTML += i+"\n"
+        contenthtml,HTML = Refactor.htmlContent('Report Logger'),''
+        for i in contenthtml['htmlheader']: HTML += i+"\n"
         HTML += '</span><span class="s5">Report Generated at::</span><span class="s0">'+asctime()+'</span>\n'
-        HTML += '</span><span class="s4">-----------------------------------</span><span class="s1">\n'
-        HTML += '</span><span class="s2">--------[   DHCP Logger   ]--------</span><span class="s1">\n'
-        HTML += readFile['dhcp']['Logs/dhcp.log']
-        HTML += '</span><span class="s2">--------[   URLS Logger   ]--------</span><span class="s1">\n'
-        HTML += readFile['urls']['Logs/urls.log']
-        HTML += '</span><span class="s2">--------[   Creds Logger  ]--------</span><span class="s1">\n'
-        HTML += readFile['credentials']['Logs/credentials.log']
-        HTML += '</span><span class="s2">--------[   FakeAP Logger ]--------</span><span class="s1">\n'
-        HTML += readFile['requestAP']['Logs/requestAP.log']
-        HTML += '</span><span class="s2">--------[   Dns2proxy Logger  ]--------</span><span class="s1">\n'
-        HTML += readFile['dns2proxy']['Logs/dns2proxy.log']
-        HTML += '</span><span class="s4">-----------------------------------</span><span class="s1">\n'
-        HTML += '</span></pre>\n'+'</body>\n'+'</html>\n'
-        return HTML
+        HTML += '</span><span class="s4"><br></span><span class="s1">\n'
+        for key in readFile.keys():
+            if Refactor.getSize(readFile[key].keys()[0]) > 0:
+                HTML += '</span><span class="s2">-[ {} Logger ]-</span><span class="s1">\n'.format(key)
+                HTML += readFile[key][readFile[key].keys()[0]]
+                HTML += '</span><span class="s4"><br><br></span><span class="s1">\n'
+        HTML += '</span></pre>\n<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#C0C0C0" >\
+        <TR><TD><CENTER>''<FONT FACE="Arial, Helvetica" COLOR="#000000">WiFi-Pumpkin (C) 2015 P0cL4bs Team' \
+        '</FONT></center></TD></TR></TABLE></body>\n</html>\n'
+
+        Load_ = {'HTML': HTML,'Files':[readFile[x].keys()[0] for x in readFile.keys()]}
+        return Load_
 
     @staticmethod
     def set_ip_forward(value):

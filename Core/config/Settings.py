@@ -199,6 +199,7 @@ class frm_Settings(QDialog):
 
         self.AP_0 = QRadioButton('hostapd')
         self.AP_1 = QRadioButton('airbase-ng')
+        self.AP_1.setEnabled(False)
         self.d_scapy = QRadioButton('Scapy Deauth')
         self.d_mdk = QRadioButton('mdk3 Deauth')
         self.scan_scapy = QRadioButton('Scan from scapy')
