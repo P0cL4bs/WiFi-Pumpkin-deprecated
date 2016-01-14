@@ -2,10 +2,7 @@ from os import getcwd,popen,chdir,path,remove
 from shutil import copyfile
 from subprocess import Popen,PIPE,STDOUT
 from datetime import date
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from Core.Utils import Refactor
-from Core.config.Settings import frm_Settings
+from Core.loaders.Stealth.PackagesUI import *
 
 """
 Description:
@@ -27,45 +24,18 @@ Copyright:
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
-
 threadloading = {'server':[]}
 
-class mThreadServer(QThread):
-    def __init__(self,cmd):
-        QThread.__init__(self)
-        self.cmd = cmd
-        self.process = None
-
-    def run(self):
-        popen('service apache2 stop')
-        print 'Starting Thread:' + self.objectName()
-        self.process = p = Popen(self.cmd,
-        stdout=PIPE,
-            stderr=STDOUT)
-        for line,data in enumerate(iter(p.stdout.readline, b'')):
-            self.emit(SIGNAL("Activated( QString )"),data.rstrip())
-
-    def stop(self):
-        print "Stop thread:" + self.objectName()
-        if self.process is not None:
-            self.process.terminate()
-            self.process = None
-
-class frm_update_attack(QMainWindow):
+class frm_update_attack(PumpkinModule):
     def __init__(self, parent=None):
         super(frm_update_attack, self).__init__(parent)
-        self.form_widget = frm_WinSoftUp(self)
-        self.setCentralWidget(self.form_widget)
         self.setWindowTitle('Windows Update Attack Generator ')
         self.setWindowIcon(QIcon('rsc/icon.ico'))
-        self.config = frm_Settings()
-        self.main = frm_WinSoftUp()
-        self.loadtheme(self.config.XmlThemeSelected())
-
-    def loadtheme(self,theme):
-        sshFile=("Core/%s.qss"%(theme))
-        with open(sshFile,"r") as fh:
-            self.setStyleSheet(fh.read())
+        self.loadtheme(self.configure.XmlThemeSelected())
+        self.Main       = QVBoxLayout()
+        self.owd        = getcwd()
+        self.path_file  = None
+        self.GUI()
 
     def closeEvent(self, event):
         reply = QMessageBox.question(self, 'About Exit',"Are you sure to quit?", QMessageBox.Yes |
@@ -74,18 +44,10 @@ class frm_update_attack(QMainWindow):
             event.accept()
             global threadloading
             for i in threadloading['server']:i.stop()
-            self.main.removefiles()
+            self.removefiles()
             return
         event.ignore()
 
-class frm_WinSoftUp(QWidget):
-    def __init__(self, parent=None):
-        super(frm_WinSoftUp, self).__init__(parent)
-        self.Main       = QVBoxLayout()
-        self.control    = None
-        self.path_file  = None
-        self.owd        = getcwd()
-        self.GUI()
     def GUI(self):
         self.form   = QFormLayout(self)
         self.grid   = QGridLayout(self)
@@ -224,7 +186,7 @@ class frm_WinSoftUp(QWidget):
         except OSError,e:
             return QMessageBox.warning(self, "error directory",e)
         global threadloading
-        self.thphp = mThreadServer(("php -S %s:80"%(ip)).split())
+        self.thphp = ThreadPopen(("php -S %s:80"%(ip)).split())
         self.connect(self.thphp,SIGNAL("Activated ( QString ) "),self.logPhising)
         threadloading['server'].append(self.thphp)
         self.thphp.setObjectName("Server-PHP")

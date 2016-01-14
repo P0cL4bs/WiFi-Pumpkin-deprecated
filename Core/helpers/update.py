@@ -1,10 +1,9 @@
 import time
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from subprocess import Popen, PIPE,check_output,CalledProcessError
-from Core.loaders.github import GithubUpdate,UrllibDownload
-from Core.config.Settings import frm_Settings
 from os import path
+from subprocess import check_output,CalledProcessError
+from Core.loaders.master.github import GithubUpdate,UrllibDownload
+from Core.loaders.Stealth.PackagesUI import *
+
 
 """
 Description:
@@ -26,30 +25,18 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-class frm_githubUpdate(QWidget):
+class frm_githubUpdate(PumpkinModule):
     def __init__(self,version,parent = None):
         super(frm_githubUpdate, self).__init__(parent)
-        self.setWindowTitle("WiFi Pumpkin Software Update")
-        self.config  = frm_Settings()
+        self.setWindowTitle("WiFi-Pumpkin Software Update")
+        self.loadtheme(self.configure.XmlThemeSelected())
         self.version = version
-        self.loadtheme(self.config.XmlThemeSelected())
         self.UrlDownloadCommits = \
         'https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/Core/config/Lcommits.cfg'
-        self.PathUrlRcommits = 'Core/config/Rcommits.cfg'
-        self.PathUrlLcommits = 'Core/config/Lcommits.cfg'
+        self.PathUrlRcommits = 'Core/config/commits/Rcommits.cfg'
+        self.PathUrlLcommits = 'Core/config/commits/Lcommits.cfg'
         self.center()
         self.GUI()
-
-    def loadtheme(self,theme):
-        sshFile=("Core/%s.qss"%(theme))
-        with open(sshFile,"r") as fh:
-            self.setStyleSheet(fh.read())
-
-    def center(self):
-        frameGm = self.frameGeometry()
-        centerPoint = QDesktopWidget().availableGeometry().center()
-        frameGm.moveCenter(centerPoint)
-        self.move(frameGm.topLeft())
 
     def GUI(self):
         self.Main       = QVBoxLayout()

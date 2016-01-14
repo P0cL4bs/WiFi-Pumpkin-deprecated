@@ -1,10 +1,8 @@
+from Core.loaders.Stealth.PackagesUI import *
 from os import geteuid
 import subprocess
 import random
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from Core.config.Settings import frm_Settings
-from Core.Utils import Refactor
+
 
 """
 Description:
@@ -27,17 +25,10 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-class frm_mac_changer(QMainWindow):
-    def __init__(self, parent=None):
-        super(frm_mac_changer, self).__init__(parent)
-        self.form_widget = frm_mac_generator(self)
-        self.setCentralWidget(self.form_widget)
-
-class frm_mac_generator(QWidget):
+class frm_mac_generator(PumpkinModule):
     def __init__(self, parent=None):
         super(frm_mac_generator, self).__init__(parent)
         self.setWindowIcon(QIcon('rsc/icon.ico'))
-        self.setWindowIcon(QIcon('Modules/icon.ico'))
         self.setWindowTitle("MAC Address Generator")
         self.Main = QVBoxLayout()
         self.prefix = [ 0x00, 0xCB, 0x01,0x03 ,\
@@ -48,14 +39,8 @@ class frm_mac_generator(QWidget):
                         0x2F, 0x31, 0x32, 0x1D, 0x5F, 0x70, 0x5A,\
                         0x5B, 0x5C, 0x63, 0x4F, 0x3F, 0x5F, 0x9E]
 
-        self.config = frm_Settings()
-        self.loadtheme(self.config.XmlThemeSelected())
+        self.loadtheme(self.configure.XmlThemeSelected())
         self.MacGUI()
-
-    def loadtheme(self,theme):
-        sshFile=("Core/%s.qss"%(theme))
-        with open(sshFile,"r") as fh:
-            self.setStyleSheet(fh.read())
 
     @pyqtSlot(QModelIndex)
     def combo_clicked(self, device):

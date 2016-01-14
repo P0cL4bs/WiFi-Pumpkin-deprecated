@@ -1,6 +1,6 @@
-from PyQt4.QtGui import *
-from Core.config.Settings import frm_Settings
-class frmAbout(QDialog):
+from Core.loaders.Stealth.PackagesUI import *
+
+class frmAbout(PumpkinModule):
     def __init__(self,author,emails,version,
         update,license,desc, parent = None):
         super(frmAbout, self).__init__(parent)

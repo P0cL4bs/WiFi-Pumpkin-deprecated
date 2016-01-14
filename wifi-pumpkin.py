@@ -3,8 +3,8 @@ from sys import argv,exit
 from os import getuid
 from PyQt4.QtGui import QApplication,QIcon
 from Core.Main import Initialize
-from Core.loaders.Privilege import frm_privelege
-from Core.loaders.check import check_dependencies
+from Core.loaders.checker.Privilege import frm_privelege
+from Core.loaders.checker.check_depen import check_dependencies
 from Core.Utils import Refactor
 
 """

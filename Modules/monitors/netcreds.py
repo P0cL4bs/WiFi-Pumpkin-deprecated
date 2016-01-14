@@ -1,32 +1,17 @@
 from os import getcwd,path
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from Core.config.Settings import frm_Settings
-from Core.Utils import ThreadPopen
+from Core.loaders.Stealth.PackagesUI import *
 
 
-class frm_NetCredsLogger(QDialog):
+class frm_NetCredsLogger(PumpkinModule):
     def __init__(self, parent = None):
         super(frm_NetCredsLogger, self).__init__(parent)
         self.setGeometry(0, 0, 550, 400)
         self.Main       = QVBoxLayout(self)
         self.owd        = getcwd()
         self.thread     = []
-        self.config     = frm_Settings()
-        self.loadtheme(self.config.XmlThemeSelected())
+        self.loadtheme(self.configure.XmlThemeSelected())
         self.center()
         self.Qui()
-
-    def loadtheme(self,theme):
-        sshFile=("Core/%s.qss"%(theme))
-        with open(sshFile,"r") as fh:
-            self.setStyleSheet(fh.read())
-
-    def center(self):
-        frameGm = self.frameGeometry()
-        centerPoint = QDesktopWidget().availableGeometry().center()
-        frameGm.moveCenter(centerPoint)
-        self.move(frameGm.topLeft())
 
     def Start_Get_creds(self):
         self.listDns.clear()

@@ -1,17 +1,11 @@
 from os import chdir,getcwd,devnull
-from scapy.all import *
 import threading
 from multiprocessing import Process,Manager
 from socket import gaierror
-from subprocess import Popen,PIPE
 from re import search
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from Core.config.Settings import frm_Settings
-from Modules.servers.UpdateFake import frm_update_attack
-from Core.Utils import Refactor,ThSpoofAttack,ThARP_posion
-from Modules.poisoners.ArpPosion import ThreadScan
-from Modules.servers.PhishingManager import frm_PhishingManager
+from socket import gethostbyname
+from Core.loaders.Stealth.PackagesUI import *
+from Modules.spreads.UpdateFake import frm_update_attack
 threadloading = {'template':[],'dnsspoof':[],'arps':[]}
 
 """
@@ -35,25 +29,13 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-class MainDnsSpoof(QMainWindow):
-    def __init__(self, parent=None):
-        super(MainDnsSpoof, self).__init__(parent)
-        self.form_widget = frm_DnsSpoof(self)
-        self.setCentralWidget(self.form_widget)
-
-class frm_DnsSpoof(QWidget):
+class frm_DnsSpoof(PumpkinModule):
     def __init__(self, parent=None):
         super(frm_DnsSpoof, self).__init__(parent)
         self.setWindowTitle('Dns Spoof Attack')
-        self.setWindowIcon(QIcon('rsc/icon.ico'))
         self.Main       = QVBoxLayout()
         self.owd        = getcwd()
-        self.control    = False
-        self.interfaces = Refactor.get_interfaces()
-        self.FormTemplate = frm_PhishingManager()
-        self.configure  = frm_Settings()
         self.loadtheme(self.configure.XmlThemeSelected())
-        self.network    = Refactor
         self.data       = {'IPaddress':[], 'Hostname':[], 'MacAddress':[]}
         self.ThreadDirc = {'dns_spoof':[]}
         global threadloading
@@ -76,10 +58,6 @@ class frm_DnsSpoof(QWidget):
             return
         event.ignore()
 
-    def loadtheme(self,theme):
-        sshFile=("Core/%s.qss"%(theme))
-        with open(sshFile,"r") as fh:
-            self.setStyleSheet(fh.read())
 
     def GUI(self):
         self.form           = QFormLayout()
@@ -225,14 +203,7 @@ class frm_DnsSpoof(QWidget):
             self.txt_gateway.setText(ifaces['gateway'])
             self.txt_redirect.setText(ifaces['IPaddress'])
         try:
-            items = [
-                'google.com:'+(str(Popen(['/bin/ping','-c1',
-                '-w100', 'google.com'], stdout=PIPE).stdout.read()).split()[2]).replace(')','').replace('(',''),
-                'facebook.com:'+(str(Popen(['/bin/ping','-c1',
-                '-w100', 'facebook.com'], stdout=PIPE).stdout.read()).split()[2]).replace(')','').replace('(',''),
-                'gmail.com:'+(str(Popen(['/bin/ping','-c1',
-                '-w100', 'gmail.com'], stdout=PIPE).stdout.read()).split()[2]).replace(')','').replace('(',''),
-            ]
+            items = ['example.com:{}'.format(gethostbyname('example.com')),]
             for i in items:
                 item = QListWidgetItem()
                 item.setText(i)
@@ -314,13 +285,13 @@ class frm_DnsSpoof(QWidget):
             self.StatusMonitor(True,'stas_phishing')
 
     def show_template_dialog(self):
-        self.connect(self.FormTemplate,SIGNAL('Activated ( QString ) '), self.emit_template)
-        self.FormTemplate.txt_redirect.setText(self.txt_redirect.text())
-        self.FormTemplate.show()
+        self.connect(self.Ftemplates,SIGNAL('Activated ( QString ) '), self.emit_template)
+        self.Ftemplates.txt_redirect.setText(self.txt_redirect.text())
+        self.Ftemplates.show()
 
     def kill_attack(self):
-        if hasattr(self, 'FormTemplate'):
-            self.FormTemplate.killThread()
+        if hasattr(self, 'Ftemplates'):
+            self.Ftemplates.killThread()
         if hasattr(self,'ThreadScanner'):
             self.ThreadScanner.terminate()
         for i in self.ThreadDirc['dns_spoof']:i.stop()
@@ -328,9 +299,9 @@ class frm_DnsSpoof(QWidget):
         threadloading['template'] = []
         threadloading['arps'] = []
         self.ThreadDirc['dns_spoof'] = []
-        chdir(self.owd)
         self.StatusMonitor(False,'dns_spoof')
         self.StatusMonitor(False,'stas_phishing')
+        chdir(self.owd)
 
     @pyqtSlot(QModelIndex)
     def check_options(self,index):
@@ -356,21 +327,13 @@ class frm_DnsSpoof(QWidget):
             if (len(self.txt_target.text()) and len(self.txt_gateway.text())) and len(self.txt_redirect.text()) != 0:
                 if len(self.txt_redirect.text()) != 0:
                     self.domains = []
-                    if self.myListDns.count() == 0:
-                        QMessageBox.warning(self, 'Error DNS', 'Any host found, you need to add hosts.')
-                        return
-                    for index in xrange(self.myListDns.count()):
-                        self.domains.append(str(self.myListDns.item(index).text()))
-                    for i in self.domains:
-                        self.targets[i.split(':')[0]] = (i.split(':')[1]).replace('\n','')
-                    self.domains = []
+                    if self.myListDns.count() != 0:
+                        for index in xrange(self.myListDns.count()):
+                            self.domains.append(str(self.myListDns.item(index).text()))
+                        for i in self.domains:
+                            self.targets[i.split(':')[0]] = (i.split(':')[1]).replace('\n','')
                     if self.configure.xmlSettings('statusAP','value',None,False) == 'False':
                         Refactor.set_ip_forward(1)
-                        arp_target = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()),
-                        get_if_hwaddr(str(self.ComboIface.currentText())))
-                        arp_target.setObjectName('Arp Posion:: [target]')
-                        threadloading['arps'].append(arp_target)
-                        arp_target.start()
 
                         arp_gateway = ThARP_posion(str(self.txt_target.text()),str(self.txt_gateway.text()),
                         get_if_hwaddr(str(self.ComboIface.currentText())))
@@ -378,6 +341,13 @@ class frm_DnsSpoof(QWidget):
                         threadloading['arps'].append(arp_gateway)
                         arp_gateway.start()
 
+                        arp_target = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()),
+                        get_if_hwaddr(str(self.ComboIface.currentText())))
+                        arp_target.setObjectName('Arp Posion:: [target]')
+                        threadloading['arps'].append(arp_target)
+                        arp_target.start()
+
+                    if self.myListDns.count() == 0:self.targets = ''
                     thr = ThSpoofAttack(self.targets,
                     str(self.ComboIface.currentText()),'udp port 53',True,str(self.txt_redirect.text()))
                     if self.configure.xmlSettings('statusAP','value',None,False) == 'False':thr.redirection()
@@ -385,8 +355,8 @@ class frm_DnsSpoof(QWidget):
                     self.connect(thr,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
                     thr.setObjectName('Dns Spoof')
                     self.ThreadDirc['dns_spoof'].append(thr)
-                    thr.start()
                     self.StatusMonitor(True,'dns_spoof')
+                    thr.start()
 
 
     def Start_scan(self):
@@ -430,11 +400,11 @@ class frm_DnsSpoof(QWidget):
 
     def working(self,ip,lista):
         with open(devnull, 'wb') as limbo:
-            result=subprocess.Popen(['ping', '-c', '1', '-n', '-W', '1', ip],
+            result=Popen(['ping', '-c', '1', '-n', '-W', '1', ip],
             stdout=limbo, stderr=limbo).wait()
             if not result:
                 print('online',ip)
-                lista[ip] = ip + '|' + self.network.get_mac(ip)
+                lista[ip] = ip + '|' + self.module_network.get_mac(ip)
 
     def scanner_network(self,gateway):
         scan = ''

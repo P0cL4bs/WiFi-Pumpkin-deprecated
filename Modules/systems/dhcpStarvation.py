@@ -1,8 +1,5 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from Core.config.Settings import frm_Settings
-from Core.Utils import Refactor,ThreadAttackStar
-
+from Core.Utils import ThreadAttackStar
+from Core.loaders.Stealth.PackagesUI import *
 """
 Description:
     This program is a module for wifi-pumpkin.py file which includes functionality
@@ -24,28 +21,15 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-class frm_dhcp_main(QMainWindow):
-    def __init__(self, parent=None):
-        super(frm_dhcp_main, self).__init__(parent)
-        self.form_widget = frm_dhcp_Attack(self)
-        self.setCentralWidget(self.form_widget)
-        self.setWindowTitle("DHCP Starvation Attack")
-        self.setWindowIcon(QIcon('rsc/icon.ico'))
-
-        self.config = frm_Settings()
-        self.loadtheme(self.config.XmlThemeSelected())
-
-    def loadtheme(self,theme):
-        sshFile=("Core/%s.qss"%(theme))
-        with open(sshFile,"r") as fh:
-            self.setStyleSheet(fh.read())
-
-class frm_dhcp_Attack(QWidget):
+class frm_dhcp_Attack(PumpkinModule):
     def __init__(self, parent=None):
         super(frm_dhcp_Attack, self).__init__(parent)
+        self.loadtheme(self.configure.XmlThemeSelected())
+        self.setWindowTitle("Dhcp Starvation Attack")
         self.Main       = QVBoxLayout()
         self.control    = None
         self.GUI()
+
     def GUI(self):
         self.form       = QFormLayout()
         self.list_log   = QListWidget()

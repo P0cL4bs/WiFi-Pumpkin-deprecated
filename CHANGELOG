@@ -6,6 +6,7 @@ Version 0.7.1
 - changed name Tool Wifi-Pumpkin
 - locked dnsmasq support  temporarily
 - added new modules Phishing Manager
+- some improvements in modules
 
 Version 0.6.8
 -------------

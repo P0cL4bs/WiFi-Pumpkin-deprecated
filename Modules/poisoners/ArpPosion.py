@@ -1,13 +1,8 @@
-from os import chdir,getcwd, devnull
-from scapy.all import *
 import threading
+from os import chdir,getcwd, devnull
 from multiprocessing import Process,Manager
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from Core.config.Settings import frm_Settings
-from Modules.servers.UpdateFake import frm_update_attack
-from Modules.servers.PhishingManager import frm_PhishingManager
-from Core.Utils import Refactor,ThreadScan,ThARP_posion,ThSpoofAttack
+from Modules.spreads.UpdateFake import frm_update_attack
+from Core.loaders.Stealth.PackagesUI import *
 threadloading = {'template':[],'posion':[]}
 
 """
@@ -31,25 +26,13 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-class frm_Arp(QMainWindow):
-    def __init__(self, parent=None):
-        super(frm_Arp, self).__init__(parent)
-        self.form_widget = frm_Arp_Poison(self)
-        self.setCentralWidget(self.form_widget)
-
-class frm_Arp_Poison(QWidget):
+class frm_Arp_Poison(PumpkinModule):
 
     def __init__(self, parent=None):
         super(frm_Arp_Poison, self).__init__(parent)
         self.setWindowTitle('Arp Posion Attack ')
-        self.setWindowIcon(QIcon('rsc/icon.ico'))
         self.Main           = QVBoxLayout()
         self.owd            = getcwd()
-        self.control        = False
-        self.interfaces     = Refactor.get_interfaces()
-        self.configure      = frm_Settings()
-        self.Ftemplates = frm_PhishingManager()
-        self.module_network = Refactor
         self.loadtheme(self.configure.XmlThemeSelected())
         self.data = {'IPaddress':[], 'Hostname':[], 'MacAddress':[]}
         self.ThreadDirc = {'Arp_posion':[]}
@@ -72,11 +55,6 @@ class frm_Arp_Poison(QWidget):
             self.deleteLater()
             return
         event.ignore()
-
-    def loadtheme(self,theme):
-        sshFile=("Core/%s.qss"%(theme))
-        with open(sshFile,"r") as fh:
-            self.setStyleSheet(fh.read())
 
     def GUI(self):
         self.form =QFormLayout()
@@ -251,13 +229,15 @@ class frm_Arp_Poison(QWidget):
         self.Ftemplates.show()
 
     def kill_attack(self):
-        try:
-            for i in self.ThreadDirc['Arp_posion']:i.stop()
+        if hasattr(self, 'Ftemplates'):
             self.Ftemplates.killThread()
-        except:pass
-        chdir(self.owd)
+        for i in self.ThreadDirc['Arp_posion']:i.stop()
+        threadloading['template'] = []
+        threadloading['arps'] = []
+        self.ThreadDirc['Arp_posion'] = []
         self.StatusMonitor(False,'stas_arp')
         self.StatusMonitor(False,'stas_phishing')
+        chdir(self.owd)
 
     @pyqtSlot(QModelIndex)
     def check_options(self,index):
@@ -290,8 +270,7 @@ class frm_Arp_Poison(QWidget):
                         self.ThreadDirc['Arp_posion'].append(arp_gateway)
                         arp_gateway.start()
 
-                        arp_target = ThARP_posion(str(self.txt_target.text()),
-                        str(self.txt_gateway.text()),
+                        arp_target = ThARP_posion(str(self.txt_target.text()),str(self.txt_gateway.text()),
                         str(self.txt_mac.text()))
                         self.connect(arp_target,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
                         arp_target.setObjectName('Arp::Posion => [target]')
@@ -350,7 +329,7 @@ class frm_Arp_Poison(QWidget):
 
     def working(self,ip,lista):
         with open(devnull, 'wb') as limbo:
-            result=subprocess.Popen(['ping', '-c', '1', '-n', '-W', '1', ip],
+            result=Popen(['ping', '-c', '1', '-n', '-W', '1', ip],
             stdout=limbo, stderr=limbo).wait()
             if not result:
                 print('online',ip)

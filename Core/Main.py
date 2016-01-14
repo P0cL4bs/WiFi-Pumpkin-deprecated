@@ -1,7 +1,8 @@
-from shutil import move
-from sys import argv
 import logging
+from sys import argv
+import Modules as pkg
 from re import search
+from shutil import move
 from time import asctime
 from ast import literal_eval
 from twisted.web import http
@@ -11,17 +12,6 @@ from twisted.internet import reactor
 from os import system,path,getcwd,chdir,popen,listdir,mkdir
 from subprocess import Popen,PIPE,STDOUT,call,check_output,CalledProcessError
 from isc_dhcp_leases.iscdhcpleases import IscDhcpLeases
-from Modules.systems.dhcpStarvation import frm_dhcp_main
-from Modules.systems.Macchanger import frm_mac_generator
-from Modules.wireless.ProbeRequest import frm_PMonitor
-from Modules.wireless.WirelessDeauth import frm_wifideauth
-from Modules.poisoners.ArpPosion import frm_Arp_Poison
-from Modules.poisoners.DnsSpoof import frm_DnsSpoof
-from Modules.monitors.Credentials import frm_get_credentials
-from Modules.monitors.dns2proxy import frm_dns2proxy
-from Modules.monitors.netcreds import frm_NetCredsLogger
-from Modules.servers.PhishingManager import frm_PhishingManager
-from Modules.servers.UpdateFake import frm_update_attack
 from Core.Utils import ProcessThread,Refactor,setup_logger,set_monitor_mode,ProcessHostapd
 from Core.helpers.update import frm_githubUpdate
 from Core.config.Settings import frm_Settings
@@ -213,7 +203,7 @@ class PopUpServer(QWidget):
     def __init__(self,FSettings):
         QWidget.__init__(self)
         self.FSettings  = FSettings
-        self.Ftemplates = frm_PhishingManager()
+        self.Ftemplates = pkg.frm_PhishingManager()
         self.layout     = QVBoxLayout(self)
         self.FormLayout = QFormLayout()
         self.GridForm   = QGridLayout()
@@ -538,7 +528,7 @@ class SubMain(QWidget):
         self.setLayout(self.Main)
 
     def show_arp_posion(self):
-        self.Farp_posion = frm_Arp_Poison()
+        self.Farp_posion = pkg.frm_Arp_Poison()
         self.Farp_posion.setGeometry(0, 0, 450, 300)
         self.Farp_posion.show()
 
@@ -551,32 +541,32 @@ class SubMain(QWidget):
         self.FSettings.show()
 
     def show_windows_update(self):
-        self.FWinUpdate = frm_update_attack()
+        self.FWinUpdate = pkg.frm_update_attack()
         self.FWinUpdate.setGeometry(QRect(100, 100, 450, 300))
         self.FWinUpdate.show()
 
     def show_dhcpDOS(self):
-        self.Fstar = frm_dhcp_main()
+        self.Fstar = pkg.frm_dhcp_Attack()
         self.Fstar.setGeometry(QRect(100, 100, 450, 200))
         self.Fstar.show()
 
     def showProbe(self):
-        self.Fprobe = frm_PMonitor()
+        self.Fprobe = pkg.frm_PMonitor()
         self.Fprobe.setGeometry(QRect(100, 100, 400, 400))
         self.Fprobe.show()
 
     def formDauth(self):
-        self.Fdeauth = frm_wifideauth()
+        self.Fdeauth =pkg.frm_deauth()
         self.Fdeauth.setGeometry(QRect(100, 100, 200, 200))
         self.Fdeauth.show()
 
     def form_mac(self):
-        self.Fmac = frm_mac_generator()
+        self.Fmac = pkg.frm_mac_generator()
         self.Fmac.setGeometry(QRect(100, 100, 300, 100))
         self.Fmac.show()
 
     def show_dns_spoof(self):
-        self.Fdns = frm_DnsSpoof()
+        self.Fdns = pkg.frm_DnsSpoof()
         self.Fdns.setGeometry(QRect(100, 100, 450, 300))
         self.Fdns.show()
 
@@ -586,17 +576,17 @@ class SubMain(QWidget):
         self.FPhishingManager.show()
 
     def credentials(self):
-        self.Fcredentials = frm_get_credentials()
+        self.Fcredentials = pkg.frm_get_credentials()
         self.Fcredentials.setWindowTitle('Phishing Logger')
         self.Fcredentials.show()
 
     def logsnetcreds(self):
-        self.FnetCreds = frm_NetCredsLogger()
+        self.FnetCreds = pkg.frm_NetCredsLogger()
         self.FnetCreds.setWindowTitle('NetCreds Logger')
         self.FnetCreds.show()
 
     def logdns2proxy(self):
-        self.Fdns2proxy = frm_dns2proxy()
+        self.Fdns2proxy = pkg.frm_dns2proxy()
         self.Fdns2proxy.setWindowTitle('Dns2proxy Logger')
         self.Fdns2proxy.show()
 

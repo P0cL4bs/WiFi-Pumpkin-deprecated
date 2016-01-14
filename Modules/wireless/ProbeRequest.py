@@ -1,8 +1,6 @@
 from re import search
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from Core.config.Settings import frm_Settings
-from Core.Utils import Refactor,set_monitor_mode,ThreadProbeScan
+from Core.Utils import set_monitor_mode,ThreadProbeScan
+from Core.loaders.Stealth.PackagesUI import *
 
 """
 Description:
@@ -25,30 +23,17 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-class frm_Probe(QMainWindow):
-    def __init__(self, parent=None):
-        super(frm_Probe, self).__init__(parent)
-        self.form_widget = frm_PMonitor(self)
-        self.setCentralWidget(self.form_widget)
-        self.setWindowIcon(QIcon('rsc/icon.ico'))
-
-class frm_PMonitor(QWidget):
+class frm_PMonitor(PumpkinModule):
     def __init__(self, parent=None):
         super(frm_PMonitor, self).__init__(parent)
         self.Main       = QVBoxLayout()
-        self.config     = frm_Settings()
         self.Requests   = []
         self.data       = {'Devices':[],'MacAddress': [], 'SSIDs':[]}
-        self.interface  = str(self.config.xmlSettings("interface", "monitor_mode", None, False))
-        self.loadtheme(self.config.XmlThemeSelected())
+        self.interface  = str(self.configure.xmlSettings("interface", "monitor_mode", None, False))
+        self.loadtheme(self.configure.XmlThemeSelected())
         self.setWindowTitle("Probe Request wifi Monitor")
         self.setWindowIcon(QIcon('rsc/icon.ico'))
         self.setupGUI()
-
-    def loadtheme(self,theme):
-        sshFile=("Core/%s.qss"%(theme))
-        with open(sshFile,"r") as fh:
-            self.setStyleSheet(fh.read())
 
     def setupGUI(self):
         self.form0          = QFormLayout()

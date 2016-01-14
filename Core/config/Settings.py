@@ -92,7 +92,7 @@ class frm_Settings(QDialog):
         self.xmlSettings('channel', 'mchannel', str(self.channel.value()), False)
         self.xmlSettings('redirect', 'port', str(self.redirectport.text()), False)
         self.xmlSettings('netcreds', 'interface', str(self.InterfaceNetCreds.text()), False)
-        with open('Core/config/hostapd+.conf','w') as apconf:
+        with open('Core/config/hostapd/hostapd+.conf','w') as apconf:
             apconf.write(self.ListHostapd.toPlainText())
         self.close()
 
@@ -243,7 +243,7 @@ class frm_Settings(QDialog):
         # page hostpad
         self.ListHostapd = QTextEdit(self)
         self.ListHostapd.setFixedHeight(300)
-        with open('Core/config/hostapd+.conf','r') as apconf:
+        with open('Core/config/hostapd/hostapd+.conf','r') as apconf:
             self.ListHostapd.setText(apconf.read())
 
         #grup page 1

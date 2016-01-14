@@ -1,11 +1,9 @@
 import threading
 from os import popen,path,makedirs
 from re import search
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from Core.config.Settings import frm_Settings
-from Core.Utils import Refactor,ProcessThread,airdump_start,\
+from Core.Utils import ProcessThread,airdump_start,\
 get_network_scan,set_monitor_mode,ThreadDeauth,ThreadScannerAP
+from Core.loaders.Stealth.PackagesUI import *
 threadloading = {'deauth':[],'mdk3':[]}
 
 """
@@ -29,20 +27,17 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-class frm_wifideauth(QMainWindow):
+class frm_deauth(PumpkinModule):
     def __init__(self, parent=None):
-        super(frm_wifideauth, self).__init__(parent)
-        self.form_widget = frm_deauth(self)
-        self.setCentralWidget(self.form_widget)
+        super(frm_deauth, self).__init__(parent)
+        self.Main           = QVBoxLayout()
         self.setWindowTitle("Deauth Attack wireless Route")
         self.setWindowIcon(QIcon('rsc/icon.ico'))
-        self.config = frm_Settings()
-        self.loadtheme(self.config.XmlThemeSelected())
-
-    def loadtheme(self,theme):
-        sshFile=("Core/%s.qss"%(theme))
-        with open(sshFile,"r") as fh:
-            self.setStyleSheet(fh.read())
+        self.interface      = self.configure.xmlSettings("interface", "monitor_mode", None, False)
+        self.ApsCaptured    = {}
+        self.data           = {'Bssid':[], 'Essid':[], 'Channel':[]}
+        self.loadtheme(self.configure.XmlThemeSelected())
+        self.window_qt()
 
     def closeEvent(self, event):
         global threadloading
@@ -59,17 +54,6 @@ class frm_wifideauth(QMainWindow):
                 self.deleteLater()
                 return
             event.ignore()
-
-
-class frm_deauth(QWidget):
-    def __init__(self, parent=None):
-        super(frm_deauth, self).__init__(parent)
-        self.Main           = QVBoxLayout()
-        self.xmlcheck       = frm_Settings()
-        self.interface      = self.xmlcheck.xmlSettings("interface", "monitor_mode", None, False)
-        self.ApsCaptured    = {}
-        self.data           = {'Bssid':[], 'Essid':[], 'Channel':[]}
-        self.window_qt()
 
     def select_target(self):
         item = self.tables.selectedItems()
@@ -137,7 +121,7 @@ class frm_deauth(QWidget):
 
         #grid options
         self.Grid = QGridLayout()
-        self.options_scan = self.xmlcheck.xmlSettings("scanner_AP", "select", None, False)
+        self.options_scan = self.configure.xmlSettings("scanner_AP", "select", None, False)
 
         self.Grid.addWidget(self.get_placa,0,1)
         self.Grid.addWidget(self.btn_scan_start,0,2)
@@ -222,7 +206,7 @@ class frm_deauth(QWidget):
             QMessageBox.information(self, "Network Adapter", 'Network Adapter Not found try again.')
         else:
             self.interface = str(set_monitor_mode(self.get_placa.currentText()).setEnable())
-            self.xmlcheck.xmlSettings("interface", "monitor_mode", self.interface, False)
+            self.configure.xmlSettings("interface", "monitor_mode", self.interface, False)
             self.btn_scan_stop.setEnabled(True)
             self.btn_scan_start.setEnabled(False)
             if self.interface != None:
@@ -255,8 +239,8 @@ class frm_deauth(QWidget):
             QMessageBox.information(self, 'Target Error', 'Please, first select Target for attack')
         else:
             self.bssid = str(self.linetarget.text())
-            self.deauth_check = self.xmlcheck.xmlSettings('deauth', 'select',None,False)
-            self.args = str(self.xmlcheck.xmlSettings('mdk3','arguments', None, False))
+            self.deauth_check = self.configure.xmlSettings('deauth', 'select',None,False)
+            self.args = str(self.configure.xmlSettings('mdk3','arguments', None, False))
             self.interface = str(set_monitor_mode(self.get_placa.currentText()).setEnable())
             if self.deauth_check == 'packets_scapy':
                 self.AttackStatus(True)
