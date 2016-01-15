@@ -32,7 +32,7 @@ class frm_githubUpdate(PumpkinModule):
         self.loadtheme(self.configure.XmlThemeSelected())
         self.version = version
         self.UrlDownloadCommits = \
-        'https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/Core/config/Lcommits.cfg'
+        'https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/Core/config/commits/Lcommits.cfg'
         self.PathUrlRcommits = 'Core/config/commits/Rcommits.cfg'
         self.PathUrlLcommits = 'Core/config/commits/Lcommits.cfg'
         self.center()
@@ -135,7 +135,7 @@ class frm_githubUpdate(PumpkinModule):
         elif 'alive::' in commits:
             self.pb.update_bar(10)
         elif '::updated' in commits:
-            self.pb.update_bar(101)
+            self.pb.update_bar(100)
             QMessageBox.information(self,'Update Information',
             "Already up-to-date. You're required to restart the tool to apply this update.")
             self.btnUpdate.setDisabled(True)

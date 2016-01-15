@@ -70,10 +70,12 @@ class GithubUpdate(QThread):
         if hasattr(self,'commit_update'):
             if self.commit_update['Updates'] != []:
                 if not path.isdir('.git/'):self.gitZipRepo()
+                call(['git','reset','--hard','origin/master'])
                 self.ProcessCall_(['git','pull','origin','master'])
 
     def NewVersionUpdate(self):
         if not path.isdir('.git/'):self.gitZipRepo()
+        call(['git','reset','--hard','origin/master'])
         self.ProcessCall_(['git','pull','origin','master'])
 
     def checkUpdate(self,Version):
