@@ -120,6 +120,7 @@ func_install(){
 	fi
 	echo "[$green+$txtrst]$color_y P0cL4bs Team CopyRight 2015$txtrst"
 	echo "[$green+$txtrst] Enjoy"
+	exit 0
 }
 
 bin_install(){
