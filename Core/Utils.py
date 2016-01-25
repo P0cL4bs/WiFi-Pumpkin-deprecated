@@ -154,7 +154,7 @@ class ProcessHostapd(QThread):
         self.makeLogger()
         self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
         for line in iter(self.process.stdout.readline, b''):
-            self.log_hostapd.info(line.rstrip())
+            #self.log_hostapd.info(line.rstrip())
             if self.objectName() == 'hostapd':
                 if 'AP-STA-DISCONNECTED' in line.rstrip() or 'inactivity (timer DEAUTH/REMOVE)' in line.rstrip():
                     self.statusAP_connected.emit(line.split()[2])
