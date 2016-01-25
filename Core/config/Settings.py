@@ -48,7 +48,7 @@ class frm_Settings(QDialog):
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
-    def xmlSettings(self,id,data,bool,show):
+    def xmlSettings(self,id,data,bool,show=False):
         xmldoc = minidom.parse('Core/config/Settings.xml')
         country = xmldoc.getElementsByTagName(id)
         firstchild = country[0]
@@ -186,7 +186,7 @@ class frm_Settings(QDialog):
         self.btn_save = QPushButton('Save')
         self.btn_save.clicked.connect(self.save_settings)
         self.btn_save.setFixedWidth(80)
-        self.btn_save.setIcon(QIcon('rsc/Save.png'))
+        self.btn_save.setIcon(QIcon('Icons/Save.png'))
 
         self.GruPag0=QButtonGroup()
         self.GruPag1=QButtonGroup()
@@ -218,7 +218,6 @@ class frm_Settings(QDialog):
         self.interface = QLineEdit(self)
         self.Apname =  QLineEdit(self)
         self.channel = QSpinBox(self)
-        self.rangeIP = QLineEdit(self)
         self.redirectport = QLineEdit(self)
         self.InterfaceNetCreds = QLineEdit(self)
 
@@ -317,7 +316,6 @@ class frm_Settings(QDialog):
         self.interface.setText(self.xmlSettings('interface', 'monitor_mode', None, False))
         self.Apname.setText(self.xmlSettings('AP', 'name', None, False))
         self.channel.setValue(int(self.xmlSettings('channel', 'mchannel', None, False)))
-        self.rangeIP.setText(self.xmlSettings('Iprange', 'range', None, False))
         self.redirectport.setText(self.xmlSettings('redirect', 'port', None, False))
         self.InterfaceNetCreds.setText(self.xmlSettings('netcreds', 'interface', None, False))
         #add tab Advanced
@@ -327,7 +325,6 @@ class frm_Settings(QDialog):
         self.page_2.addRow('Interface Monitor:',self.interface)
         self.page_2.addRow('AP Name:',self.Apname)
         self.page_2.addRow('Channel:',self.channel)
-        self.page_2.addRow('DHCP Range:',self.rangeIP)
         self.page_2.addRow('Port sslstrip:',self.redirectport)
         self.page_2.addRow('NetCreds Interface:',self.InterfaceNetCreds)
         self.page_2.addRow(QLabel('mdk3 Args:'),self.txt_arguments)

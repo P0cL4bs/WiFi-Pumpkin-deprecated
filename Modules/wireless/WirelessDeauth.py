@@ -32,7 +32,7 @@ class frm_deauth(PumpkinModule):
         super(frm_deauth, self).__init__(parent)
         self.Main           = QVBoxLayout()
         self.setWindowTitle("Deauth Attack wireless Route")
-        self.setWindowIcon(QIcon('rsc/icon.ico'))
+        self.setWindowIcon(QIcon('Icons/icon.ico'))
         self.interface      = self.configure.xmlSettings("interface", "monitor_mode", None, False)
         self.ApsCaptured    = {}
         self.data           = {'Bssid':[], 'Essid':[], 'Channel':[]}
@@ -106,10 +106,10 @@ class frm_deauth(PumpkinModule):
         self.btn_stop.setEnabled(False)
 
         #icons
-        self.btn_scan_start.setIcon(QIcon("rsc/network.png"))
-        self.btn_scan_stop.setIcon(QIcon('rsc/network_off.png'))
-        self.btn_enviar.setIcon(QIcon("rsc/start.png"))
-        self.btn_stop.setIcon(QIcon("rsc/Stop.png"))
+        self.btn_scan_start.setIcon(QIcon("Icons/network.png"))
+        self.btn_scan_stop.setIcon(QIcon('Icons/network_off.png'))
+        self.btn_enviar.setIcon(QIcon("Icons/start.png"))
+        self.btn_stop.setIcon(QIcon("Icons/Stop.png"))
 
 
         self.get_placa = QComboBox(self)

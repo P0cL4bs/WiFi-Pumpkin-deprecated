@@ -113,8 +113,8 @@ class frm_PhishingManager(QWidget):
         # button stop,start
         self.btn_start_template = QPushButton('Start Server')
         self.btn_stop_template  = QPushButton('Stop Server')
-        self.btn_start_template.setIcon(QIcon('rsc/start.png'))
-        self.btn_stop_template.setIcon(QIcon('rsc/Stop.png'))
+        self.btn_start_template.setIcon(QIcon('Icons/start.png'))
+        self.btn_stop_template.setIcon(QIcon('Icons/Stop.png'))
         self.btn_stop_template.setEnabled(False)
         self.btn_start_template.setFixedWidth(110)
         self.btn_stop_template.setFixedWidth(110)
@@ -125,7 +125,7 @@ class frm_PhishingManager(QWidget):
         self.GroupCheckBox  = QGroupBox(self)
         self.GroupCloneSite = QGroupBox(self)
         self.GroupSettings.setTitle('Settings:')
-        self.GroupCheckBox.setTitle('Modules:')
+        self.GroupCheckBox.setTitle('Options:')
         self.GroupCloneSite.setTitle('clone:')
 
 

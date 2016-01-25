@@ -10,12 +10,32 @@
         <themes selected="themes/theme2"/>
     </configure>
 
+    <DHCP>
+        <leasetimeDef value="600"/>
+        <leasetimeMax value="7200"/>
+        <subnet value="10.0.0.0"/>
+        <router value="10.0.0.1"/>
+        <netmask value="255.255.255.0"/>
+        <broadcast value="10.0.0.255"/>
+        <range value="10.0.0.20 10.0.0.50"/>
+    </DHCP>
+
+
+    <DHCPDefault>
+        <D-leasetimeDef value="600"/>
+        <D-leasetimeMax value="7200"/>
+        <D-subnet value="10.0.0.0"/>
+        <D-router value="10.0.0.1"/>
+        <D-netmask value="255.255.255.0"/>
+        <D-broadcast value="10.0.0.255"/>
+        <D-range value="10.0.0.20 10.0.0.50"/>
+    </DHCPDefault>
+
     <configure>
         <advanced Function_scan="Ping"/>
         <interface monitor_mode="wlan1"/>
         <channel mchannel="11"/>
         <AP name="PumpAP"/>
-        <Iprange range="10.0.0.20 10.0.0.50"/>
         <redirect port="10000"/>
         <netcreds interface="wlan3"/>
     </configure>

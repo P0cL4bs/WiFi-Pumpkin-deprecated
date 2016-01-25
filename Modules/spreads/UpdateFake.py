@@ -30,7 +30,7 @@ class frm_update_attack(PumpkinModule):
     def __init__(self, parent=None):
         super(frm_update_attack, self).__init__(parent)
         self.setWindowTitle('Windows Update Attack Generator ')
-        self.setWindowIcon(QIcon('rsc/icon.ico'))
+        self.setWindowIcon(QIcon('Icons/icon.ico'))
         self.loadtheme(self.configure.XmlThemeSelected())
         self.Main       = QVBoxLayout()
         self.owd        = getcwd()
@@ -74,10 +74,10 @@ class frm_update_attack(PumpkinModule):
         self.btn_stop.setFixedHeight(50)
         self.btn_start_server.setFixedHeight(50)
         #icons
-        self.btn_open.setIcon(QIcon("rsc/open.png"))
-        self.btn_stop.setIcon(QIcon("rsc/Stop.png"))
-        self.btn_reload.setIcon(QIcon("rsc/refresh.png"))
-        self.btn_start_server.setIcon(QIcon("rsc/server.png"))
+        self.btn_open.setIcon(QIcon("Icons/open.png"))
+        self.btn_stop.setIcon(QIcon("Icons/Stop.png"))
+        self.btn_reload.setIcon(QIcon("Icons/refresh.png"))
+        self.btn_start_server.setIcon(QIcon("Icons/server.png"))
 
         # connect buttons
         self.btn_open.clicked.connect(self.getpath)
@@ -87,11 +87,11 @@ class frm_update_attack(PumpkinModule):
 
         # radionButton
         self.rb_windows = QRadioButton("Windows Update",self)
-        self.rb_windows.setIcon(QIcon("rsc/winUp.png"))
+        self.rb_windows.setIcon(QIcon("Icons/winUp.png"))
         self.rb_adobe = QRadioButton("Adobe Update", self)
-        self.rb_adobe.setIcon(QIcon("rsc/adobe.png"))
+        self.rb_adobe.setIcon(QIcon("Icons/adobe.png"))
         self.rb_java = QRadioButton("Java Update", self)
-        self.rb_java.setIcon(QIcon("rsc/java.png"))
+        self.rb_java.setIcon(QIcon("Icons/java.png"))
         self.rb_adobe.setEnabled(False)
         self.grid.addWidget(self.rb_windows, 0,1)
         self.grid.addWidget(self.rb_adobe, 0,2)

@@ -42,8 +42,8 @@ class frm_dhcp_Attack(PumpkinModule):
         self.btn_Start_attack.clicked.connect(self.D_attack)
         self.btn_Stop_attack.clicked.connect(self.kill_thread)
 
-        self.btn_Start_attack.setIcon(QIcon("rsc/start.png"))
-        self.btn_Stop_attack.setIcon(QIcon("rsc/Stop.png"))
+        self.btn_Start_attack.setIcon(QIcon("Icons/start.png"))
+        self.btn_Stop_attack.setIcon(QIcon("Icons/Stop.png"))
 
         self.form.addRow(self.list_log)
         self.form.addRow("Status Attack:",self.check)

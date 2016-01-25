@@ -32,7 +32,7 @@ Copyright:
 
 def ExecRootApp(root):
     app = Initialize()
-    app.setWindowIcon(QIcon('rsc/icon.ico'))
+    app.setWindowIcon(QIcon('Icons/icon.ico'))
     app.center(),app.show()
     exit(root.exec_())
 
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     main = QApplication(argv)
     if not getuid() == 0:
         priv = frm_privelege()
-        priv.setWindowIcon(QIcon('rsc/icon.ico'))
+        priv.setWindowIcon(QIcon('Icons/icon.ico'))
         priv.show(),main.exec_()
         exit(Refactor.threadRoot(priv.Editpassword.text()))
     ExecRootApp(main)

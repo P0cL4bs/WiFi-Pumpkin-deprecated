@@ -194,7 +194,7 @@ QScrollBar::handle:horizontal
 QScrollBar::add-line:horizontal
 {
     margin: 0px 3px 0px 3px;
-    border-image: url(rsc/right_arrow_disabled.png);
+    border-image: url(Icons/right_arrow_disabled.png);
     width: 10px;
     height: 10px;
     subcontrol-position: right;
@@ -204,7 +204,7 @@ QScrollBar::add-line:horizontal
 QScrollBar::sub-line:horizontal
 {
     margin: 0px 3px 0px 3px;
-    border-image: url(rsc/left_arrow_disabled.png);
+    border-image: url(Icons/left_arrow_disabled.png);
     height: 10px;
     width: 10px;
     subcontrol-position: left;
@@ -213,7 +213,7 @@ QScrollBar::sub-line:horizontal
 
 QScrollBar::add-line:horizontal:hover,QScrollBar::add-line:horizontal:on
 {
-    border-image: url(rsc/right_arrow.png);
+    border-image: url(Icons/right_arrow.png);
     height: 10px;
     width: 10px;
     subcontrol-position: right;
@@ -223,7 +223,7 @@ QScrollBar::add-line:horizontal:hover,QScrollBar::add-line:horizontal:on
 
 QScrollBar::sub-line:horizontal:hover, QScrollBar::sub-line:horizontal:on
 {
-    border-image: url(rsc/left_arrow.png);
+    border-image: url(Icons/left_arrow.png);
     height: 10px;
     width: 10px;
     subcontrol-position: left;
@@ -260,7 +260,7 @@ QScrollBar::handle:vertical
 QScrollBar::sub-line:vertical
 {
     margin: 3px 0px 3px 0px;
-    border-image: url(rsc/up_arrow_disabled.png);
+    border-image: url(Icons/up_arrow_disabled.png);
     height: 10px;
     width: 10px;
     subcontrol-position: top;
@@ -270,7 +270,7 @@ QScrollBar::sub-line:vertical
 QScrollBar::add-line:vertical
 {
     margin: 3px 0px 3px 0px;
-    border-image: url(rsc/down_arrow_disabled.png);
+    border-image: url(Icons/down_arrow_disabled.png);
     height: 10px;
     width: 10px;
     subcontrol-position: bottom;
@@ -280,7 +280,7 @@ QScrollBar::add-line:vertical
 QScrollBar::sub-line:vertical:hover,QScrollBar::sub-line:vertical:on
 {
 
-    border-image: url(rsc/up_arrow.png);
+    border-image: url(Icons/up_arrow.png);
     height: 10px;
     width: 10px;
     subcontrol-position: top;
@@ -290,7 +290,7 @@ QScrollBar::sub-line:vertical:hover,QScrollBar::sub-line:vertical:on
 
 QScrollBar::add-line:vertical:hover, QScrollBar::add-line:vertical:on
 {
-    border-image: url(rsc/down_arrow_theme2.png);
+    border-image: url(Icons/down_arrow_theme2.png);
     height: 10px;
     width: 10px;
     subcontrol-position: bottom;
@@ -337,7 +337,7 @@ QCheckBox:disabled
 }
 
 QSizeGrip {
-    image: url(rsc/sizegrip.png);
+    image: url(Icons/sizegrip.png);
     width: 12px;
     height: 12px;
 }
@@ -423,7 +423,7 @@ QRadioButton::indicator:hover, QCheckBox::indicator:hover
 
 QCheckBox::indicator:checked, QGroupBox::indicator:checked, QMenu::indicator:non-exclusive:checked
 {
-    image:url(rsc/checkbox.png);
+    image:url(Icons/checkbox.png);
 }
 
 QCheckBox::indicator:disabled, QRadioButton::indicator:disabled
@@ -432,7 +432,7 @@ QCheckBox::indicator:disabled, QRadioButton::indicator:disabled
 }
 
 QCheckBox::indicator:indeterminate {
-    image: url(rsc/checkbox_indeterminate.png);
+    image: url(Icons/checkbox_indeterminate.png);
 }
 
 QFrame
@@ -459,16 +459,16 @@ QToolBar {
 }
 
 QToolBar::handle:horizontal {
-    image: url(rsc/Hmovetoolbar.png);
+    image: url(Icons/Hmovetoolbar.png);
 }
 QToolBar::handle:vertical {
-    image: url(rsc/Vmovetoolbar.png);
+    image: url(Icons/Vmovetoolbar.png);
 }
 QToolBar::separator:horizontal {
-    image: url(rsc/Hsepartoolbar.png);
+    image: url(Icons/Hsepartoolbar.png);
 }
 QToolBar::separator:vertical {
-    image: url(rsc/Vsepartoolbars.png);
+    image: url(Icons/Vsepartoolbars.png);
 }
 
 QPushButton
@@ -549,13 +549,13 @@ QComboBox::drop-down
 
 QComboBox::down-arrow
 {
-    image: url(rsc/down_arrow_disabled.png);
+    image: url(Icons/down_arrow_disabled.png);
 }
 
 QComboBox::down-arrow:on, QComboBox::down-arrow:hover,
 QComboBox::down-arrow:focus
 {
-    image: url(rsc/down_arrow_theme2.png);
+    image: url(Icons/down_arrow_theme2.png);
 }
 
 QPushButton:pressed
@@ -588,25 +588,25 @@ QAbstractSpinBox:down-button
 }
 
 QAbstractSpinBox::up-arrow,QAbstractSpinBox::up-arrow:disabled,QAbstractSpinBox::up-arrow:off {
-    image: url(rsc/up_arrow_disabled.png);
+    image: url(Icons/up_arrow_disabled.png);
     width: 10px;
     height: 10px;
 }
 QAbstractSpinBox::up-arrow:hover
 {
-    image: url(rsc/up_arrow.png);
+    image: url(Icons/up_arrow.png);
 }
 
 
 QAbstractSpinBox::down-arrow,QAbstractSpinBox::down-arrow:disabled,QAbstractSpinBox::down-arrow:off
 {
-    image: url(rsc/down_arrow_disabled.png);
+    image: url(Icons/down_arrow_disabled.png);
     width: 10px;
     height: 10px;
 }
 QAbstractSpinBox::down-arrow:hover
 {
-    image: url(rsc/down_arrow_theme2.png);
+    image: url(Icons/down_arrow_theme2.png);
 }
 
 
@@ -637,18 +637,18 @@ QTabBar:focus
 }
 
 QTabBar::close-button  {
-    image: url(rsc/close.png);
+    image: url(Icons/close.png);
     background: transparent;
 }
 
 QTabBar::close-button:hover
 {
-    image: url(rsc/close-hover.png);
+    image: url(Icons/close-hover.png);
     background: transparent;
 }
 
 QTabBar::close-button:pressed {
-    image: url(rsc/close-pressed.png);
+    image: url(Icons/close-pressed.png);
     background: transparent;
 }
 
@@ -754,26 +754,26 @@ QTabBar::tab:right:!selected:hover {
 }
 
 QTabBar QToolButton::right-arrow:enabled {
-     image: url(rsc/right_arrow.png);
+     image: url(Icons/right_arrow.png);
  }
 
  QTabBar QToolButton::left-arrow:enabled {
-     image: url(rsc/left_arrow.png);
+     image: url(Icons/left_arrow.png);
  }
 
 QTabBar QToolButton::right-arrow:disabled {
-     image: url(rsc/right_arrow_disabled.png);
+     image: url(Icons/right_arrow_disabled.png);
  }
 
  QTabBar QToolButton::left-arrow:disabled {
-     image: url(rsc/left_arrow_disabled.png);
+     image: url(Icons/left_arrow_disabled.png);
  }
 
 
 QDockWidget {
     border: 1px solid #403F3F;
-    titlebar-close-icon: url(rsc/close.png);
-    titlebar-normal-icon: url(rsc/undock.png);
+    titlebar-close-icon: url(Icons/close.png);
+    titlebar-normal-icon: url(Icons/undock.png);
 }
 
 QDockWidget::close-button, QDockWidget::float-button {
@@ -799,39 +799,39 @@ QTreeView, QListView
 
 QTreeView:branch:selected, QTreeView:branch:hover
 {
-    background: url(rsc/transparent.png);
+    background: url(Icons/transparent.png);
 }
 
 QTreeView::branch:has-siblings:!adjoins-item {
-    border-image: url(rsc/transparent.png);
+    border-image: url(Icons/transparent.png);
 }
 
 QTreeView::branch:has-siblings:adjoins-item {
-    border-image: url(rsc/transparent.png);
+    border-image: url(Icons/transparent.png);
 }
 
 QTreeView::branch:!has-children:!has-siblings:adjoins-item {
-    border-image: url(rsc/transparent.png);
+    border-image: url(Icons/transparent.png);
 }
 
 QTreeView::branch:has-children:!has-siblings:closed,
 QTreeView::branch:closed:has-children:has-siblings {
-    image: url(rsc/branch_closed.png);
+    image: url(Icons/branch_closed.png);
 }
 
 QTreeView::branch:open:has-children:!has-siblings,
 QTreeView::branch:open:has-children:has-siblings  {
-    image: url(rsc/branch_open.png);
+    image: url(Icons/branch_open.png);
 }
 
 QTreeView::branch:has-children:!has-siblings:closed:hover,
 QTreeView::branch:closed:has-children:has-siblings:hover {
-    image: url(rsc/branch_closed-on.png);
+    image: url(Icons/branch_closed-on.png);
     }
 
 QTreeView::branch:open:has-children:!has-siblings:hover,
 QTreeView::branch:open:has-children:has-siblings:hover  {
-    image: url(rsc/branch_open-on.png);
+    image: url(Icons/branch_open-on.png);
     }
 
 QListView::item:!selected:hover, QListView::item:!selected:hover, QTreeView::item:!selected:hover  {
@@ -913,7 +913,7 @@ QToolButton:checked, QToolButton:pressed, QToolButton::menu-button:pressed {
 
 /* the subcontrol below is used only in the InstantPopup or DelayedPopup mode */
 QToolButton::menu-indicator {
-    image: url(rsc/down_arrow_theme2.png);
+    image: url(Icons/down_arrow_theme2.png);
     top: -7px; left: -2px; /* shift it a bit */
 }
 
@@ -928,7 +928,7 @@ QToolButton::menu-button {
 }
 
 QToolButton::menu-arrow {
-    image: url(rsc/down_arrow_theme2.png);
+    image: url(Icons/down_arrow_theme2.png);
 }
 
 QToolButton::menu-arrow:open {
@@ -1012,11 +1012,11 @@ QHeaderView::section:checked
 
  /* style the sort indicator */
 QHeaderView::down-arrow {
-    image: url(rsc/down_arrow_theme2.png);
+    image: url(Icons/down_arrow_theme2.png);
 }
 
 QHeaderView::up-arrow {
-    image: url(rsc/up_arrow.png);
+    image: url(Icons/up_arrow.png);
 }
 
 

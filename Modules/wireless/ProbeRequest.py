@@ -32,7 +32,7 @@ class frm_PMonitor(PumpkinModule):
         self.interface  = str(self.configure.xmlSettings("interface", "monitor_mode", None, False))
         self.loadtheme(self.configure.XmlThemeSelected())
         self.setWindowTitle("Probe Request wifi Monitor")
-        self.setWindowIcon(QIcon('rsc/icon.ico'))
+        self.setWindowIcon(QIcon('Icons/icon.ico'))
         self.setupGUI()
 
     def setupGUI(self):
@@ -64,9 +64,9 @@ class frm_PMonitor(PumpkinModule):
         self.btn_refrash.clicked.connect(self.refrash_interface)
         self.btn_stop.clicked.connect(self.StopProbeResquest)
         self.btn_scan.clicked.connect(self.StartProbeResquest)
-        self.btn_scan.setIcon(QIcon('rsc/network.png'))
-        self.btn_stop.setIcon(QIcon('rsc/network_off.png'))
-        self.btn_refrash.setIcon(QIcon('rsc/refresh.png'))
+        self.btn_scan.setIcon(QIcon('Icons/network.png'))
+        self.btn_stop.setIcon(QIcon('Icons/network_off.png'))
+        self.btn_refrash.setIcon(QIcon('Icons/refresh.png'))
         self.get_placa = QComboBox(self)
         self.loadCard()
 

@@ -40,8 +40,10 @@ class frm_get_credentials(PumpkinModule):
         self.listDns.setAutoScroll(True)
 
         self.btn_getdata = QPushButton('Capture logs')
+        self.btn_getdata.setIcon(QIcon('Icons/start.png'))
         self.btn_getdata.clicked.connect(self.Start_Get_creds)
-        self.btn_exit = QPushButton('Exit')
+        self.btn_exit = QPushButton('Kill')
+        self.btn_exit.setIcon(QIcon('Icons/cancel.png'))
         self.btn_exit.clicked.connect(self.exit_function)
 
         self.frm0.addWidget(self.listDns)

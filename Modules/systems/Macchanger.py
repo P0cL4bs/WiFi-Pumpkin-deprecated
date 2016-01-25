@@ -28,7 +28,7 @@ Copyright:
 class frm_mac_generator(PumpkinModule):
     def __init__(self, parent=None):
         super(frm_mac_generator, self).__init__(parent)
-        self.setWindowIcon(QIcon('rsc/icon.ico'))
+        self.setWindowIcon(QIcon('Icons/icon.ico'))
         self.setWindowTitle("MAC Address Generator")
         self.Main = QVBoxLayout()
         self.prefix = [ 0x00, 0xCB, 0x01,0x03 ,\
@@ -72,9 +72,9 @@ class frm_mac_generator(PumpkinModule):
         self.i_mac = QLineEdit(self)
         self.combo_card = QComboBox(self)
         self.btn_random = QPushButton("Random MAC")
-        self.btn_random.setIcon(QIcon("rsc/refresh.png"))
+        self.btn_random.setIcon(QIcon("Icons/refresh.png"))
         self.btn_save = QPushButton("Save")
-        self.btn_save.setIcon(QIcon("rsc/Save.png"))
+        self.btn_save.setIcon(QIcon("Icons/Save.png"))
         self.btn_save.clicked.connect(self.change_macaddress)
         self.btn_random.clicked.connect(self.action_btn_random)
         self.cards = Refactor.get_interfaces()['all']

@@ -30,7 +30,7 @@ class frm_Arp_Poison(PumpkinModule):
 
     def __init__(self, parent=None):
         super(frm_Arp_Poison, self).__init__(parent)
-        self.setWindowTitle('Arp Posion Attack ')
+        self.setWindowTitle('Arp Poison Attack ')
         self.Main           = QVBoxLayout()
         self.owd            = getcwd()
         self.loadtheme(self.configure.XmlThemeSelected())
@@ -58,7 +58,7 @@ class frm_Arp_Poison(PumpkinModule):
 
     def GUI(self):
         self.form =QFormLayout()
-        self.movie = QMovie('rsc/loading2.gif', QByteArray(), self)
+        self.movie = QMovie('Icons/loading2.gif', QByteArray(), self)
         size = self.movie.scaledSize()
         self.setGeometry(200, 200, size.width(), size.height())
         self.movie_screen = QLabel()
@@ -118,12 +118,12 @@ class frm_Arp_Poison(PumpkinModule):
         self.btn_windows_update.clicked.connect(self.show_frm_fake)
 
         #icons
-        self.btn_start_scanner.setIcon(QIcon('rsc/network.png'))
-        self.btn_Attack_Posion.setIcon(QIcon('rsc/start.png'))
-        self.btn_Stop_Posion.setIcon(QIcon('rsc/Stop.png'))
-        self.btn_stop_scanner.setIcon(QIcon('rsc/network_off.png'))
-        self.btn_server.setIcon(QIcon('rsc/page.png'))
-        self.btn_windows_update.setIcon(QIcon('rsc/winUp.png'))
+        self.btn_start_scanner.setIcon(QIcon('Icons/network.png'))
+        self.btn_Attack_Posion.setIcon(QIcon('Icons/start.png'))
+        self.btn_Stop_Posion.setIcon(QIcon('Icons/Stop.png'))
+        self.btn_stop_scanner.setIcon(QIcon('Icons/network_off.png'))
+        self.btn_server.setIcon(QIcon('Icons/page.png'))
+        self.btn_windows_update.setIcon(QIcon('Icons/winUp.png'))
 
         self.grid0 = QGridLayout()
         self.grid0.minimumSize()

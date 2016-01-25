@@ -4,7 +4,7 @@ You can help this project by reporting problems, suggestions, localizing it or c
 
 ### Report a problem or suggestion
 
-Go to our [issue tracker](https://github.com/P0cL4bs/3vilTwinAttacker/issues) and check if your problem/suggestion is already reported. If not, create a new issue with a descriptive title and detail your suggestion or steps to reproduce the problem.
+Go to our [issue tracker](https://github.com/P0cL4bs/WiFi-Pumpkin/issues) and check if your problem/suggestion is already reported. If not, create a new issue with a descriptive title and detail your suggestion or steps to reproduce the problem.
 A good bug report shouldn't leave others needing to chase you up for more
 information. Please try to be as detailed as possible in your report.
 

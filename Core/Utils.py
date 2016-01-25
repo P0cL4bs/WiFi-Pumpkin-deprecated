@@ -154,7 +154,7 @@ class ProcessHostapd(QThread):
         self.makeLogger()
         self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
         for line in iter(self.process.stdout.readline, b''):
-            #self.log_hostapd.info(line.rstrip())
+            self.log_hostapd.info(line.rstrip())
             if self.objectName() == 'hostapd':
                 if 'AP-STA-DISCONNECTED' in line.rstrip() or 'inactivity (timer DEAUTH/REMOVE)' in line.rstrip():
                     self.statusAP_connected.emit(line.split()[2])
@@ -199,25 +199,14 @@ class ProcessThread(threading.Thread):
 
     def run(self):
         print 'Starting Thread:' + self.name
-        if self.name == 'Airbase-ng':
-            setup_logger('airbase', './Logs/AccessPoint/requestAP.log')
-            log_airbase = logging.getLogger('airbase')
-            self.logger = True
-        elif self.name == 'Dns2Proxy':
+        if self.name == 'Dns2Proxy':
             setup_logger('dns2proxy', './Logs/AccessPoint/dns2proxy.log')
             log_dns2proxy = logging.getLogger('dns2proxy')
             self.logger = True
         self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
         for line in iter(self.process.stdout.readline, b''):
             if self.logger:
-                if self.name == 'Airbase-ng':
-                    if search('Created tap interface',line):
-                        Popen(['ifconfig',line.split()[4], 'up'])
-                        self.iface = line.split()[4]
-                    log_airbase.info(line.rstrip())
-                elif self.name == 'hostapd':
-                    log_hostapd.info(line.rstrip())
-                elif self.name == 'Dns2Proxy':
+                if self.name == 'Dns2Proxy':
                     log_dns2proxy.info(line.rstrip())
                     self.prompt = False
             if self.prompt:
@@ -553,6 +542,7 @@ class Refactor:
          'credentials': {'Logs/AccessPoint/credentials.log':[]},
          'requestAP': {'Logs/AccessPoint/requestAP.log':[]},
          'dns2proxy': {'Logs/AccessPoint/dns2proxy.log':[]},
+         'injectionPage': {'Logs/AccessPoint/injectionPage.log':[]},
          'phishing': {'Logs/Phishing/Webclone.log':[]},}
         for i in readFile.keys():
             for j in readFile[i]:

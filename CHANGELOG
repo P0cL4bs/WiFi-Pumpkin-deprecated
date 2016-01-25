@@ -1,3 +1,10 @@
+Version 0.7.3
+-------------
+- added new Pump-Logo default
+- added PumpSettings TAB DHCP configure
+- fixed no share internet with plugins sslstrip disabled
+- added new Modular Transparent Proxy tranks @xtr4nge sslstrip::mod
+
 Version 0.7.1
 -------------
 - added update commits from repository

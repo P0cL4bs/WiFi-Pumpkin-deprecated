@@ -54,8 +54,8 @@ class frm_githubUpdate(PumpkinModule):
         self.btnUpdate.setDisabled(True)
 
         # icons
-        self.btnCheck.setIcon(QIcon('rsc/Checklist_update.png'))
-        self.btnUpdate.setIcon(QIcon('rsc/updates_.png'))
+        self.btnCheck.setIcon(QIcon('Icons/Checklist_update.png'))
+        self.btnUpdate.setIcon(QIcon('Icons/updates_.png'))
         #connects
         self.btnCheck.clicked.connect(self.checkUpdate)
         self.btnUpdate.clicked.connect(self.startUpdate)
@@ -113,7 +113,7 @@ class frm_githubUpdate(PumpkinModule):
         if 'no changes into' in commits:
             item = QListWidgetItem()
             item.setText(commits)
-            item.setIcon(QIcon('rsc/checked_update.png'))
+            item.setIcon(QIcon('Icons/checked_update.png'))
             item.setSizeHint(QSize(20,20))
             self.LCommits.addItem(item)
             return self.btnCheck.setEnabled(True)
@@ -127,7 +127,7 @@ class frm_githubUpdate(PumpkinModule):
         elif 'commit:' in commits:
             item = QListWidgetItem()
             item.setText(commits)
-            item.setIcon(QIcon('rsc/check_update.png'))
+            item.setIcon(QIcon('Icons/check_update.png'))
             item.setSizeHint(QSize(20,20))
             self.LCommits.addItem(item)
             self.btnCheck.setEnabled(True)

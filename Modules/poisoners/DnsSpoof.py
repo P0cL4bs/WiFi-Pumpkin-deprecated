@@ -62,7 +62,7 @@ class frm_DnsSpoof(PumpkinModule):
     def GUI(self):
         self.form           = QFormLayout()
         self.layoutform     = QFormLayout()
-        self.movie          = QMovie('rsc/loading2.gif', QByteArray(), self)
+        self.movie          = QMovie('Icons/loading2.gif', QByteArray(), self)
         size                = self.movie.scaledSize()
         self.movie_screen   = QLabel()
         self.setGeometry(200, 200, size.width(), size.height())
@@ -136,7 +136,7 @@ class frm_DnsSpoof(PumpkinModule):
         self.btn_start_scanner.setFixedHeight(22)
         self.btn_stop_scanner.setFixedHeight(22)
         self.btn_windows_update.setFixedHeight(22)
-        self.btn_server.setIcon(QIcon('rsc/page.png'))
+        self.btn_server.setIcon(QIcon('Icons/page.png'))
 
 
         # connet buttons
@@ -148,11 +148,11 @@ class frm_DnsSpoof(PumpkinModule):
         self.btn_windows_update.clicked.connect(self.show_frm_fake)
 
         #icons
-        self.btn_start_scanner.setIcon(QIcon('rsc/network.png'))
-        self.btn_Attack_Posion.setIcon(QIcon('rsc/start.png'))
-        self.btn_Stop_Posion.setIcon(QIcon('rsc/Stop.png'))
-        self.btn_stop_scanner.setIcon(QIcon('rsc/network_off.png'))
-        self.btn_windows_update.setIcon(QIcon('rsc/winUp.png'))
+        self.btn_start_scanner.setIcon(QIcon('Icons/network.png'))
+        self.btn_Attack_Posion.setIcon(QIcon('Icons/start.png'))
+        self.btn_Stop_Posion.setIcon(QIcon('Icons/Stop.png'))
+        self.btn_stop_scanner.setIcon(QIcon('Icons/network_off.png'))
+        self.btn_windows_update.setIcon(QIcon('Icons/winUp.png'))
 
         # grid status modules
         self.grid0 = QGridLayout()

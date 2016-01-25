@@ -9,7 +9,7 @@ class PumpkinModule(QWidget):
     ''' this is Qwidget Module base '''
     def __init__(self,parent=None,*args):
         super(PumpkinModule, self).__init__(parent)
-        self.setWindowIcon(QIcon('rsc/icon.ico'))
+        self.setWindowIcon(QIcon('Icons/icon.ico'))
         self.module_network = Refactor
         self.configure      = frm_Settings()
         self.Ftemplates     = frm_PhishingManager()
