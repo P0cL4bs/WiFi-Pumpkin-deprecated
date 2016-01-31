@@ -41,6 +41,8 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 attacks based version fork @LeonardoNve/@xtr4nge.
 - [sergio-proxy](https://github.com/supernothing/sergio-proxy) - Sergio Proxy (a Super Effective Recorder of Gathered Inputs and Outputs) is an
 HTTP proxy that was written in Python for the Twisted framework.
+
+
 ### Transparent Proxy
  Transparent proxies that you can use to intercept and manipulate HTTP/HTTPS traffic modifying requests and responses, that allow to inject javascripts into the targets visited.  You can easily implement a module to inject data into pages creating a python file in directory "Proxy" automatically will be listed on PumpProxy tab.
 ### Plugins Example
