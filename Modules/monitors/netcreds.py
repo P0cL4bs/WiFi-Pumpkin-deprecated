@@ -48,6 +48,8 @@ class frm_NetCredsLogger(PumpkinModule):
         self.listDns.setAutoScroll(True)
         self.list_creds = QListWidget(self)
         self.list_creds.setAutoScroll(True)
+        self.list_creds.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.listDns.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.btn_getdata = QPushButton('Capture logs')
         self.btn_getdata.setIcon(QIcon('Icons/start.png'))

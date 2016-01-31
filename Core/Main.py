@@ -1,25 +1,27 @@
 import logging
+import argparse
 from Proxy import *
-from sys import argv
 import Modules as pkg
 from re import search
 from shutil import move
 from time import asctime
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+from sys import argv,stdout
 from ast import literal_eval
-from os import system,path,getcwd,chdir,popen,listdir,mkdir
-from subprocess import Popen,PIPE,STDOUT,call,check_output,CalledProcessError
+from subprocess import (Popen,PIPE,STDOUT,call,
+check_output,CalledProcessError)
 from isc_dhcp_leases.iscdhcpleases import IscDhcpLeases
-from Core.Utils import ProcessThread,Refactor,setup_logger,set_monitor_mode,ProcessHostapd,ThreadPopen
+from os import system,path,getcwd,chdir,popen,listdir,mkdir,stat
+from Core.Utils import (ProcessThread,Refactor,setup_logger,
+set_monitor_mode,ProcessHostapd,ThreadPopen)
 from Core.helpers.update import frm_githubUpdate
 from Core.config.Settings import frm_Settings
 from Core.helpers.about import frmAbout
 from twisted.web import http
 from twisted.internet import reactor
-from Plugins.sslstrip.StrippingProxy import StrippingProxy
-from Plugins.sslstrip.URLMonitor import URLMonitor
-from Plugins.sslstrip.CookieCleaner import CookieCleaner
+from Plugins.sergio_proxy.sslstrip.ProxyPlugins import ProxyPlugins
+from Plugins.sergio_proxy.plugins import *
 if search('/usr/share/',argv[0]):chdir('/usr/share/WiFi-Pumpkin/')
 
 """
@@ -114,7 +116,7 @@ class ThRunDhcp(QThread):
             self.process.terminate()
             self.process = None
 
-class Threadsslstrip(QThread):
+class Thread_sslstrip(QThread):
     '''Thread: run sslstrip on brackground'''
     def __init__(self,port,plugins={},data= {}):
         QThread.__init__(self)
@@ -122,11 +124,15 @@ class Threadsslstrip(QThread):
         self.plugins  = plugins
         self.loaderPlugins = data
     def run(self):
-        print 'Starting Thread:' + self.objectName()
-        listenPort   = self.port
-        spoofFavicon = False
         killSessions = True
+        spoofFavicon = False
+        listenPort   = self.port
+        from Plugins.sslstrip.StrippingProxy import StrippingProxy
+        from Plugins.sslstrip.URLMonitor import URLMonitor
+        from Plugins.sslstrip.CookieCleaner import CookieCleaner
+        print 'Starting Thread:' + self.objectName()
         print 'SSLstrip v0.9 by Moxie Marlinspike (@xtr4nge v0.9.2)::Online'
+        print "+ POC by Leonardo Nve"
         if self.loaderPlugins['Plugins'] != None:
             self.plugins[self.loaderPlugins['Plugins']].getInstance()._activated = True
             self.plugins[self.loaderPlugins['Plugins']].getInstance().setInjectionCode(
@@ -135,14 +141,138 @@ class Threadsslstrip(QThread):
         CookieCleaner.getInstance().setEnabled(killSessions)
         strippingFactory              = http.HTTPFactory(timeout=10)
         strippingFactory.protocol     = StrippingProxy
-        reactor.listenTCP(int(listenPort), strippingFactory)
-        reactor.run(installSignalHandlers=False)
+        if not reactor.running:
+           self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
+           reactor.run(installSignalHandlers=False)
     def stop(self):
         print 'Stop thread:' + self.objectName()
+
+
+class Thread_sergioProxy(QThread):
+    '''Thread: run sergio-proxy on brackground'''
+    def __init__(self,port,plugins={},options= {}):
+        QThread.__init__(self)
+        self.port          = port
+        self.PumpPlugins   = plugins
+        self.loaderPlugins = options
+
+    def run(self):
+        killSessions = True
+        spoofFavicon = False
+        listenPort   = self.port
+        sslstrip_version = "0.9"
+        sergio_version = "0.2.1"
+        if self.loaderPlugins['Plugins'] != None:
+            self.PumpPlugins[self.loaderPlugins['Plugins']].getInstance()._activated = True
+            self.PumpPlugins[self.loaderPlugins['Plugins']].getInstance().setInjectionCode(
+                self.loaderPlugins['Content'])
+        # load plugins will be implemented coming soon
+        parser = argparse.ArgumentParser(
+               description="Sergio Proxy v%s - An HTTP MITM Tool" % sergio_version,
+               epilog="Use wisely, young Padawan.",
+               fromfile_prefix_chars='@' )
+        #add sslstrip options
+        sgroup = parser.add_argument_group("sslstrip",
+               "Options for sslstrip library")
+
+        sgroup.add_argument("-w","--write",type=argparse.FileType('w'),
+               metavar="filename", default=stdout,
+               help="Specify file to log to (stdout by default).")
+        sgroup.add_argument("--log-level",type=str,
+               choices=['debug','info','warning','error'],default="info",
+               help="Specify file to log to (stdout by default).")
+        slogopts = sgroup.add_mutually_exclusive_group()
+        slogopts.add_argument("-p","--post",action="store_true",
+               help="Log only SSL POSTs. (default)")
+        slogopts.add_argument("-s","--ssl",action="store_true",
+               help="Log all SSL traffic to and from server.")
+        slogopts.add_argument("-a","--all",action="store_true",
+               help="Log all SSL and HTTP traffic to and from server.")
+        sgroup.add_argument("-l","--listen",type=int,metavar="port",default=10000,
+               help="Port to listen on (default 10000)")
+        sgroup.add_argument("-f","--favicon",action="store_true",
+                help="Substitute a lock favicon on secure requests.")
+        sgroup.add_argument("-k","--killsessions",action="store_true",
+                help="Kill sessions in progress.")
+
+        #add msf options
+        sgroup = parser.add_argument_group("MSF",
+                "Generic Options for MSF integration")
+
+        sgroup.add_argument("--msf-path",type=str,default="/pentest/exploits/framework/",
+                help="Path to msf (default: /pentest/exploits/framework)")
+        sgroup.add_argument("--msf-rc",type=str,default="/tmp/tmp.rc",
+                help="Specify a custom rc file (overrides all other settings)")
+        sgroup.add_argument("--msf-user",type=str,default="root",
+                help="Specify what user to run Metasploit under.")
+        sgroup.add_argument("--msf-lhost",type=str,default="192.168.1.1",
+                help="The IP address Metasploit is listening at.")
+
+        plugin_classes = plugin.Plugin.__subclasses__()
+        #Initialize plugins
+        plugins = []
         try:
-            reactor.stop()
-        except Exception:
-            pass
+            for p in plugin_classes:
+                plugins.append(p())
+        except:
+            print "Failed to load plugin class %s" % str(p)
+
+        #Give subgroup to each plugin with options
+        try:
+            for p in plugins:
+                if p.desc == "":
+                    sgroup = parser.add_argument_group("%s" % p.name,
+                        "Options for %s." % p.name)
+                else:
+                    sgroup = parser.add_argument_group("%s" % p.name,
+                        p.desc)
+
+                sgroup.add_argument("--%s" % p.optname, action="store_true",
+                        help="Load plugin %s" % p.name)
+                if p.has_opts:
+                    p.add_options(sgroup)
+        except NotImplementedError:
+            print "Plugin %s claimed option support, but didn't have it." % p.name
+
+        args = parser.parse_args()
+        if args.msf_rc == "/tmp/tmp.rc":
+            #need to wipe
+            open(args.msf_rc,"w").close()
+        args.full_path = path.dirname(path.abspath(__file__))
+
+        #All our options should be loaded now, pass them onto plugins
+        load = []
+        try:
+            for p in plugins:
+                if  getattr(args,p.optname):
+                    p.initialize(args)
+                    load.append(p)
+        except NotImplementedError:
+            print "Plugin %s lacked initialize function." % p.name
+
+        #this whole msf loading process sucks. need to improve
+        if args.msf_rc != "/tmp/tmp.rc" or stat("/tmp/tmp.rc").st_size != 0:
+            from Plugins.sergio_proxy.plugins.StartMSF import launch_msf
+            launch_msf(args.msf_path,args.msf_rc,args.msf_user)
+
+        from Plugins.sergio_proxy.sslstrip.StrippingProxy import StrippingProxy
+        from Plugins.sergio_proxy.sslstrip.URLMonitor import URLMonitor
+        from Plugins.sergio_proxy.sslstrip.CookieCleaner import CookieCleaner
+
+        URLMonitor.getInstance().setFaviconSpoofing(spoofFavicon)
+        CookieCleaner.getInstance().setEnabled(killSessions)
+        strippingFactory              = http.HTTPFactory(timeout=10)
+        strippingFactory.protocol     = StrippingProxy
+        print 'Starting Thread:' + self.objectName()
+        print "\nsslstrip " + sslstrip_version + " by Moxie Marlinspike running..."
+        print "sergio-proxy v%s online" % sergio_version
+        if not reactor.running:
+           self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
+           reactor.run(installSignalHandlers=False)
+
+    def stop(self):
+        print 'Stop thread:' + self.objectName()
+
 
 class PopUpPlugins(QWidget):
     ''' this module control all plugins to MITM attack'''
@@ -154,21 +284,37 @@ class PopUpPlugins(QWidget):
         self.check_sslstrip = QCheckBox('::ssLstrip')
         self.check_netcreds = QCheckBox('::net-creds')
         self.check_dns2proy = QCheckBox('::dns2proxy')
+        self.check_sergioProxy  = QCheckBox('::sergio-proxy')
         self.check_dns2proy.clicked.connect(self.checkBoxDns2proxy)
         self.check_sslstrip.clicked.connect(self.checkBoxSslstrip)
         self.check_netcreds.clicked.connect(self.checkBoxNecreds)
+        self.check_sergioProxy.clicked.connect(self.checkBoxSergioProxy)
         self.layout.addWidget(self.title)
         self.layout.addWidget(self.check_sslstrip)
         self.layout.addWidget(self.check_netcreds)
         self.layout.addWidget(self.check_dns2proy)
+        self.layout.addWidget(self.check_sergioProxy)
     # control checkbox plugins
     def checkBoxSslstrip(self):
         if not self.check_sslstrip.isChecked():
-            self.unset_Rules('sslstrip')
+            if not self.check_sergioProxy.isChecked():
+                self.unset_Rules('sslstrip')
             self.FSettings.xmlSettings('sslstrip_plugin','status','False',False)
         elif self.check_sslstrip.isChecked():
-            self.set_sslStripRule()
+            if not self.check_sergioProxy.isChecked():
+                self.set_sslStripRule()
             self.FSettings.xmlSettings('sslstrip_plugin','status','True',False)
+
+    def checkBoxSergioProxy(self):
+        if self.check_sergioProxy.isChecked():
+            if not self.check_sslstrip.isChecked():
+                self.set_sslStripRule()
+            self.FSettings.xmlSettings('sergioproxy_plugin','status','True')
+        elif not self.check_sergioProxy.isChecked():
+            if not self.check_sslstrip.isChecked():
+                self.unset_Rules('sslstrip')
+            self.FSettings.xmlSettings('sergioproxy_plugin','status','False')
+
     def checkBoxDns2proxy(self):
         if not self.check_dns2proy.isChecked():
             self.unset_Rules('dns2proxy')
@@ -304,6 +450,7 @@ class PumpkinProxy(QVBoxLayout):
         self.btnLoader  = QPushButton('Load Plugins')
         self.btnEnable  = QPushButton('Enable')
         self.btncancel  = QPushButton('Cancel')
+        self.btnbrownser= QPushButton('Browser')
         self.comboxBox  = QComboBox()
         self.log_inject = QListWidget()
         self.docScripts = QTextEdit()
@@ -311,11 +458,13 @@ class PumpkinProxy(QVBoxLayout):
         self.btncancel.setIcon(QIcon('Icons/cancel.png'))
         self.btnLoader.setIcon(QIcon('Icons/search.png'))
         self.btnEnable.setIcon(QIcon('Icons/accept.png'))
+        self.btnbrownser.setIcon(QIcon("Icons/open.png"))
         self.statusbar.addWidget(self.lname)
         self.statusbar.addWidget(self.lstatus)
-        self.docScripts.setFixedHeight(50)
+        self.docScripts.setFixedHeight(40)
         self.statusInjection(False)
         self.argsScripts.setEnabled(False)
+        self.btnbrownser.setEnabled(False)
 
         # group settings
         self.GroupSettings  = QGroupBox()
@@ -326,6 +475,7 @@ class PumpkinProxy(QVBoxLayout):
         self.hBox.addWidget(self.btnEnable)
         self.hBoxargs.addWidget(self.argsLabel)
         self.hBoxargs.addWidget(self.argsScripts)
+        self.hBoxargs.addWidget(self.btnbrownser)
         self.hBoxargs.addWidget(self.btncancel)
         self.SettingsLayout.addRow(self.hBox)
         self.SettingsLayout.addRow(self.hBoxargs)
@@ -351,12 +501,20 @@ class PumpkinProxy(QVBoxLayout):
         self.connect(self.comboxBox,SIGNAL('currentIndexChanged(QString)'),self.readDocScripts)
         self.btnEnable.clicked.connect(self.setPluginsActivated)
         self.btncancel.clicked.connect(self.unsetPluginsConf)
+        self.btnbrownser.clicked.connect(self.get_filenameToInjection)
         # add widgets
         self.Home.addRow(self.GroupSettings)
         self.Home.addRow(self.GroupDoc)
         self.Home.addRow(self.GroupLogger)
         self.Home.addRow(self.statusbar)
         self.addLayout(self.Home)
+
+    def get_filenameToInjection(self):
+        filename = QFileDialog.getOpenFileName(None,
+        'load File','','HTML (*.html);;js (*.js);;css (*.css)')
+        if len(filename) > 0:
+            self.argsScripts.setText(filename)
+            QMessageBox.information(None, 'Scripts Loaders', 'file has been loaded with success.')
 
     def setPluginsActivated(self):
         if self.popup.check_sslstrip.isChecked():
@@ -398,10 +556,15 @@ class PumpkinProxy(QVBoxLayout):
         try:
             self.docScripts.setText(self.plugins[str(item)].__doc__)
             if self.plugins[str(item)]._requiresArgs:
+                if 'FilePath' in self.plugins[str(item)]._argsname:
+                    self.btnbrownser.setEnabled(True)
+                else:
+                    self.btnbrownser.setEnabled(False)
                 self.argsScripts.setEnabled(True)
                 self.argsLabel.setText(self.plugins[str(item)]._argsname)
             else:
                 self.argsScripts.setEnabled(False)
+                self.btnbrownser.setEnabled(False)
                 self.argsLabel.setText('')
         except Exception:
             pass
@@ -571,7 +734,7 @@ class SubMain(QWidget):
         # table information AP connected
         self.TabInfoAP = QTableWidget(5,3)
         self.TabInfoAP.setRowCount(50)
-        self.TabInfoAP.setFixedHeight(150)
+        self.TabInfoAP.setFixedHeight(180)
         self.TabInfoAP.resizeRowsToContents()
         self.TabInfoAP.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.TabInfoAP.horizontalHeader().setStretchLastSection(True)
@@ -848,6 +1011,10 @@ class SubMain(QWidget):
         if literal_eval(self.FSettings.xmlSettings('dns2proxy_plugin','status',None,False)):
             self.PopUpPlugins.check_dns2proy.setChecked(True)
             self.PopUpPlugins.set_Dns2proxyRule()
+        if literal_eval(self.FSettings.xmlSettings('sergioproxy_plugin','status',None,False)):
+            self.PopUpPlugins.check_sergioProxy.setChecked(True)
+            if not literal_eval(self.FSettings.xmlSettings('sslstrip_plugin','status',None,False)):
+                self.PopUpPlugins.set_sslStripRule()
 
     def Started(self,bool):
         if bool:
@@ -1021,7 +1188,7 @@ class SubMain(QWidget):
         'interface':
             [
                 'ifconfig %s up'%(self.ConfigTwin['AP_iface']),
-                'ifconfig %s 10.0.0.1 netmask %s'%(self.ConfigTwin['AP_iface'],self.DHCP['netmask']),
+                'ifconfig %s %s netmask %s'%(self.ConfigTwin['AP_iface'],self.DHCP['router'],self.DHCP['netmask']),
                 'ifconfig %s mtu 1400'%(self.ConfigTwin['AP_iface']),
                 'route add -net %s netmask %s gw %s'%(self.DHCP['subnet'],
                 self.DHCP['netmask'],self.DHCP['router'])
@@ -1182,12 +1349,27 @@ class SubMain(QWidget):
             self.plugins[p._name] = p()
 
         # thread plugins
-        if self.PopUpPlugins.check_sslstrip.isChecked():
-            self.Thread_sslstrip = Threadsslstrip(self.ConfigTwin['PortRedirect'],
+        if self.PopUpPlugins.check_sslstrip.isChecked() and not self.PopUpPlugins.check_sergioProxy.isChecked():
+            self.Threadsslstrip = Thread_sslstrip(self.ConfigTwin['PortRedirect'],
             self.plugins,self.ProxyPluginsTAB._PluginsToLoader)
-            self.Thread_sslstrip.setObjectName("sslstrip")
-            self.Apthreads['RougeAP'].append(self.Thread_sslstrip)
-            self.Thread_sslstrip.start()
+            self.Threadsslstrip.setObjectName("sslstrip")
+            self.Apthreads['RougeAP'].append(self.Threadsslstrip)
+            self.Threadsslstrip.start()
+
+        elif not self.PopUpPlugins.check_sslstrip.isChecked() and self.PopUpPlugins.check_sergioProxy.isChecked():
+            self.Threadsslstrip = Thread_sergioProxy(self.ConfigTwin['PortRedirect'],
+            self.plugins,self.ProxyPluginsTAB._PluginsToLoader)
+            self.Threadsslstrip.setObjectName("sslstrip")
+            self.Apthreads['RougeAP'].append(self.Threadsslstrip)
+            self.Threadsslstrip.start()
+
+        elif self.PopUpPlugins.check_sergioProxy.isChecked() and self.PopUpPlugins.check_sergioProxy.isChecked():
+            self.Threadsslstrip = Thread_sergioProxy(self.ConfigTwin['PortRedirect'],
+            self.plugins,self.ProxyPluginsTAB._PluginsToLoader)
+            self.Threadsslstrip.setObjectName("sslstrip")
+            self.Apthreads['RougeAP'].append(self.Threadsslstrip)
+            self.Threadsslstrip.start()
+
 
         if self.PopUpPlugins.check_netcreds.isChecked():
             Thread_netcreds = ProcessThread(['python','Plugins/net-creds/net-creds.py','-i',

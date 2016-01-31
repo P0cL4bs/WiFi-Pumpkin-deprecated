@@ -35,8 +35,8 @@ class frm_get_credentials(PumpkinModule):
     def Qui(self):
         self.frm0 = QFormLayout(self)
         self.listDns = QListWidget(self)
-        self.listDns.adjustSize()
-        self.listDns.setFixedHeight(320)
+        self.listDns.setFixedHeight(300)
+        self.listDns.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.listDns.setAutoScroll(True)
 
         self.btn_getdata = QPushButton('Capture logs')

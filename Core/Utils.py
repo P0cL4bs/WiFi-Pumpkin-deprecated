@@ -541,7 +541,7 @@ class Refactor:
          'urls': {'Logs/AccessPoint/urls.log':[]},
          'credentials': {'Logs/AccessPoint/credentials.log':[]},
          'requestAP': {'Logs/AccessPoint/requestAP.log':[]},
-         'dns2proxy': {'Logs/AccessPoint/dns2proxy.log':[]},
+         #'dns2proxy': {'Logs/AccessPoint/dns2proxy.log':[]},
          'injectionPage': {'Logs/AccessPoint/injectionPage.log':[]},
          'phishing': {'Logs/Phishing/Webclone.log':[]},}
         for i in readFile.keys():
@@ -674,3 +674,9 @@ class waiter(threading.Thread):
     def run(self):
         sleep(10)
         call(['kill','-9',str(getpid())])
+
+def ExecRootApp(Initialize,root):
+    app = Initialize()
+    app.setWindowIcon(QIcon('Icons/icon.ico'))
+    app.center(),app.show()
+    exit(root.exec_())

@@ -4,6 +4,9 @@ Version 0.7.3
 - added PumpSettings TAB DHCP configure
 - fixed no share internet with plugins sslstrip disabled
 - added new Modular Transparent Proxy tranks @xtr4nge sslstrip::mod
+- added new bypass HSTS by LeonardoNve sslstrip feature
+- fixed set router IP DHCP - Pump-Settings
+- added new plugins sergio-proxy
 
 Version 0.7.1
 -------------

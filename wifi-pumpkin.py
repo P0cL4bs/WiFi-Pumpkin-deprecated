@@ -5,7 +5,7 @@ from PyQt4.QtGui import QApplication,QIcon
 from Core.Main import Initialize
 from Core.loaders.checker.Privilege import frm_privelege
 from Core.loaders.checker.check_depen import check_dependencies
-from Core.Utils import Refactor
+from Core.Utils import Refactor,ExecRootApp
 
 """
 Author : Marcos Nesster - mh4root@gmail.com  PocL4bs Team
@@ -30,11 +30,6 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-def ExecRootApp(root):
-    app = Initialize()
-    app.setWindowIcon(QIcon('Icons/icon.ico'))
-    app.center(),app.show()
-    exit(root.exec_())
 
 if __name__ == '__main__':
     check_dependencies()
@@ -44,4 +39,4 @@ if __name__ == '__main__':
         priv.setWindowIcon(QIcon('Icons/icon.ico'))
         priv.show(),main.exec_()
         exit(Refactor.threadRoot(priv.Editpassword.text()))
-    ExecRootApp(main)
+    ExecRootApp(Initialize,main)

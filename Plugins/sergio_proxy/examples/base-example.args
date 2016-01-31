@@ -1,0 +1,11 @@
+--msf-path
+/pentest/exploits/framework3/
+--arpspoof
+--victim-ip
+192.168.1.101
+--router-ip
+192.168.1.1
+--msf-user
+root
+--msf-lhost
+192.168.1.100

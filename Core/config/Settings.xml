@@ -44,6 +44,7 @@
         <sslstrip_plugin status="True"/>
         <netcreds_plugin status="True"/>
         <dns2proxy_plugin status="True"/>
+        <sergioproxy_plugin status="True"/>
     </configure>
 
     <configure>

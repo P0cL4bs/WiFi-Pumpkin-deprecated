@@ -36,7 +36,7 @@ class frm_dns2proxy(PumpkinModule):
     def Qui(self):
         self.frm0 = QFormLayout(self)
         self.listDns = QListWidget(self)
-        self.listDns.adjustSize()
+        self.listDns.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.listDns.setFixedHeight(320)
         self.listDns.setAutoScroll(True)
 

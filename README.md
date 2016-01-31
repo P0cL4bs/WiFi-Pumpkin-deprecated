@@ -28,7 +28,7 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 * Transparent Proxy
 * Windows Update Attack
 * Phishing Manager
-* Partial bypass HSTS
+* Bypass HSTS protocol
 * Support beef hook
 * Mac Changer 
 * ARP Poison 
@@ -37,11 +37,12 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 ### Plugins
 - [net-creds](https://github.com/DanMcInerney/net-creds) - Sniff passwords and hashes from an interface or pcap file
 - [dns2proxy](https://github.com/LeonardoNve/dns2proxy) - This tools offer a different features for post-explotation once you change the DNS server to a Victim.
-- [sslstrip](https://github.com/xtr4nge/sslstrip) - Sslstrip is a MITM tool that implements Moxie Marlinspike's SSL stripping 
-attacks by xtr4nge based version
-
+- [sslstrip2](https://github.com/LeonardoNve/sslstrip2) - Sslstrip is a MITM tool that implements Moxie Marlinspike's SSL stripping 
+attacks based version fork @LeonardoNve/@xtr4nge.
+- [sergio-proxy](https://github.com/supernothing/sergio-proxy) - Sergio Proxy (a Super Effective Recorder of Gathered Inputs and Outputs) is an
+HTTP proxy that was written in Python for the Twisted framework.
 ### Transparent Proxy
- Transparent proxies that you can use to intercept and manipulate HTTP traffic modifying requests and responses, that allow to inject javascripts into the targets visited.  You can easily implement a module to inject data into pages creating a python file in directory "Proxy" automatically will be listed on PumpProxy tab.
+ Transparent proxies that you can use to intercept and manipulate HTTP/HTTPS traffic modifying requests and responses, that allow to inject javascripts into the targets visited.  You can easily implement a module to inject data into pages creating a python file in directory "Proxy" automatically will be listed on PumpProxy tab.
 ### Plugins Example
  The following is a sample module that injects some contents into the <head> tag to set blur filter into body html page:
  ``` python

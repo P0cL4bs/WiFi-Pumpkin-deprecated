@@ -15,14 +15,8 @@ class frmAbout(PumpkinModule):
         self.frm = QFormLayout()
         self.setGeometry(0, 0, 400, 300)
         self.center()
-        self.config = frm_Settings()
-        self.loadtheme(self.config.XmlThemeSelected())
+        self.loadtheme(self.configure.XmlThemeSelected())
         self.Qui_update()
-
-    def loadtheme(self,theme):
-        sshFile=("Core/%s.qss"%(theme))
-        with open(sshFile,"r") as fh:
-            self.setStyleSheet(fh.read())
 
     def center(self):
         frameGm = self.frameGeometry()

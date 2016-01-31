@@ -1,12 +1,9 @@
-from subprocess import Popen, PIPE
+import getpass
 from os import popen
 from re import search
-import getpass
-from PyQt4.QtGui import *
-from Core.config.Settings import frm_Settings
+from Core.loaders.Stealth.PackagesUI import *
 
-
-class frm_privelege(QDialog):
+class frm_privelege(PumpkinModule):
     def __init__(self, parent = None):
         super(frm_privelege, self).__init__(parent)
         self.setWindowTitle("Privilege Authentication")
@@ -14,13 +11,8 @@ class frm_privelege(QDialog):
         self.frm = QFormLayout()
         self.setGeometry(0, 0, 270, 100)
         self.center()
-        self.config = frm_Settings()
-        self.loadtheme(self.config.XmlThemeSelected())
+        self.loadtheme(self.configure.XmlThemeSelected())
         self.Qui()
-    def loadtheme(self,theme):
-        sshFile=("Core/%s.qss"%(theme))
-        with open(sshFile,"r") as fh:
-            self.setStyleSheet(fh.read())
 
     def center(self):
         frameGm = self.frameGeometry()

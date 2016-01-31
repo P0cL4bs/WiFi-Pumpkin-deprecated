@@ -1,0 +1,6 @@
+--filepwn
+--pdf
+--exe
+--msf-file-lport
+4445
+--launch-msf-listener

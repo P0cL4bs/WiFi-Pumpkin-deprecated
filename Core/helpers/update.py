@@ -26,6 +26,7 @@ Copyright:
 """
 
 class frm_githubUpdate(PumpkinModule):
+    ''' called update from github repository master'''
     def __init__(self,version,parent = None):
         super(frm_githubUpdate, self).__init__(parent)
         self.setWindowTitle("WiFi-Pumpkin Software Update")
@@ -143,7 +144,7 @@ class frm_githubUpdate(PumpkinModule):
             self.LOutput.addItem(commits)
 
 
-
+''' http://stackoverflow.com/questions/22332106/python-qtgui-qprogressbar-color '''
 class ProgressBarWid(QProgressBar):
     def __init__(self, parent=None, total=0):
         super(ProgressBarWid, self).__init__()

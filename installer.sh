@@ -48,7 +48,7 @@ func_install(){
 		exit 1
 	fi
 	apt-get update
-	apt-get install -y python-qt4 xterm python-scapy php5-cli hostapd rfkill
+	apt-get install -y python-qt4 python-scapy php5-cli hostapd rfkill
     pip install -r requirements.txt
     File="/etc/apt/sources.list"
     if  grep -q '#Wifi Pumpkin' $File;then
@@ -58,7 +58,6 @@ func_install(){
 	echo "----------------------------------------"
 	echo "[=]$bldblu checking dependencies $txtrst "
 	func_check_install "hostapd"
-	#func_check_install "dnsmasq"
 	func_check_install "dhcpd"
 	func_check_install "php"
 	echo "----------------------------------------"
