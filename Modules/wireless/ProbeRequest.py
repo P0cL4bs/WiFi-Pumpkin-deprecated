@@ -88,7 +88,7 @@ class frm_PMonitor(PumpkinModule):
     def loadCard(self):
         n = Refactor.get_interfaces()['all']
         for i,j in enumerate(n):
-            if search("wlan", j):
+            if search("wl", j):
                 self.get_placa.addItem(n[i])
 
     def StartedProbe(self,bool):

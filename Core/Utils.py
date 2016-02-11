@@ -12,6 +12,7 @@ try:
 except ImportError:
     pass
 import threading
+import netifaces
 from threading import Thread
 import Queue
 from scapy.all import *
@@ -582,43 +583,20 @@ class Refactor:
     @staticmethod
     def get_interfaces():
         interfaces = {'activated':None,'all':[],'gateway':None,'IPaddress':None}
-        proc = Popen("ls -1 /sys/class/net",stdout=PIPE, shell=True)
-        for i in proc.communicate()[0].split():
-            interfaces['all'].append(i)
-        output1 = popen('route | grep default').read().split()
-        output2 = popen('/sbin/ip route | grep default').read().split()
-        if (output2 and output1) != []:
-            if output1 != []:interfaces['gateway'],interfaces['activated'] = output1[1],output1[7]
-            elif output2 != []:
-                if path.isfile('/sbin/ip'):
-                    interfaces['gateway'],interfaces['activated'] = output2[2], output2[4]
+        interfaces['all'] = netifaces.interfaces()
+        try:
+            interfaces['gateway'] = netifaces.gateways()['default'][netifaces.AF_INET][0]
+            interfaces['activated'] = netifaces.gateways()['default'][netifaces.AF_INET][1]
             interfaces['IPaddress'] = Refactor.get_Ipaddr(interfaces['activated'])
+        except KeyError:
+            print('Error: find network interface information ')
         return interfaces
 
     @staticmethod
     def get_Ipaddr(card):
-        if not card != None:
-            get_interface = Refactor.get_interfaces()['activated']
-            out = popen("ifconfig %s | grep 'Bcast'"%(get_interface)).read().split()
-            for i in out:
-                if search("end",i):
-                    if len(out) > 0:
-                        ip = out[2].split(":")
-                        return ip[0]
-            if len(out) > 0:
-                ip = out[1].split(":")
-                return ip[1]
-        else:
-            out = popen("ifconfig %s | grep 'Bcast'"%(card)).read().split()
-            for i in out:
-                if search("end",i):
-                    if len(out) > 0:
-                        ip = out[2].split(":")
-                        return ip[0]
-            if len(out) > 0:
-                ip = out[1].split(":")
-                return ip[1]
-        return '0.0.0.0'
+        if card == None:
+            return get_if_addr(Refactor.get_interfaces()['activated'])
+        return get_if_addr(card)
 
     @staticmethod
     def get_mac(host):

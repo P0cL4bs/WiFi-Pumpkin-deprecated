@@ -2,13 +2,14 @@ import logging
 import argparse
 from Proxy import *
 import Modules as pkg
-from re import search
+from re import search,sub
 from shutil import move
 from time import asctime
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from sys import argv,stdout
 from ast import literal_eval
+from datetime import datetime
 from subprocess import (Popen,PIPE,STDOUT,call,
 check_output,CalledProcessError)
 from isc_dhcp_leases.iscdhcpleases import IscDhcpLeases
@@ -23,7 +24,6 @@ from twisted.internet import reactor
 from Plugins.sergio_proxy.sslstrip.ProxyPlugins import ProxyPlugins
 from Plugins.sergio_proxy.plugins import *
 if search('/usr/share/',argv[0]):chdir('/usr/share/WiFi-Pumpkin/')
-
 """
 Description:
     This program is a Core for wifi-pumpkin.py. file which includes functionality
@@ -418,7 +418,7 @@ class PopUpServer(QWidget):
         self.ComboIface.clear()
         n = Refactor.get_interfaces()['all']
         for i,j in enumerate(n):
-            if search('at',j) or search('wlan',j):
+            if search('at',j) or search('wl',j):
                 self.ComboIface.addItem(n[i])
                 self.discoveryIface()
 
@@ -439,6 +439,7 @@ class PumpkinProxy(QVBoxLayout):
     def __init__(self,popup,parent = None):
         super(PumpkinProxy, self).__init__(parent)
         self.popup      = popup
+        self.urlinjected= []
         self.FSettings  = frm_Settings()
         self.Home       = QFormLayout()
         self.statusbar  = QStatusBar()
@@ -447,7 +448,7 @@ class PumpkinProxy(QVBoxLayout):
         self.argsLabel  = QLabel('')
         self.hBox       = QHBoxLayout()
         self.hBoxargs   = QHBoxLayout()
-        self.btnLoader  = QPushButton('Load Plugins')
+        self.btnLoader  = QPushButton('Reload')
         self.btnEnable  = QPushButton('Enable')
         self.btncancel  = QPushButton('Cancel')
         self.btnbrownser= QPushButton('Browser')
@@ -473,10 +474,10 @@ class PumpkinProxy(QVBoxLayout):
         self.hBox.addWidget(self.comboxBox)
         self.hBox.addWidget(self.btnLoader)
         self.hBox.addWidget(self.btnEnable)
+        self.hBox.addWidget(self.btncancel)
         self.hBoxargs.addWidget(self.argsLabel)
         self.hBoxargs.addWidget(self.argsScripts)
         self.hBoxargs.addWidget(self.btnbrownser)
-        self.hBoxargs.addWidget(self.btncancel)
         self.SettingsLayout.addRow(self.hBox)
         self.SettingsLayout.addRow(self.hBoxargs)
         self.GroupSettings.setLayout(self.SettingsLayout)
@@ -541,7 +542,9 @@ class PumpkinProxy(QVBoxLayout):
         QMessageBox.warning(self,'error proxy logger','Pump-Proxy::capture is not found')
 
     def GetloggerInjection(self,data):
-        self.log_inject.addItem(data)
+        if data not in self.urlinjected:
+            self.log_inject.addItem(data)
+            self.urlinjected.append(data)
         self.log_inject.scrollToBottom()
 
     def statusInjection(self,server):
@@ -576,6 +579,7 @@ class PumpkinProxy(QVBoxLayout):
         self.statusInjection(False)
         self.argsScripts.clear()
         self.log_inject.clear()
+        self.urlinjected = []
 
     def SearchProxyPlugins(self):
         self.comboxBox.clear()
@@ -584,6 +588,60 @@ class PumpkinProxy(QVBoxLayout):
         for p in self.plugin_classes:
             self.plugins[p._name] = p()
         self.comboxBox.addItems(self.plugins.keys())
+
+class PumpkinMonitor(QVBoxLayout):
+    ''' Monitor Access Point cleints connections'''
+    def __init__(self, parent = None):
+        super(PumpkinMonitor, self).__init__(parent)
+        self.FSettings      = frm_Settings()
+        self.Home           = QFormLayout()
+        self.GroupMonitor   = QGroupBox()
+        self.MonitorTreeView= QTreeView()
+        self.MonitorTreeView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.MonitorTreeView.setFixedHeight(330)
+        self.model = QStandardItemModel()
+        self.model.setHorizontalHeaderLabels(['Devices','Informations'])
+        self.MonitorTreeView.setModel(self.model)
+        self.MonitorTreeView.setUniformRowHeights(True)
+        self.MonitorTreeView.setColumnWidth(0,130)
+
+        self.GroupMonitor.setTitle('Pump-Monitor::')
+        self.MonitorLayout = QFormLayout()
+        self.MonitorLayout.addRow(self.MonitorTreeView)
+        self.GroupMonitor.setLayout(self.MonitorLayout)
+        self.Home.addRow(self.GroupMonitor)
+        self.addLayout(self.Home)
+
+    def addRequests(self,macddress,user,status):
+        if status:
+            ParentMaster = QStandardItem('Connected:: {} at {}'.format(macddress,
+            datetime.now().strftime("%H:%M")))
+            ParentMaster.setIcon(QIcon('Icons/connected.png'))
+            ParentMaster.setSizeHint(QSize(30,30))
+            info1 = QStandardItem('{}'.format(user['device']))
+            info2 = QStandardItem('{}'.format(user['IP']))
+            info3 = QStandardItem('{}'.format(datetime.now().strftime("%Y-%m-%d %H:%M")))
+            ParentMaster.appendRow([QStandardItem('Device::'),info1])
+            ParentMaster.appendRow([QStandardItem('IPAddr::'),info2])
+            ParentMaster.appendRow([QStandardItem('Current date::'),info3])
+            self.model.appendRow(ParentMaster)
+            return self.MonitorTreeView.setFirstColumnSpanned(ParentMaster.row(),
+            self.MonitorTreeView.rootIndex(), True)
+
+        ParentMaster = QStandardItem('Disconnected:: {} at {}'.format(macddress,
+        datetime.now().strftime("%H:%M")))
+        ParentMaster.setIcon(QIcon('Icons/disconnected.png'))
+        ParentMaster.setSizeHint(QSize(30,30))
+        info1 = QStandardItem('{}'.format(user['device']))
+        info2 = QStandardItem('{}'.format(user['IP']))
+        info3 = QStandardItem('{}'.format(datetime.now().strftime("%Y-%m-%d %H:%M")))
+        ParentMaster.appendRow([QStandardItem('Device::'),info1])
+        ParentMaster.appendRow([QStandardItem('IPAddr::'),info2])
+        ParentMaster.appendRow([QStandardItem('Current date::'),info3])
+        self.model.appendRow(ParentMaster)
+        self.MonitorTreeView.setFirstColumnSpanned(ParentMaster.row(),
+        self.MonitorTreeView.rootIndex(), True)
+
 
 class PumpkinSettings(QVBoxLayout):
     ''' settings DHCP options'''
@@ -669,12 +727,16 @@ class SubMain(QWidget):
         self.Tab_Default    = QWidget(self)
         self.Tab_Injector   = QWidget(self)
         self.Tab_Settings   = QWidget(self)
+        self.Tab_ApMonitor  = QWidget(self)
+        self.TabControl.setTabPosition(QTabWidget.West)
         self.TabControl.addTab(self.Tab_Default,'Home')
         self.TabControl.addTab(self.Tab_Injector,'Pump-Proxy')
         self.TabControl.addTab(self.Tab_Settings,'Pump-Settings')
+        self.TabControl.addTab(self.Tab_ApMonitor,'Pump-Monitor')
         self.ContentTabHome    = QVBoxLayout(self.Tab_Default)
         self.ContentTabInject  = QVBoxLayout(self.Tab_Injector)
         self.ContentTabsettings= QVBoxLayout(self.Tab_Settings)
+        self.ContentTabMonitor = QVBoxLayout(self.Tab_ApMonitor)
         self.Apthreads      = {'RougeAP': []}
         self.APclients      = {}
         self.ConfigTwin     = {
@@ -707,6 +769,10 @@ class SubMain(QWidget):
     def GetmessageSave(self,data):
         QMessageBox.information(self,'Settings DHCP',data)
 
+    def ApMonitorTabContent(self):
+        self.PumpMonitorTAB = PumpkinMonitor()
+        self.ContentTabMonitor.addLayout(self.PumpMonitorTAB)
+
     def SettingsTABContent(self):
         self.PumpSettingsTAB = PumpkinSettings()
         self.PumpSettingsTAB.sendMensage.connect(self.GetmessageSave)
@@ -734,7 +800,7 @@ class SubMain(QWidget):
         # table information AP connected
         self.TabInfoAP = QTableWidget(5,3)
         self.TabInfoAP.setRowCount(50)
-        self.TabInfoAP.setFixedHeight(180)
+        self.TabInfoAP.setFixedHeight(190)
         self.TabInfoAP.resizeRowsToContents()
         self.TabInfoAP.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.TabInfoAP.horizontalHeader().setStretchLastSection(True)
@@ -816,6 +882,7 @@ class SubMain(QWidget):
         self.DefaultTABContent()
         self.InjectorTABContent()
         self.SettingsTABContent()
+        self.ApMonitorTabContent()
 
         self.myQMenuBar = QMenuBar(self)
         self.myQMenuBar.setFixedWidth(400)
@@ -1024,22 +1091,22 @@ class SubMain(QWidget):
             self.StatusDhcp.setText("[OFF]")
             self.StatusDhcp.setStyleSheet("QLabel {  color : red; }")
 
-    def StatusDHCPRequests(self,key):
-        print('Connected::[{}] hostname::[{}]'.format(key,self.APclients[key]['device']))
+    def StatusDHCPRequests(self,mac,user_info):
+        return self.PumpMonitorTAB.addRequests(mac,user_info,True)
 
     def GetDHCPRequests(self,data):
         if len(data) == 8:
             if Refactor.check_is_mac(data[4]):
                 if data[4] not in self.APclients.keys():
-                    self.APclients[data[4]] = {'IP': data[2],'device': data[5],
-                    'in_tables': False,}
-                    self.StatusDHCPRequests(data[4])
+                    self.APclients[data[4]] = {'IP': data[2],
+                    'device': sub(r'[)|(]',r'',data[5]),'in_tables': False,}
+                    self.StatusDHCPRequests(data[4],self.APclients[data[4]])
         elif len(data) == 9:
             if Refactor.check_is_mac(data[5]):
                 if data[5] not in self.APclients.keys():
-                    self.APclients[data[5]] = {'IP': data[2],'device': data[6],
-                    'in_tables': False,}
-                    self.StatusDHCPRequests(data[5])
+                    self.APclients[data[5]] = {'IP': data[2],
+                    'device': sub(r'[)|(]',r'',data[6]),'in_tables': False,}
+                    self.StatusDHCPRequests(data[5],self.APclients[data[5]])
         elif len(data) == 7:
             if Refactor.check_is_mac(data[4]):
                 if data[4] not in self.APclients.keys():
@@ -1057,7 +1124,7 @@ class SubMain(QWidget):
                     if hostname == None:hostname = 'unknown'
                     self.APclients[data[4]] = {'IP': data[2],'device': hostname,
                     'in_tables': False,}
-                    self.StatusDHCPRequests(data[4])
+                    self.StatusDHCPRequests(data[4],self.APclients[data[4]])
 
         Headers = []
         for mac in self.APclients.keys():
@@ -1079,7 +1146,7 @@ class SubMain(QWidget):
     def GetHostapdStatus(self,data):
         if self.APclients != {}:
             if data in self.APclients.keys():
-                print('Disconnected::[{}] hostname::[{}]'.format(data,self.APclients[data]['device']))
+                self.PumpMonitorTAB.addRequests(data,self.APclients[data],False)
         for row in xrange(0,self.TabInfoAP.rowCount()):
             if self.TabInfoAP.item(row,1) != None:
                 if self.TabInfoAP.item(row,1).text() == data:
@@ -1100,7 +1167,7 @@ class SubMain(QWidget):
         self.EditChannel.setText(self.FSettings.xmlSettings('channel', 'mchannel',None,False))
         self.ConfigTwin['PortRedirect'] = self.FSettings.redirectport.text()
         for i,j in enumerate(self.get_interfaces['all']):
-            if search('wlan', j):self.selectCard.addItem(self.get_interfaces['all'][i])
+            if search('wl', j):self.selectCard.addItem(self.get_interfaces['all'][i])
         driftnet = popen('which driftnet').read().split('\n')
         ettercap = popen('which ettercap').read().split('\n')
         dhcpd = popen('which dhcpd').read().split("\n")
@@ -1122,7 +1189,7 @@ class SubMain(QWidget):
         self.selectCard.clear()
         n = Refactor.get_interfaces()['all']
         for i,j in enumerate(n):
-            if search('wlan', j):
+            if search('wl', j):
                 self.selectCard.addItem(n[i])
 
     def kill(self):
@@ -1135,16 +1202,21 @@ class SubMain(QWidget):
         self.Started(False)
         self.Apthreads['RougeAP'] = []
         self.APclients = {}
+        lines = []
+        if self.ProxyPluginsTAB.log_inject.count()>0:
+            with open('Logs/AccessPoint/injectionPage.log','w') as injectionlog:
+                for index in xrange(self.ProxyPluginsTAB.log_inject.count()):
+                    lines.append(str(self.ProxyPluginsTAB.log_inject.item(index).text()))
+                for log in lines: injectionlog.wr(log+'\n')
+                injectionlog.close()
         with open('Settings/dhcp/dhcpd.leases','w') as dhcpLease:
             dhcpLease.write(''),dhcpLease.close()
         self.btn_start_attack.setDisabled(False)
         Refactor.set_ip_forward(0)
         self.TabInfoAP.clearContents()
-        try:
+        if hasattr(self.FormPopup,'Ftemplates'):
             self.FormPopup.Ftemplates.killThread()
             self.FormPopup.StatusServer(False)
-        except AttributeError as e:
-            print e
 
     def delete_logger(self):
         content = Refactor.exportHtml()
@@ -1263,7 +1335,7 @@ class SubMain(QWidget):
         elif dhcp_select == 'dnsmasq':
             if not self.ConfigTwin['ProgCheck'][4]:
                 return QMessageBox.information(self,'Error dhcp','dnsmasq is not installed')
-        if str(Refactor.get_interfaces()['activated']).startswith('wlan'):
+        if str(Refactor.get_interfaces()['activated']).startswith('wl'):
             return QMessageBox.information(self,'Error network card',
                 'You are connected with interface wireless, try again with local connection')
         self.btn_start_attack.setDisabled(True)
@@ -1296,7 +1368,7 @@ class SubMain(QWidget):
                     check_output(['nmcli','nm','wifi',"off"])
                 except CalledProcessError as e:
                     return QMessageBox.warning(self,'Error nmcli',e)
-            call(['rfkill', 'unblock' ,'wlan'])
+            call(['rfkill', 'unblock' ,'wifi'])
             self.CoreSettings()
             ignore = ('interface=','ssid=','channel=')
             with open('Settings/hostapd.conf','w') as apconf:

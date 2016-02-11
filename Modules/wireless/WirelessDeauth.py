@@ -116,7 +116,7 @@ class frm_deauth(PumpkinModule):
 
         n = Refactor.get_interfaces()['all']
         for i,j in enumerate(n):
-            if search("wlan", j):
+            if search("wl", j):
                 self.get_placa.addItem(n[i])
 
         #grid options
