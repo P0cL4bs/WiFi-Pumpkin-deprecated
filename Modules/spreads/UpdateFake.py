@@ -163,7 +163,7 @@ class frm_update_attack(PumpkinModule):
         confFile = open(directory+'index.html','w')
         confFile.write(settings_html)
         confFile.close()
-        ip = Refactor.get_Ipaddr(self.cb_interface.currentText())
+        ip = Refactor.get_Ipaddr(str(self.cb_interface.currentText()))
         if ip == None:
             return QMessageBox.warning(self, 'Ip not found',
             'the ipaddress not found on network adapter seleted.')
