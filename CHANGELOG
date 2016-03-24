@@ -10,6 +10,7 @@ Version 0.7.3
 - fixed logger duplicate injection::proxy
 - fixed get_interfaces method (netifaces module)
 - added new Tab Pump-Monitor Clients::RequestsAP
+- changed organizational structure::Core, fixed bug when logging in PumpkinProxy::url
 
 Version 0.7.1
 -------------

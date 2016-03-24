@@ -1,29 +1,43 @@
-import logging
-import argparse
-from Proxy import *
-import Modules as pkg
-from re import search,sub
-from shutil import move
+from sys import exit
+try:
+    from PyQt4.QtGui import *
+    from PyQt4.QtCore import *
+except ImportError:
+    exit('WiFi-Pumpkin need PyQt4 :(')
+
 from time import asctime
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from sys import argv,stdout
+from shutil import move
+from re import search,sub
 from ast import literal_eval
 from datetime import datetime
-from subprocess import (Popen,PIPE,STDOUT,call,
-check_output,CalledProcessError)
-from isc_dhcp_leases.iscdhcpleases import IscDhcpLeases
-from os import system,path,getcwd,chdir,popen,listdir,mkdir,stat
-from Core.Utils import (ProcessThread,Refactor,setup_logger,
-set_monitor_mode,ProcessHostapd,ThreadPopen)
-from Core.helpers.update import frm_githubUpdate
-from Core.config.Settings import frm_Settings
+from os import (
+    system,path,getcwd,chdir,popen,listdir,stat
+)
+from subprocess import (
+    Popen,PIPE,STDOUT,call,check_output,
+    CalledProcessError
+)
+
+from Core.Utils import (
+    ProcessThread,Refactor,setup_logger,
+    set_monitor_mode,ProcessHostapd,ThreadPopen
+)
+from Core.widgets.TabModels import (
+    ProxyPlugins,PumpkinProxy,PumpkinMonitor,
+    PumpkinSettings
+)
+from Core.Threads import (ThRunDhcp,Thread_sslstrip,
+    Thread_sergioProxy
+)
+
+from Proxy import *
+import Modules as GUIModules
 from Core.helpers.about import frmAbout
-from twisted.web import http
-from twisted.internet import reactor
-from Plugins.sergio_proxy.sslstrip.ProxyPlugins import ProxyPlugins
-from Plugins.sergio_proxy.plugins import *
-if search('/usr/share/',argv[0]):chdir('/usr/share/WiFi-Pumpkin/')
+from Core.helpers.update import frm_githubUpdate
+from isc_dhcp_leases.iscdhcpleases import IscDhcpLeases
+from Core.widgets.PopupModels import PopUpPlugins,PopUpServer
+from Core.config.Settings import frm_Settings
+
 """
 Description:
     This program is a Core for wifi-pumpkin.py. file which includes functionality
@@ -76,646 +90,16 @@ class Initialize(QMainWindow):
         self.move(frameGm.topLeft())
 
     def closeEvent(self, event):
-        outputiwconfig = popen('iwconfig').readlines()
-        for i in outputiwconfig:
+        iwconfig = Popen(['iwconfig'], stdout=PIPE,shell=False,stderr=PIPE)
+        for i in iwconfig.stdout.readlines():
             if search('Mode:Monitor',i):
                 reply = QMessageBox.question(self,
                 'About Exit','Are you sure to quit?', QMessageBox.Yes |
-                    QMessageBox.No, QMessageBox.No)
+                QMessageBox.No, QMessageBox.No)
                 if reply == QMessageBox.Yes:
-                    event.accept()
                     set_monitor_mode(i.split()[0]).setDisable()
+                    event.accept()
                     return
-                event.ignore()
-
-class ThRunDhcp(QThread):
-    ''' thread: run DHCP on background fuctions'''
-    sendRequest = pyqtSignal(object)
-    def __init__(self,args):
-        QThread.__init__(self)
-        self.args    = args
-        self.process = None
-
-    def run(self):
-        print 'Starting Thread:' + self.objectName()
-        self.process = Popen(self.args,
-        stdout=PIPE,stderr=STDOUT)
-        setup_logger('dhcp', './Logs/AccessPoint/dhcp.log')
-        loggerDhcp = logging.getLogger('dhcp')
-        loggerDhcp.info('---[ Start DHCP '+asctime()+']---')
-        for line,data in enumerate(iter(self.process.stdout.readline, b'')):
-            if 'DHCPREQUEST for' in data.rstrip():
-                self.sendRequest.emit(data.split())
-            elif 'DHCPACK on' in data.rstrip():
-                self.sendRequest.emit(data.split())
-            loggerDhcp.info(data.rstrip())
-
-    def stop(self):
-        print 'Stop thread:' + self.objectName()
-        if self.process is not None:
-            self.process.terminate()
-            self.process = None
-
-class Thread_sslstrip(QThread):
-    '''Thread: run sslstrip on brackground'''
-    def __init__(self,port,plugins={},data= {}):
-        QThread.__init__(self)
-        self.port     = port
-        self.plugins  = plugins
-        self.loaderPlugins = data
-    def run(self):
-        killSessions = True
-        spoofFavicon = False
-        listenPort   = self.port
-        from Plugins.sslstrip.StrippingProxy import StrippingProxy
-        from Plugins.sslstrip.URLMonitor import URLMonitor
-        from Plugins.sslstrip.CookieCleaner import CookieCleaner
-        print 'Starting Thread:' + self.objectName()
-        print 'SSLstrip v0.9 by Moxie Marlinspike (@xtr4nge v0.9.2)::Online'
-        print "+ POC by Leonardo Nve"
-        if self.loaderPlugins['Plugins'] != None:
-            self.plugins[self.loaderPlugins['Plugins']].getInstance()._activated = True
-            self.plugins[self.loaderPlugins['Plugins']].getInstance().setInjectionCode(
-                self.loaderPlugins['Content'])
-        URLMonitor.getInstance().setFaviconSpoofing(spoofFavicon)
-        CookieCleaner.getInstance().setEnabled(killSessions)
-        strippingFactory              = http.HTTPFactory(timeout=10)
-        strippingFactory.protocol     = StrippingProxy
-        if not reactor.running:
-           self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
-           reactor.run(installSignalHandlers=False)
-    def stop(self):
-        print 'Stop thread:' + self.objectName()
-
-
-class Thread_sergioProxy(QThread):
-    '''Thread: run sergio-proxy on brackground'''
-    def __init__(self,port,plugins={},options= {}):
-        QThread.__init__(self)
-        self.port          = port
-        self.PumpPlugins   = plugins
-        self.loaderPlugins = options
-
-    def run(self):
-        killSessions = True
-        spoofFavicon = False
-        listenPort   = self.port
-        sslstrip_version = "0.9"
-        sergio_version = "0.2.1"
-        if self.loaderPlugins['Plugins'] != None:
-            self.PumpPlugins[self.loaderPlugins['Plugins']].getInstance()._activated = True
-            self.PumpPlugins[self.loaderPlugins['Plugins']].getInstance().setInjectionCode(
-                self.loaderPlugins['Content'])
-        # load plugins will be implemented coming soon
-        parser = argparse.ArgumentParser(
-               description="Sergio Proxy v%s - An HTTP MITM Tool" % sergio_version,
-               epilog="Use wisely, young Padawan.",
-               fromfile_prefix_chars='@' )
-        #add sslstrip options
-        sgroup = parser.add_argument_group("sslstrip",
-               "Options for sslstrip library")
-
-        sgroup.add_argument("-w","--write",type=argparse.FileType('w'),
-               metavar="filename", default=stdout,
-               help="Specify file to log to (stdout by default).")
-        sgroup.add_argument("--log-level",type=str,
-               choices=['debug','info','warning','error'],default="info",
-               help="Specify file to log to (stdout by default).")
-        slogopts = sgroup.add_mutually_exclusive_group()
-        slogopts.add_argument("-p","--post",action="store_true",
-               help="Log only SSL POSTs. (default)")
-        slogopts.add_argument("-s","--ssl",action="store_true",
-               help="Log all SSL traffic to and from server.")
-        slogopts.add_argument("-a","--all",action="store_true",
-               help="Log all SSL and HTTP traffic to and from server.")
-        sgroup.add_argument("-l","--listen",type=int,metavar="port",default=10000,
-               help="Port to listen on (default 10000)")
-        sgroup.add_argument("-f","--favicon",action="store_true",
-                help="Substitute a lock favicon on secure requests.")
-        sgroup.add_argument("-k","--killsessions",action="store_true",
-                help="Kill sessions in progress.")
-
-        #add msf options
-        sgroup = parser.add_argument_group("MSF",
-                "Generic Options for MSF integration")
-
-        sgroup.add_argument("--msf-path",type=str,default="/pentest/exploits/framework/",
-                help="Path to msf (default: /pentest/exploits/framework)")
-        sgroup.add_argument("--msf-rc",type=str,default="/tmp/tmp.rc",
-                help="Specify a custom rc file (overrides all other settings)")
-        sgroup.add_argument("--msf-user",type=str,default="root",
-                help="Specify what user to run Metasploit under.")
-        sgroup.add_argument("--msf-lhost",type=str,default="192.168.1.1",
-                help="The IP address Metasploit is listening at.")
-
-        plugin_classes = plugin.Plugin.__subclasses__()
-        #Initialize plugins
-        plugins = []
-        try:
-            for p in plugin_classes:
-                plugins.append(p())
-        except:
-            print "Failed to load plugin class %s" % str(p)
-
-        #Give subgroup to each plugin with options
-        try:
-            for p in plugins:
-                if p.desc == "":
-                    sgroup = parser.add_argument_group("%s" % p.name,
-                        "Options for %s." % p.name)
-                else:
-                    sgroup = parser.add_argument_group("%s" % p.name,
-                        p.desc)
-
-                sgroup.add_argument("--%s" % p.optname, action="store_true",
-                        help="Load plugin %s" % p.name)
-                if p.has_opts:
-                    p.add_options(sgroup)
-        except NotImplementedError:
-            print "Plugin %s claimed option support, but didn't have it." % p.name
-
-        args = parser.parse_args()
-        if args.msf_rc == "/tmp/tmp.rc":
-            #need to wipe
-            open(args.msf_rc,"w").close()
-        args.full_path = path.dirname(path.abspath(__file__))
-
-        #All our options should be loaded now, pass them onto plugins
-        load = []
-        try:
-            for p in plugins:
-                if  getattr(args,p.optname):
-                    p.initialize(args)
-                    load.append(p)
-        except NotImplementedError:
-            print "Plugin %s lacked initialize function." % p.name
-
-        #this whole msf loading process sucks. need to improve
-        if args.msf_rc != "/tmp/tmp.rc" or stat("/tmp/tmp.rc").st_size != 0:
-            from Plugins.sergio_proxy.plugins.StartMSF import launch_msf
-            launch_msf(args.msf_path,args.msf_rc,args.msf_user)
-
-        from Plugins.sergio_proxy.sslstrip.StrippingProxy import StrippingProxy
-        from Plugins.sergio_proxy.sslstrip.URLMonitor import URLMonitor
-        from Plugins.sergio_proxy.sslstrip.CookieCleaner import CookieCleaner
-
-        URLMonitor.getInstance().setFaviconSpoofing(spoofFavicon)
-        CookieCleaner.getInstance().setEnabled(killSessions)
-        strippingFactory              = http.HTTPFactory(timeout=10)
-        strippingFactory.protocol     = StrippingProxy
-        print 'Starting Thread:' + self.objectName()
-        print "\nsslstrip " + sslstrip_version + " by Moxie Marlinspike running..."
-        print "sergio-proxy v%s online" % sergio_version
-        if not reactor.running:
-           self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
-           reactor.run(installSignalHandlers=False)
-
-    def stop(self):
-        print 'Stop thread:' + self.objectName()
-
-
-class PopUpPlugins(QWidget):
-    ''' this module control all plugins to MITM attack'''
-    def __init__(self,FSettings):
-        QWidget.__init__(self)
-        self.FSettings = FSettings
-        self.layout = QVBoxLayout(self)
-        self.title = QLabel('::Available Plugins::')
-        self.check_sslstrip = QCheckBox('::ssLstrip')
-        self.check_netcreds = QCheckBox('::net-creds')
-        self.check_dns2proy = QCheckBox('::dns2proxy')
-        self.check_sergioProxy  = QCheckBox('::sergio-proxy')
-        self.check_dns2proy.clicked.connect(self.checkBoxDns2proxy)
-        self.check_sslstrip.clicked.connect(self.checkBoxSslstrip)
-        self.check_netcreds.clicked.connect(self.checkBoxNecreds)
-        self.check_sergioProxy.clicked.connect(self.checkBoxSergioProxy)
-        self.layout.addWidget(self.title)
-        self.layout.addWidget(self.check_sslstrip)
-        self.layout.addWidget(self.check_netcreds)
-        self.layout.addWidget(self.check_dns2proy)
-        self.layout.addWidget(self.check_sergioProxy)
-    # control checkbox plugins
-    def checkBoxSslstrip(self):
-        if not self.check_sslstrip.isChecked():
-            if not self.check_sergioProxy.isChecked():
-                self.unset_Rules('sslstrip')
-            self.FSettings.xmlSettings('sslstrip_plugin','status','False',False)
-        elif self.check_sslstrip.isChecked():
-            if not self.check_sergioProxy.isChecked():
-                self.set_sslStripRule()
-            self.FSettings.xmlSettings('sslstrip_plugin','status','True',False)
-
-    def checkBoxSergioProxy(self):
-        if self.check_sergioProxy.isChecked():
-            if not self.check_sslstrip.isChecked():
-                self.set_sslStripRule()
-            self.FSettings.xmlSettings('sergioproxy_plugin','status','True')
-        elif not self.check_sergioProxy.isChecked():
-            if not self.check_sslstrip.isChecked():
-                self.unset_Rules('sslstrip')
-            self.FSettings.xmlSettings('sergioproxy_plugin','status','False')
-
-    def checkBoxDns2proxy(self):
-        if not self.check_dns2proy.isChecked():
-            self.unset_Rules('dns2proxy')
-            self.FSettings.xmlSettings('dns2proxy_plugin','status','False',False)
-        elif self.check_dns2proy.isChecked():
-            self.set_Dns2proxyRule()
-            self.FSettings.xmlSettings('dns2proxy_plugin','status','True',False)
-    def checkBoxNecreds(self):
-        if self.check_netcreds.isChecked():
-            self.FSettings.xmlSettings('netcreds_plugin','status','True',False)
-        else:
-            self.FSettings.xmlSettings('netcreds_plugin','status','False',False)
-
-    # set rules to sslstrip
-    def set_sslStripRule(self):
-        item = QListWidgetItem()
-        item.setText('iptables -t nat -A PREROUTING -p '+
-        'tcp --destination-port 80 -j REDIRECT --to-port '+self.FSettings.redirectport.text())
-        item.setSizeHint(QSize(30,30))
-        self.FSettings.ListRules.addItem(item)
-    # set redirect port rules dns2proy
-    def set_Dns2proxyRule(self):
-        item = QListWidgetItem()
-        item.setText('iptables -t nat -A PREROUTING -p '+
-        'udp --destination-port 53 -j REDIRECT --to-port 53')
-        item.setSizeHint(QSize(30,30))
-        self.FSettings.ListRules.addItem(item)
-
-    def unset_Rules(self,type):
-        items = []
-        for index in xrange(self.FSettings.ListRules.count()):
-            items.append(str(self.FSettings.ListRules.item(index).text()))
-        for i,j in enumerate(items):
-            if type == 'sslstrip':
-                if search(str('tcp --destination-port 80 -j REDIRECT --to-port '+
-                    self.FSettings.redirectport.text()),j):
-                    self.FSettings.ListRules.takeItem(i)
-            elif type =='dns2proxy':
-                if search('udp --destination-port 53 -j REDIRECT --to-port 53',j):
-                    self.FSettings.ListRules.takeItem(i)
-
-
-class PopUpServer(QWidget):
-    ''' this module fast access to phishing-manager'''
-    def __init__(self,FSettings):
-        QWidget.__init__(self)
-        self.FSettings  = FSettings
-        self.Ftemplates = pkg.frm_PhishingManager()
-        self.layout     = QVBoxLayout(self)
-        self.FormLayout = QFormLayout()
-        self.GridForm   = QGridLayout()
-        self.StatusLabel        = QLabel(self)
-        self.title              = QLabel('::Server-HTTP::')
-        self.btntemplates       = QPushButton('Phishing M.')
-        self.btnStopServer      = QPushButton('Stop Server')
-        self.btnRefresh         = QPushButton('ReFresh')
-        self.txt_IP             = QLineEdit(self)
-        self.txt_IP.setVisible(False)
-        self.ComboIface         = QComboBox(self)
-        self.StatusServer(False)
-        #icons
-        self.btntemplates.setIcon(QIcon('Icons/page.png'))
-        self.btnStopServer.setIcon(QIcon('Icons/close.png'))
-        self.btnRefresh.setIcon(QIcon('Icons/refresh.png'))
-
-        #conects
-        self.refrash_interface()
-        self.btntemplates.clicked.connect(self.show_template_dialog)
-        self.btnStopServer.clicked.connect(self.StopLocalServer)
-        self.btnRefresh.clicked.connect(self.refrash_interface)
-        self.connect(self.ComboIface, SIGNAL('currentIndexChanged(QString)'), self.discoveryIface)
-
-        #layout
-        self.GridForm.addWidget(self.ComboIface,0,1)
-        self.GridForm.addWidget(self.btnRefresh,0,2)
-        self.GridForm.addWidget(self.btntemplates,1,1)
-        self.GridForm.addWidget(self.btnStopServer,1,2)
-        self.FormLayout.addRow(self.title)
-        self.FormLayout.addRow(self.GridForm)
-        self.FormLayout.addRow('Status::',self.StatusLabel)
-        self.layout.addLayout(self.FormLayout)
-
-
-    def emit_template(self,log):
-        if log == 'started':
-            self.StatusServer(True)
-
-    def StopLocalServer(self):
-        self.StatusServer(False)
-        self.Ftemplates.killThread()
-
-    def StatusServer(self,server):
-        if server:
-            self.StatusLabel.setText('[ ON ]')
-            self.StatusLabel.setStyleSheet('QLabel {  color : green; }')
-        elif not server:
-            self.StatusLabel.setText('[ OFF ]')
-            self.StatusLabel.setStyleSheet('QLabel {  color : red; }')
-
-    def refrash_interface(self):
-        self.ComboIface.clear()
-        n = Refactor.get_interfaces()['all']
-        for i,j in enumerate(n):
-            if search('at',j) or search('wl',j):
-                self.ComboIface.addItem(n[i])
-                self.discoveryIface()
-
-    def discoveryIface(self):
-        iface = str(self.ComboIface.currentText())
-        ip = Refactor.get_Ipaddr(iface)
-        self.txt_IP.setText(ip)
-
-    def show_template_dialog(self):
-        self.connect(self.Ftemplates,SIGNAL('Activated ( QString ) '), self.emit_template)
-        self.Ftemplates.txt_redirect.setText(self.txt_IP.text())
-        self.Ftemplates.show()
-
-class PumpkinProxy(QVBoxLayout):
-    ''' settings  Transparent Proxy '''
-    sendError = pyqtSignal(str)
-    _PluginsToLoader = {'Plugins': None,'Content':''}
-    def __init__(self,popup,parent = None):
-        super(PumpkinProxy, self).__init__(parent)
-        self.popup      = popup
-        self.urlinjected= []
-        self.FSettings  = frm_Settings()
-        self.Home       = QFormLayout()
-        self.statusbar  = QStatusBar()
-        self.lname      = QLabel('Proxy::scripts::')
-        self.lstatus    = QLabel('')
-        self.argsLabel  = QLabel('')
-        self.hBox       = QHBoxLayout()
-        self.hBoxargs   = QHBoxLayout()
-        self.btnLoader  = QPushButton('Reload')
-        self.btnEnable  = QPushButton('Enable')
-        self.btncancel  = QPushButton('Cancel')
-        self.btnbrownser= QPushButton('Browser')
-        self.comboxBox  = QComboBox()
-        self.log_inject = QListWidget()
-        self.docScripts = QTextEdit()
-        self.argsScripts= QLineEdit()
-        self.btncancel.setIcon(QIcon('Icons/cancel.png'))
-        self.btnLoader.setIcon(QIcon('Icons/search.png'))
-        self.btnEnable.setIcon(QIcon('Icons/accept.png'))
-        self.btnbrownser.setIcon(QIcon("Icons/open.png"))
-        self.statusbar.addWidget(self.lname)
-        self.statusbar.addWidget(self.lstatus)
-        self.docScripts.setFixedHeight(40)
-        self.statusInjection(False)
-        self.argsScripts.setEnabled(False)
-        self.btnbrownser.setEnabled(False)
-
-        # group settings
-        self.GroupSettings  = QGroupBox()
-        self.GroupSettings.setTitle('Settings:')
-        self.SettingsLayout = QFormLayout()
-        self.hBox.addWidget(self.comboxBox)
-        self.hBox.addWidget(self.btnLoader)
-        self.hBox.addWidget(self.btnEnable)
-        self.hBox.addWidget(self.btncancel)
-        self.hBoxargs.addWidget(self.argsLabel)
-        self.hBoxargs.addWidget(self.argsScripts)
-        self.hBoxargs.addWidget(self.btnbrownser)
-        self.SettingsLayout.addRow(self.hBox)
-        self.SettingsLayout.addRow(self.hBoxargs)
-        self.GroupSettings.setLayout(self.SettingsLayout)
-        #group logger
-        self.GroupLogger  = QGroupBox()
-        self.GroupLogger.setTitle('Logger Injection:')
-        self.LoggerLayout = QFormLayout()
-        self.LoggerLayout.addRow(self.log_inject)
-        self.GroupLogger.setLayout(self.LoggerLayout)
-
-        #group descriptions
-        self.GroupDoc  = QGroupBox()
-        self.GroupDoc.setTitle('Description:')
-        self.DocLayout = QFormLayout()
-        self.DocLayout.addRow(self.docScripts)
-        self.GroupDoc.setLayout(self.DocLayout)
-
-        #connections
-        self.SearchProxyPlugins()
-        self.readDocScripts('html_injector')
-        self.btnLoader.clicked.connect(self.SearchProxyPlugins)
-        self.connect(self.comboxBox,SIGNAL('currentIndexChanged(QString)'),self.readDocScripts)
-        self.btnEnable.clicked.connect(self.setPluginsActivated)
-        self.btncancel.clicked.connect(self.unsetPluginsConf)
-        self.btnbrownser.clicked.connect(self.get_filenameToInjection)
-        # add widgets
-        self.Home.addRow(self.GroupSettings)
-        self.Home.addRow(self.GroupDoc)
-        self.Home.addRow(self.GroupLogger)
-        self.Home.addRow(self.statusbar)
-        self.addLayout(self.Home)
-
-    def get_filenameToInjection(self):
-        filename = QFileDialog.getOpenFileName(None,
-        'load File','','HTML (*.html);;js (*.js);;css (*.css)')
-        if len(filename) > 0:
-            self.argsScripts.setText(filename)
-            QMessageBox.information(None, 'Scripts Loaders', 'file has been loaded with success.')
-
-    def setPluginsActivated(self):
-        if self.popup.check_sslstrip.isChecked():
-            item = str(self.comboxBox.currentText())
-            if self.plugins[str(item)]._requiresArgs:
-                if len(self.argsScripts.text()) != 0:
-                    self._PluginsToLoader['Plugins'] = item
-                    self._PluginsToLoader['Content'] = str(self.argsScripts.text())
-                else:
-                    return self.sendError.emit('this module proxy requires {} args'.format(self.argsLabel.text()))
-            else:
-                self._PluginsToLoader['Plugins'] = item
-            self.btnEnable.setEnabled(False)
-            self.ProcessReadLogger()
-            return self.statusInjection(True)
-        self.sendError.emit('sslstrip is not enabled.'.format(self.argsLabel.text()))
-
-    def ProcessReadLogger(self):
-        if path.exists('Logs/AccessPoint/injectionPage.log'):
-            self.injectionThread = ThreadPopen(['tail','-f','Logs/AccessPoint/injectionPage.log'])
-            self.connect(self.injectionThread,SIGNAL('Activated ( QString ) '), self.GetloggerInjection)
-            self.injectionThread.setObjectName('Pump-Proxy::Capture')
-            return self.injectionThread.start()
-        QMessageBox.warning(self,'error proxy logger','Pump-Proxy::capture is not found')
-
-    def GetloggerInjection(self,data):
-        if data not in self.urlinjected:
-            self.log_inject.addItem(data)
-            self.urlinjected.append(data)
-        self.log_inject.scrollToBottom()
-
-    def statusInjection(self,server):
-        if server:
-            self.lstatus.setText('[ ON ]')
-            self.lstatus.setStyleSheet('QLabel {  color : green; }')
-        else:
-            self.lstatus.setText('[ OFF ]')
-            self.lstatus.setStyleSheet('QLabel {  color : red; }')
-
-    def readDocScripts(self,item):
-        try:
-            self.docScripts.setText(self.plugins[str(item)].__doc__)
-            if self.plugins[str(item)]._requiresArgs:
-                if 'FilePath' in self.plugins[str(item)]._argsname:
-                    self.btnbrownser.setEnabled(True)
-                else:
-                    self.btnbrownser.setEnabled(False)
-                self.argsScripts.setEnabled(True)
-                self.argsLabel.setText(self.plugins[str(item)]._argsname)
-            else:
-                self.argsScripts.setEnabled(False)
-                self.btnbrownser.setEnabled(False)
-                self.argsLabel.setText('')
-        except Exception:
-            pass
-
-    def unsetPluginsConf(self):
-        if hasattr(self,'injectionThread'): self.injectionThread.stop()
-        self._PluginsToLoader = {'Plugins': None,'args':''}
-        self.btnEnable.setEnabled(True)
-        self.statusInjection(False)
-        self.argsScripts.clear()
-        self.log_inject.clear()
-        self.urlinjected = []
-
-    def SearchProxyPlugins(self):
-        self.comboxBox.clear()
-        self.plugin_classes = Plugin.PluginProxy.__subclasses__()
-        self.plugins = {}
-        for p in self.plugin_classes:
-            self.plugins[p._name] = p()
-        self.comboxBox.addItems(self.plugins.keys())
-
-class PumpkinMonitor(QVBoxLayout):
-    ''' Monitor Access Point cleints connections'''
-    def __init__(self, parent = None):
-        super(PumpkinMonitor, self).__init__(parent)
-        self.FSettings      = frm_Settings()
-        self.Home           = QFormLayout()
-        self.GroupMonitor   = QGroupBox()
-        self.MonitorTreeView= QTreeView()
-        self.MonitorTreeView.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.MonitorTreeView.setFixedHeight(330)
-        self.model = QStandardItemModel()
-        self.model.setHorizontalHeaderLabels(['Devices','Informations'])
-        self.MonitorTreeView.setModel(self.model)
-        self.MonitorTreeView.setUniformRowHeights(True)
-        self.MonitorTreeView.setColumnWidth(0,130)
-
-        self.GroupMonitor.setTitle('Pump-Monitor::')
-        self.MonitorLayout = QFormLayout()
-        self.MonitorLayout.addRow(self.MonitorTreeView)
-        self.GroupMonitor.setLayout(self.MonitorLayout)
-        self.Home.addRow(self.GroupMonitor)
-        self.addLayout(self.Home)
-
-    def addRequests(self,macddress,user,status):
-        if status:
-            ParentMaster = QStandardItem('Connected:: {} at {}'.format(macddress,
-            datetime.now().strftime("%H:%M")))
-            ParentMaster.setIcon(QIcon('Icons/connected.png'))
-            ParentMaster.setSizeHint(QSize(30,30))
-            info1 = QStandardItem('{}'.format(user['device']))
-            info2 = QStandardItem('{}'.format(user['IP']))
-            info3 = QStandardItem('{}'.format(datetime.now().strftime("%Y-%m-%d %H:%M")))
-            ParentMaster.appendRow([QStandardItem('Device::'),info1])
-            ParentMaster.appendRow([QStandardItem('IPAddr::'),info2])
-            ParentMaster.appendRow([QStandardItem('Current date::'),info3])
-            self.model.appendRow(ParentMaster)
-            return self.MonitorTreeView.setFirstColumnSpanned(ParentMaster.row(),
-            self.MonitorTreeView.rootIndex(), True)
-
-        ParentMaster = QStandardItem('Disconnected:: {} at {}'.format(macddress,
-        datetime.now().strftime("%H:%M")))
-        ParentMaster.setIcon(QIcon('Icons/disconnected.png'))
-        ParentMaster.setSizeHint(QSize(30,30))
-        info1 = QStandardItem('{}'.format(user['device']))
-        info2 = QStandardItem('{}'.format(user['IP']))
-        info3 = QStandardItem('{}'.format(datetime.now().strftime("%Y-%m-%d %H:%M")))
-        ParentMaster.appendRow([QStandardItem('Device::'),info1])
-        ParentMaster.appendRow([QStandardItem('IPAddr::'),info2])
-        ParentMaster.appendRow([QStandardItem('Current date::'),info3])
-        self.model.appendRow(ParentMaster)
-        self.MonitorTreeView.setFirstColumnSpanned(ParentMaster.row(),
-        self.MonitorTreeView.rootIndex(), True)
-
-
-class PumpkinSettings(QVBoxLayout):
-    ''' settings DHCP options'''
-    sendMensage = pyqtSignal(str)
-    def __init__(self, parent = None):
-        super(PumpkinSettings, self).__init__(parent)
-        self.SettingsDHCP  = {}
-        self.FSettings     = frm_Settings()
-        self.mainLayout    = QFormLayout()
-        self.GroupDHCP     = QGroupBox()
-        self.layoutDHCP    = QFormLayout()
-        self.layoutbuttons = QHBoxLayout()
-        self.btnDefault    = QPushButton('default')
-        self.btnSave       = QPushButton('save settings')
-        self.btnSave.setIcon(QIcon('Icons/export.png'))
-        self.btnDefault.setIcon(QIcon('Icons/settings.png'))
-        self.leaseTime_def = QLineEdit(self.FSettings.xmlSettings('leasetimeDef', 'value',None))
-        self.leaseTime_Max = QLineEdit(self.FSettings.xmlSettings('leasetimeMax', 'value',None))
-        self.netmask       = QLineEdit(self.FSettings.xmlSettings('netmask', 'value',None))
-        self.range_dhcp    = QLineEdit(self.FSettings.xmlSettings('range', 'value',None))
-        self.route         = QLineEdit(self.FSettings.xmlSettings('router', 'value',None))
-        self.subnet        = QLineEdit(self.FSettings.xmlSettings('subnet', 'value',None))
-        self.broadcast     = QLineEdit(self.FSettings.xmlSettings('broadcast', 'value',None))
-        self.GroupDHCP.setTitle('DHCP-Settings')
-        self.GroupDHCP.setLayout(self.layoutDHCP)
-        self.layoutDHCP.addRow('default-lease-time',self.leaseTime_def)
-        self.layoutDHCP.addRow('max-lease-time',self.leaseTime_Max)
-        self.layoutDHCP.addRow('subnet',self.subnet)
-        self.layoutDHCP.addRow('router',self.route)
-        self.layoutDHCP.addRow('netmask',self.netmask)
-        self.layoutDHCP.addRow('broadcast-address',self.broadcast)
-        self.layoutDHCP.addRow('range-dhcp',self.range_dhcp)
-        # layout add
-        self.layoutbuttons.addWidget(self.btnSave)
-        self.layoutbuttons.addWidget(self.btnDefault)
-        self.layoutDHCP.addRow(self.layoutbuttons)
-
-        # connects
-        self.btnDefault.clicked.connect(self.setdefaultSettings)
-        self.btnSave.clicked.connect(self.savesettingsDHCP)
-        self.mainLayout.addRow(self.GroupDHCP)
-        self.addLayout(self.mainLayout)
-
-    def setdefaultSettings(self):
-        self.leaseTime_def.setText(self.FSettings.xmlSettings('D-leasetimeDef', 'value',None))
-        self.leaseTime_Max.setText(self.FSettings.xmlSettings('D-leasetimeMax', 'value',None))
-        self.netmask.setText(self.FSettings.xmlSettings('D-netmask', 'value',None))
-        self.range_dhcp.setText(self.FSettings.xmlSettings('D-range', 'value',None))
-        self.route.setText(self.FSettings.xmlSettings('D-router', 'value',None))
-        self.subnet.setText(self.FSettings.xmlSettings('D-subnet', 'value',None))
-        self.broadcast.setText(self.FSettings.xmlSettings('D-broadcast', 'value',None))
-
-    def savesettingsDHCP(self):
-        self.FSettings.xmlSettings('leasetimeDef', 'value',str(self.leaseTime_def.text()))
-        self.FSettings.xmlSettings('leasetimeMax', 'value',str(self.leaseTime_Max.text()))
-        self.FSettings.xmlSettings('netmask', 'value', str(self.netmask.text()))
-        self.FSettings.xmlSettings('range', 'value',str(self.range_dhcp.text()))
-        self.FSettings.xmlSettings('router', 'value',str(self.route.text()))
-        self.FSettings.xmlSettings('subnet', 'value',str(self.subnet.text()))
-        self.FSettings.xmlSettings('broadcast', 'value',str(self.broadcast.text()))
-        self.btnSave.setEnabled(False)
-        self.sendMensage.emit('settings DHCP saved with success...')
-        self.btnSave.setEnabled(True)
-
-    def getPumpkinSettings(self):
-        self.SettingsDHCP['leasetimeDef'] = str(self.leaseTime_def.text())
-        self.SettingsDHCP['leasetimeMax'] = str(self.leaseTime_Max.text())
-        self.SettingsDHCP['subnet'] = str(self.subnet.text())
-        self.SettingsDHCP['router'] = str(self.route.text())
-        self.SettingsDHCP['netmask'] = str(self.netmask.text())
-        self.SettingsDHCP['broadcast'] = str(self.broadcast.text())
-        self.SettingsDHCP['range'] = str(self.range_dhcp.text())
-        return self.SettingsDHCP
-
 
 class SubMain(QWidget):
     ''' load main window class'''
@@ -728,7 +112,7 @@ class SubMain(QWidget):
         self.Tab_Injector   = QWidget(self)
         self.Tab_Settings   = QWidget(self)
         self.Tab_ApMonitor  = QWidget(self)
-        self.TabControl.setTabPosition(QTabWidget.West)
+        #self.TabControl.setTabPosition(QTabWidget.w)
         self.TabControl.addTab(self.Tab_Default,'Home')
         self.TabControl.addTab(self.Tab_Injector,'Pump-Proxy')
         self.TabControl.addTab(self.Tab_Settings,'Pump-Settings')
@@ -800,7 +184,7 @@ class SubMain(QWidget):
         # table information AP connected
         self.TabInfoAP = QTableWidget(5,3)
         self.TabInfoAP.setRowCount(50)
-        self.TabInfoAP.setFixedHeight(190)
+        self.TabInfoAP.setFixedHeight(180)
         self.TabInfoAP.resizeRowsToContents()
         self.TabInfoAP.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.TabInfoAP.horizontalHeader().setStretchLastSection(True)
@@ -1007,7 +391,7 @@ class SubMain(QWidget):
         self.setLayout(self.MainControl)
 
     def show_arp_posion(self):
-        self.Farp_posion = pkg.frm_Arp_Poison()
+        self.Farp_posion = GUIModules.frm_Arp_Poison()
         self.Farp_posion.setGeometry(0, 0, 450, 300)
         self.Farp_posion.show()
 
@@ -1020,32 +404,32 @@ class SubMain(QWidget):
         self.FSettings.show()
 
     def show_windows_update(self):
-        self.FWinUpdate = pkg.frm_update_attack()
+        self.FWinUpdate = GUIModules.frm_update_attack()
         self.FWinUpdate.setGeometry(QRect(100, 100, 450, 300))
         self.FWinUpdate.show()
 
     def show_dhcpDOS(self):
-        self.Fstar = pkg.frm_dhcp_Attack()
+        self.Fstar = GUIModules.frm_dhcp_Attack()
         self.Fstar.setGeometry(QRect(100, 100, 450, 200))
         self.Fstar.show()
 
     def showProbe(self):
-        self.Fprobe = pkg.frm_PMonitor()
+        self.Fprobe = GUIModules.frm_PMonitor()
         self.Fprobe.setGeometry(QRect(100, 100, 400, 400))
         self.Fprobe.show()
 
     def formDauth(self):
-        self.Fdeauth =pkg.frm_deauth()
+        self.Fdeauth =GUIModules.frm_deauth()
         self.Fdeauth.setGeometry(QRect(100, 100, 200, 200))
         self.Fdeauth.show()
 
     def form_mac(self):
-        self.Fmac = pkg.frm_mac_generator()
+        self.Fmac = GUIModules.frm_mac_generator()
         self.Fmac.setGeometry(QRect(100, 100, 300, 100))
         self.Fmac.show()
 
     def show_dns_spoof(self):
-        self.Fdns = pkg.frm_DnsSpoof()
+        self.Fdns = GUIModules.frm_DnsSpoof()
         self.Fdns.setGeometry(QRect(100, 100, 450, 300))
         self.Fdns.show()
 
@@ -1055,17 +439,17 @@ class SubMain(QWidget):
         self.FPhishingManager.show()
 
     def credentials(self):
-        self.Fcredentials = pkg.frm_get_credentials()
+        self.Fcredentials = GUIModules.frm_get_credentials()
         self.Fcredentials.setWindowTitle('Phishing Logger')
         self.Fcredentials.show()
 
     def logsnetcreds(self):
-        self.FnetCreds = pkg.frm_NetCredsLogger()
+        self.FnetCreds = GUIModules.frm_NetCredsLogger()
         self.FnetCreds.setWindowTitle('NetCreds Logger')
         self.FnetCreds.show()
 
     def logdns2proxy(self):
-        self.Fdns2proxy = pkg.frm_dns2proxy()
+        self.Fdns2proxy = GUIModules.frm_dns2proxy()
         self.Fdns2proxy.setWindowTitle('Dns2proxy Logger')
         self.Fdns2proxy.show()
 
@@ -1196,9 +580,10 @@ class SubMain(QWidget):
         if self.Apthreads['RougeAP'] == []: return
         self.ProxyPluginsTAB.GroupSettings.setEnabled(True)
         self.FSettings.xmlSettings('statusAP','value','False',False)
-        for i in self.Apthreads['RougeAP']:i.stop()
-        for kill in self.SettingsAP['kill']:popen(kill)
-        set_monitor_mode(self.ConfigTwin['interface']).setDisable()
+        for thread in self.Apthreads['RougeAP']: thread.stop()
+        for kill in self.SettingsAP['kill']:
+            Popen(kill.split(), stdout=PIPE,shell=False,stderr=PIPE)
+        set_monitor_mode(self.ConfigTwin['AP_iface']).setDisable()
         self.Started(False)
         self.Apthreads['RougeAP'] = []
         self.APclients = {}
@@ -1207,7 +592,7 @@ class SubMain(QWidget):
             with open('Logs/AccessPoint/injectionPage.log','w') as injectionlog:
                 for index in xrange(self.ProxyPluginsTAB.log_inject.count()):
                     lines.append(str(self.ProxyPluginsTAB.log_inject.item(index).text()))
-                for log in lines: injectionlog.wr(log+'\n')
+                for log in lines: injectionlog.write(log+'\n')
                 injectionlog.close()
         with open('Settings/dhcp/dhcpd.leases','w') as dhcpLease:
             dhcpLease.write(''),dhcpLease.close()
@@ -1304,8 +689,8 @@ class SubMain(QWidget):
             ]
         }
         Refactor.set_ip_forward(1)
-        for i in self.SettingsAP['kill']:popen(i)
-        for i in self.SettingsAP['interface']:popen(i)
+        for i in self.SettingsAP['kill']: Popen(i.split(), stdout=PIPE,shell=False,stderr=PIPE)
+        for i in self.SettingsAP['interface']: Popen(i.split(), stdout=PIPE,shell=False,stderr=PIPE)
         dhcp_select = self.FSettings.xmlSettings('dhcp','dhcp_server',None,False)
         if dhcp_select != 'dnsmasq':
             with open('Settings/dhcpd.conf','w') as dhcp:

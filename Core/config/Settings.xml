@@ -37,7 +37,7 @@
         <channel mchannel="11"/>
         <AP name="PumpAP"/>
         <redirect port="10000"/>
-        <netcreds interface="wlan3"/>
+        <netcreds interface="wlan0"/>
     </configure>
 
     <configure>

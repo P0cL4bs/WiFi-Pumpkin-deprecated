@@ -126,7 +126,7 @@ bin_install(){
 	if [ ! -f "/usr/bin/wifi-pumpkin" ]; then
 	    echo "[$green✔$txtrst] PATH::$DIRECTORY"
 		echo "[$green✔$txtrst] binary::/usr/bin/"
-		echo "'/usr/share/WiFi-Pumpkin/wifi-pumpkin.py'" >> /usr/bin/wifi-pumpkin
+        ln -sfT /usr/share/WiFi-Pumpkin/wifi-pumpkin.py /usr/bin/wifi-pumpkin
 		chmod +x /usr/bin/wifi-pumpkin
 	fi
 }
