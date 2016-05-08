@@ -3,7 +3,6 @@ import Modules as GUIs
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from Core.Utils import Refactor
-from Core.config.Settings import frm_Settings
 """
 Description:
     This program is a Core for wifi-pumpkin.py. file which includes functionality
@@ -50,34 +49,34 @@ class PopUpPlugins(QWidget):
         if not self.check_sslstrip.isChecked():
             if not self.check_sergioProxy.isChecked():
                 self.unset_Rules('sslstrip')
-            self.FSettings.xmlSettings('sslstrip_plugin','status','False',False)
+            self.FSettings.Settings.set_setting('plugins','sslstrip_plugin',False)
         elif self.check_sslstrip.isChecked():
             if not self.check_sergioProxy.isChecked():
                 self.set_sslStripRule()
-            self.FSettings.xmlSettings('sslstrip_plugin','status','True',False)
+            self.FSettings.Settings.set_setting('plugins','sslstrip_plugin',True)
 
     def checkBoxSergioProxy(self):
         if self.check_sergioProxy.isChecked():
             if not self.check_sslstrip.isChecked():
                 self.set_sslStripRule()
-            self.FSettings.xmlSettings('sergioproxy_plugin','status','True')
+            self.FSettings.Settings.set_setting('plugins','sergioproxy_plugin',True)
         elif not self.check_sergioProxy.isChecked():
             if not self.check_sslstrip.isChecked():
                 self.unset_Rules('sslstrip')
-            self.FSettings.xmlSettings('sergioproxy_plugin','status','False')
+            self.FSettings.Settings.set_setting('plugins','sergioproxy_plugin',False)
 
     def checkBoxDns2proxy(self):
         if not self.check_dns2proy.isChecked():
             self.unset_Rules('dns2proxy')
-            self.FSettings.xmlSettings('dns2proxy_plugin','status','False',False)
+            self.FSettings.Settings.set_setting('plugins','dns2proxy_plugin',False)
         elif self.check_dns2proy.isChecked():
             self.set_Dns2proxyRule()
-            self.FSettings.xmlSettings('dns2proxy_plugin','status','True',False)
+            self.FSettings.Settings.set_setting('plugins','dns2proxy_plugin',True)
     def checkBoxNecreds(self):
         if self.check_netcreds.isChecked():
-            self.FSettings.xmlSettings('netcreds_plugin','status','True',False)
+            self.FSettings.Settings.set_setting('plugins','netcreds_plugin',True)
         else:
-            self.FSettings.xmlSettings('netcreds_plugin','status','False',False)
+            self.FSettings.Settings.set_setting('plugins','netcreds_plugin',False)
 
     # set rules to sslstrip
     def set_sslStripRule(self):

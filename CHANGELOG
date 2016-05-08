@@ -1,3 +1,18 @@
+Version 0.7.5
+-------------
+- fixed size QTableWidget on modules
+- fixed scanner fast ipaddress devices
+- added new QSettings Core/modules::Configure
+- added mac address interface to exclude NetworkManager
+- added dockArea Monitor -> Pumpkin-Settings
+- added progressBar for starting Thread
+- removed privillege.py: execute root app
+- added support to start AP with wireless connection
+    * Kali Linux (Apparently not work, need some tests) :(
+    * support kubuntu 15.10
+    * support wifislax - 4.11.1
+    * support parrot - 2.0.5
+
 Version 0.7.3
 -------------
 - added new Pump-Logo default

@@ -1,17 +1,41 @@
 import argparse
 import logging
+import signal
+import threading
 from sys import stdout
 from time import asctime
-from os import path,stat
+from os import path,stat,getpgid,setsid,killpg
 from twisted.web import http
 from twisted.internet import reactor
-from PyQt4.QtCore import QThread,pyqtSignal
-from Core.config.Settings import frm_Settings
-from subprocess import (Popen,PIPE,STDOUT)
 from Core.Utils import setup_logger
-from Plugins.sergio_proxy.sslstrip.ProxyPlugins import ProxyPlugins
+from subprocess import (Popen,PIPE,STDOUT)
+from PyQt4.QtCore import QThread,pyqtSignal,SIGNAL
 from Plugins.sergio_proxy.plugins import *
+try:
+    from nmap import PortScanner
+except ImportError:
+    pass
 
+class ThreadPopen(QThread):
+    def __init__(self,cmd):
+        QThread.__init__(self)
+        self.cmd = cmd
+        self.process = None
+
+    def getNameThread(self):
+        return 'Starting Thread:' + self.objectName()
+
+    def run(self):
+        print 'Starting Thread:' + self.objectName()
+        self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
+        for line in iter(self.process.stdout.readline, b''):
+            self.emit(SIGNAL('Activated( QString )'),line.rstrip())
+
+    def stop(self):
+        print 'Stop thread:' + self.objectName()
+        if self.process is not None:
+            self.process.terminate()
+            self.process = None
 
 class ThRunDhcp(QThread):
     ''' thread: run DHCP on background fuctions'''
@@ -21,10 +45,13 @@ class ThRunDhcp(QThread):
         self.args    = args
         self.process = None
 
+    def getNameThread(self):
+        return 'Starting Thread:' + self.objectName()
+
     def run(self):
         print 'Starting Thread:' + self.objectName()
         self.process = Popen(self.args,
-        stdout=PIPE,stderr=STDOUT)
+        stdout=PIPE,stderr=STDOUT,preexec_fn=setsid)
         setup_logger('dhcp', './Logs/AccessPoint/dhcp.log')
         loggerDhcp = logging.getLogger('dhcp')
         loggerDhcp.info('---[ Start DHCP '+asctime()+']---')
@@ -38,9 +65,99 @@ class ThRunDhcp(QThread):
     def stop(self):
         print 'Stop thread:' + self.objectName()
         if self.process is not None:
+            killpg(getpgid(self.process.pid), signal.SIGTERM)
+
+
+class ThreadScan(QThread):
+    def __init__(self,gateway):
+        QThread.__init__(self)
+        self.gateway = gateway
+        self.result = ''
+    def run(self):
+        try:
+            nm = PortScanner()
+            a=nm.scan(hosts=self.gateway, arguments='-sU --script nbstat.nse -O -p137')
+            for k,v in a['scan'].iteritems():
+                if str(v['status']['state']) == 'up':
+                    try:
+                        ip = str(v['addresses']['ipv4'])
+                        hostname = str(v['hostscript'][0]['output']).split(',')[0]
+                        hostname = hostname.split(':')[1]
+                        mac = str(v['hostscript'][0]['output']).split(',')[2]
+                        if search('<unknown>',mac):mac = '<unknown>'
+                        else:mac = mac[13:32]
+                        self.result = ip +'|'+mac.replace('\n','')+'|'+hostname.replace('\n','')
+                        self.emit(SIGNAL('Activated( QString )'),
+                        self.result)
+                    except :
+                        pass
+        except NameError:
+            QMessageBox.information(self,'error module','the module Python-nmap not installed')
+
+
+
+class ProcessThread(threading.Thread):
+    def __init__(self,cmd,):
+        threading.Thread.__init__(self)
+        self.cmd = cmd
+        self.iface = None
+        self.process = None
+        self.logger = False
+        self.prompt = True
+
+    def getNameThread(self):
+        return 'Starting Thread:' + self.name
+
+    def run(self):
+        print 'Starting Thread:' + self.name
+        if self.name == 'Dns2Proxy':
+            setup_logger('dns2proxy', './Logs/AccessPoint/dns2proxy.log')
+            log_dns2proxy = logging.getLogger('dns2proxy')
+            self.logger = True
+        self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
+        for line in iter(self.process.stdout.readline, b''):
+            if self.logger:
+                if self.name == 'Dns2Proxy':
+                    log_dns2proxy.info(line.rstrip())
+                    self.prompt = False
+            if self.prompt:
+                print (line.rstrip())
+
+    def stop(self):
+        print 'Stop thread:' + self.name
+        if self.process is not None:
             self.process.terminate()
             self.process = None
 
+
+class ProcessHostapd(QThread):
+    statusAP_connected = pyqtSignal(object)
+    def __init__(self,cmd):
+        QThread.__init__(self)
+        self.cmd = cmd
+        self.process= None
+
+    def getNameThread(self):
+        return 'Starting Thread:' + self.objectName()
+
+    def run(self):
+        print 'Starting Thread:' + self.objectName()
+        self.makeLogger()
+        self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
+        for line in iter(self.process.stdout.readline, b''):
+            #self.log_hostapd.info(line.rstrip())
+            if self.objectName() == 'hostapd':
+                if 'AP-STA-DISCONNECTED' in line.rstrip() or 'inactivity (timer DEAUTH/REMOVE)' in line.rstrip():
+                    self.statusAP_connected.emit(line.split()[2])
+
+    def makeLogger(self):
+        setup_logger('hostapd', './Logs/AccessPoint/requestAP.log')
+        self.log_hostapd = logging.getLogger('hostapd')
+
+    def stop(self):
+        print 'Stop thread:' + self.objectName()
+        if self.process is not None:
+            self.process.terminate()
 
 class Thread_sslstrip(QThread):
     '''Thread: run sslstrip on brackground'''
@@ -49,6 +166,10 @@ class Thread_sslstrip(QThread):
         self.port     = port
         self.plugins  = plugins
         self.loaderPlugins = data
+
+    def getNameThread(self):
+        return 'Starting Thread:' + self.objectName()
+
     def run(self):
         killSessions = True
         spoofFavicon = False
@@ -68,8 +189,11 @@ class Thread_sslstrip(QThread):
         strippingFactory              = http.HTTPFactory(timeout=10)
         strippingFactory.protocol     = StrippingProxy
         if not reactor.running:
-           self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
-           reactor.run(installSignalHandlers=False)
+            self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
+            try:
+                reactor.run(installSignalHandlers=False)
+            except Exception:
+                pass
     def stop(self):
         print 'Stop thread:' + self.objectName()
 
@@ -82,6 +206,9 @@ class Thread_sergioProxy(QThread):
         self.port          = port
         self.PumpPlugins   = plugins
         self.loaderPlugins = options
+
+    def getNameThread(self):
+        return 'Starting Thread:' + self.objectName()
 
     def run(self):
         killSessions = True
@@ -194,8 +321,11 @@ class Thread_sergioProxy(QThread):
         print "\nsslstrip " + sslstrip_version + " by Moxie Marlinspike running..."
         print "sergio-proxy v%s online" % sergio_version
         if not reactor.running:
-           self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
-           reactor.run(installSignalHandlers=False)
+            self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
+            try:
+                reactor.run(installSignalHandlers=False)
+            except Exception:
+                pass
 
     def stop(self):
         print 'Stop thread:' + self.objectName()

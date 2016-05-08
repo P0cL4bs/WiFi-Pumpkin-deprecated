@@ -1,5 +1,6 @@
 from re import search
-from Core.Utils import set_monitor_mode,ThreadProbeScan
+from Core.Utils import set_monitor_mode
+from Core.packets.wireless import ThreadProbeScan
 from Core.loaders.Stealth.PackagesUI import *
 
 """
@@ -29,7 +30,6 @@ class frm_PMonitor(PumpkinModule):
         self.Main       = QVBoxLayout()
         self.Requests   = []
         self.data       = {'Devices':[],'MacAddress': [], 'SSIDs':[]}
-        self.interface  = str(self.configure.xmlSettings("interface", "monitor_mode", None, False))
         self.loadtheme(self.configure.XmlThemeSelected())
         self.setWindowTitle("Probe Request wifi Monitor")
         self.setWindowIcon(QIcon('Icons/icon.ico'))
@@ -45,6 +45,8 @@ class frm_PMonitor(PumpkinModule):
         self.tables = QTableWidget(5,3)
         self.tables.setRowCount(100)
         self.tables.setFixedHeight(300)
+        self.tables.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.tables.horizontalHeader().setStretchLastSection(True)
         self.tables.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tables.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tables.resizeColumnsToContents()
@@ -57,6 +59,7 @@ class frm_PMonitor(PumpkinModule):
         for key in reversed(self.data.keys()):
             Headers.append(key)
         self.tables.setHorizontalHeaderLabels(Headers)
+        self.tables.verticalHeader().setDefaultSectionSize(23)
 
         self.btn_scan = QPushButton('Start')
         self.btn_stop = QPushButton('Stop')

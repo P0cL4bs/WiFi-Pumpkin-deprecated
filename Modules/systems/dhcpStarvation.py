@@ -1,4 +1,4 @@
-from Core.Utils import ThreadAttackStar
+from Core.packets.network import ThreadAttackStar
 from Core.loaders.Stealth.PackagesUI import *
 """
 Description:

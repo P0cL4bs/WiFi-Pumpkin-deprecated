@@ -1,11 +1,12 @@
-from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 from os import popen,chdir,getcwd
 from urllib2 import urlopen,URLError
 from BeautifulSoup import BeautifulSoup
-from Core.config.Settings import frm_Settings
-from Core.Utils import Beef_Hook_url,ThreadPhishingServer
-from Modules.servers.ServerHTTP  import ServerThreadHTTP,ServerHandler
+from Core.Utils import ThreadPhishingServer
+from Core.utility.extract import Beef_Hook_url
+from Core.utility.settings import frm_Settings
+from Modules.servers.ServerHTTP  import ServerThreadHTTP
 """
 Description:
     This program is a module for wifi-pumpkin.py file which includes functionality

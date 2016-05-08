@@ -1,11 +1,14 @@
 #!/usr/bin/env python2.7
-from sys import argv,exit
+from sys import argv,exit,version_info
+if version_info.major != 2:
+    print ('WiFi-Pumpkin need Python 2 :(')
+    exit(-1)
+
 from os import getuid
-from PyQt4.QtGui import QApplication,QIcon
 from Core.Main import Initialize
-from Core.loaders.checker.Privilege import frm_privelege
-from Core.loaders.checker.check_depen import check_dependencies
-from Core.Utils import Refactor,ExecRootApp
+from Core.Utils import ExecRootApp
+from PyQt4.QtGui import QApplication
+from Core.loaders.checker.check_depen import check_dep_pumpkin,RED,ENDC
 
 """
 Author : Marcos Nesster - mh4root@gmail.com  PocL4bs Team
@@ -32,11 +35,8 @@ Copyright:
 
 
 if __name__ == '__main__':
-    check_dependencies()
-    main = QApplication(argv)
+    check_dep_pumpkin()
     if not getuid() == 0:
-        priv = frm_privelege()
-        priv.setWindowIcon(QIcon('Icons/icon.ico'))
-        priv.show(),main.exec_()
-        exit(Refactor.threadRoot(priv.Editpassword.text()))
+        exit('{}[!] WiFi-Pumpkin must be run as root{}'.format(RED,ENDC))
+    main = QApplication(argv)
     ExecRootApp(Initialize,main)

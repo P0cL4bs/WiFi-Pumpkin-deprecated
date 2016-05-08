@@ -1,7 +1,7 @@
-from PyQt4.QtGui import *
-from xml.dom import minidom
-from PyQt4.QtCore import *
 from re import search
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from Core.utility.collection import SettingsINI
 
 """
 Description:
@@ -27,11 +27,10 @@ class frm_Settings(QDialog):
     def __init__(self, parent = None):
         super(frm_Settings, self).__init__(parent)
         self.setWindowTitle('Settings WiFi-Pompkin')
-        self.Main = QVBoxLayout()
-        self.frm = QFormLayout()
+        self.Settings = SettingsINI('Core/config/app/config.ini')
+        self.loadtheme(self.XmlThemeSelected())
         self.setGeometry(0, 0, 420, 300)
         self.center()
-        self.loadtheme(self.XmlThemeSelected())
         self.Qui()
 
     def loadtheme(self,theme):
@@ -40,58 +39,40 @@ class frm_Settings(QDialog):
             self.setStyleSheet(fh.read())
 
     def XmlThemeSelected(self):
-        theme = self.xmlSettings('themes', 'selected',None,False)
-        return theme
+        return self.Settings.get_setting('settings','themes')
+
     def center(self):
         frameGm = self.frameGeometry()
         centerPoint = QDesktopWidget().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
-    def xmlSettings(self,id,data,bool,show=False):
-        xmldoc = minidom.parse('Core/config/Settings.xml')
-        country = xmldoc.getElementsByTagName(id)
-        firstchild = country[0]
-        if bool != None:
-            firstchild.attributes[data].value = bool
-        xmldoc.writexml( open('Core/config/Settings.xml', 'w'))
-
-        return firstchild.attributes[data].value
-
     def save_settings(self):
-        if self.AP_0.isChecked():
-            self.xmlSettings('accesspoint','actived','hostapd',False)
-        elif self.AP_1.isChecked():
-            self.xmlSettings('accesspoint','actived','airbase-ng',False)
         if self.d_scapy.isChecked():
-            self.xmlSettings('deauth','select','packets_scapy',False)
+            self.Settings.set_setting('settings','deauth','packets_scapy')
         elif self.d_mdk.isChecked():
-            self.xmlSettings('deauth','select','packets_mdk3',False)
-
+            self.Settings.set_setting('settings','deauth','packets_mdk3')
         if self.scan_scapy.isChecked():
-            self.xmlSettings('scanner_AP', 'select', 'scan_scapy',False)
+            self.Settings.set_setting('settings','scanner_AP','scan_scapy')
         elif self.scan_airodump.isChecked():
-            self.xmlSettings('scanner_AP', 'select', 'scan_airodump', False)
-
+            self.Settings.set_setting('settings','scanner_AP','scan_airodump')
         if self.dhcp1.isChecked():
-            self.xmlSettings('dhcp','dhcp_server','iscdhcpserver',False)
-        elif self.dhcp2.isChecked():
-            self.xmlSettings('dhcp','dhcp_server','dnsmasq',False)
+            self.Settings.set_setting('accesspoint','dhcp_server','iscdhcpserver')
         if self.theme1.isChecked():
-            self.xmlSettings('themes','selected','themes/theme1',False)
+            self.Settings.set_setting('settings','themes','themes/theme1')
         elif self.theme2.isChecked():
-            self.xmlSettings('themes','selected','themes/theme2',False)
+            self.Settings.set_setting('settings','themes','themes/theme2')
         if self.scan1.isChecked():
-            self.xmlSettings('advanced','Function_scan','Ping',False)
+            self.Settings.set_setting('settings','Function_scan','Ping')
         elif self.scan2.isChecked():
-            self.xmlSettings('advanced','Function_scan','Nmap',False)
-        self.txt_arguments.setText(self.xmlSettings('mdk3', 'arguments', str(self.txt_arguments.text()), False))
-        self.txt_ranger.setText(self.xmlSettings('scan','rangeIP',str(self.txt_ranger.text()),False))
-        self.interface.setText(self.xmlSettings('interface', 'monitor_mode', str(self.interface.text()), False))
-        self.Apname.setText(self.xmlSettings('AP', 'name', str(self.Apname.text()), False))
-        self.xmlSettings('channel', 'mchannel', str(self.channel.value()), False)
-        self.xmlSettings('redirect', 'port', str(self.redirectport.text()), False)
-        self.xmlSettings('netcreds', 'interface', str(self.InterfaceNetCreds.text()), False)
+            self.Settings.set_setting('settings','Function_scan','Nmap')
+
+        self.Settings.set_setting('settings','mdk3',str(self.txt_arguments.text()))
+        self.Settings.set_setting('settings','scanner_rangeIP',str(self.txt_ranger.text()))
+        self.Settings.set_setting('accesspoint','interface',str(self.interface.text()))
+        self.Settings.set_setting('accesspoint','APname', str(self.Apname.text()))
+        self.Settings.set_setting('accesspoint','channel', str(self.channel.value()))
+        self.Settings.set_setting('settings','redirect_port', str(self.redirectport.text()))
         with open('Core/config/hostapd/hostapd+.conf','w') as apconf:
             apconf.write(self.ListHostapd.toPlainText())
         self.close()
@@ -164,6 +145,8 @@ class frm_Settings(QDialog):
             if search('--to-destination 10.0.0.1:80',j):
                 self.ListRules.takeItem(i)
     def Qui(self):
+        self.Main = QVBoxLayout()
+        self.frm  = QFormLayout()
         self.form = QFormLayout(self)
         self.tabcontrol = QTabWidget(self)
 
@@ -219,7 +202,6 @@ class frm_Settings(QDialog):
         self.Apname =  QLineEdit(self)
         self.channel = QSpinBox(self)
         self.redirectport = QLineEdit(self)
-        self.InterfaceNetCreds = QLineEdit(self)
 
         # page Iptables
         self.ListRules = QListWidget(self)
@@ -230,10 +212,9 @@ class frm_Settings(QDialog):
         self.ListRules.connect(self.ListRules,
         SIGNAL('customContextMenuRequested(QPoint)'),
         self.listItemclicked)
-        for i in range(4):
-            j = self.xmlSettings('rules'+str(i),'value',None,False)
+        for ech in self.Settings.get_all_childname('iptables'):
             item = QListWidgetItem()
-            item.setText(j)
+            item.setText(self.Settings.get_setting('iptables',ech))
             item.setSizeHint(QSize(30,30))
             self.ListRules.addItem(item)
         self.check_redirect = QCheckBox('add Redirect all Port 80 to ipaddress::10.0.0.1')
@@ -262,34 +243,35 @@ class frm_Settings(QDialog):
         self.gruButtonPag2.addButton(self.scan2)
 
         #page 1
-        self.AP_check = self.xmlSettings('accesspoint','actived',None,False)
-        self.deauth_check = self.xmlSettings('deauth','select',None,False)
-        self.scan_AP_check = self.xmlSettings('scanner_AP', 'select', None, False)
-        self.dhcp_check = self.xmlSettings('dhcp', 'dhcp_server', None, False)
-        self.txt_ranger.setText(self.xmlSettings('scan', 'rangeIP', None, False))
-        self.txt_arguments.setText(self.xmlSettings('mdk3', 'arguments', None, False))
+        self.AP_check = self.Settings.get_setting('accesspoint','using')
+        self.deauth_check = self.Settings.get_setting('settings','deauth')
+        self.scan_AP_check = self.Settings.get_setting('settings','scanner_AP')
+        self.dhcp_check = self.Settings.get_setting('accesspoint', 'dhcp_server')
+        self.theme_selected = self.Settings.get_setting('settings','themes')
+        self.txt_ranger.setText(self.Settings.get_setting('settings','scanner_rangeIP'))
+        self.txt_arguments.setText(self.Settings.get_setting('settings','mdk3'))
 
         # setting page 1
-        self.scanIP_selected  = self.xmlSettings('advanced','Function_scan',None,False)
+        self.scanIP_selected  = self.Settings.get_setting('settings','Function_scan')
         if self.scanIP_selected == 'Ping':
             self.scan1.setChecked(True)
             self.scan2.setChecked(False)
         elif self.scanIP_selected == 'Nmap':
             self.scan2.setChecked(True)
             self.scan1.setChecked(False)
-        if self.AP_check == "hostapd":self.AP_0.setChecked(True)
-        elif self.AP_check == "airbase-ng":self.AP_1.setChecked(True)
-
-        if self.deauth_check == 'packets_mdk3':self.d_mdk.setChecked(True)
-        else:self.d_scapy.setChecked(True)
-
-        if self.dhcp_check == 'iscdhcpserver':self.dhcp1.setChecked(True)
-        else:self.dhcp2.setChecked(True)
-
-        if self.scan_AP_check == 'scan_scapy': self.scan_scapy.setChecked(True)
-        else:self.scan_airodump.setChecked(True)
-
-        self.theme_selected = self.xmlSettings('themes', 'selected', None, False)
+        if self.AP_check == 'hostapd': self.AP_0.setChecked(True)
+        if self.deauth_check == 'packets_mdk3':
+            self.d_mdk.setChecked(True)
+        else:
+            self.d_scapy.setChecked(True)
+        if self.dhcp_check == 'iscdhcpserver':
+            self.dhcp1.setChecked(True)
+        else:
+            self.dhcp2.setChecked(True)
+        if self.scan_AP_check == 'scan_scapy':
+            self.scan_scapy.setChecked(True)
+        else:
+            self.scan_airodump.setChecked(True)
         if self.theme_selected == 'themes/theme1':
             self.theme1.setChecked(True)
         else:
@@ -313,11 +295,11 @@ class frm_Settings(QDialog):
         self.page_1.addRow(self.theme2)
 
         #settings tab Advanced
-        self.interface.setText(self.xmlSettings('interface', 'monitor_mode', None, False))
-        self.Apname.setText(self.xmlSettings('AP', 'name', None, False))
-        self.channel.setValue(int(self.xmlSettings('channel', 'mchannel', None, False)))
-        self.redirectport.setText(self.xmlSettings('redirect', 'port', None, False))
-        self.InterfaceNetCreds.setText(self.xmlSettings('netcreds', 'interface', None, False))
+        self.interface.setText(self.Settings.get_setting('accesspoint','interface'))
+        self.Apname.setText(self.Settings.get_setting('accesspoint','APname'))
+        self.channel.setValue(int(self.Settings.get_setting('accesspoint','channel')))
+        self.redirectport.setText(self.Settings.get_setting('settings','redirect_port'))
+
         #add tab Advanced
         self.page_2.addRow(QLabel('Thread ScanIP:'))
         self.page_2.addRow(self.scan1)
@@ -326,7 +308,6 @@ class frm_Settings(QDialog):
         self.page_2.addRow('AP Name:',self.Apname)
         self.page_2.addRow('Channel:',self.channel)
         self.page_2.addRow('Port sslstrip:',self.redirectport)
-        self.page_2.addRow('NetCreds Interface:',self.InterfaceNetCreds)
         self.page_2.addRow(QLabel('mdk3 Args:'),self.txt_arguments)
         self.page_2.addRow(QLabel('Range ARP Posion:'),self.txt_ranger)
 

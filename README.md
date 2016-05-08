@@ -10,7 +10,7 @@ WiFi-Pumpkin is a security tool that provides the Rogue access point to Man-In-T
 ### Installation
 
 Kali 2.0/WifiSlax 4.11.1/Parrot 2.0.5
-
+- Python 2.7
 ```sh
  git clone https://github.com/P0cL4bs/WiFi-Pumpkin.git
  cd WiFi-Pumpkin
@@ -35,12 +35,12 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 * DNS Spoof 
 
 ### Plugins
-- [net-creds](https://github.com/DanMcInerney/net-creds) - Sniff passwords and hashes from an interface or pcap file
-- [dns2proxy](https://github.com/LeonardoNve/dns2proxy) - This tools offer a different features for post-explotation once you change the DNS server to a Victim.
-- [sslstrip2](https://github.com/LeonardoNve/sslstrip2) - Sslstrip is a MITM tool that implements Moxie Marlinspike's SSL stripping 
-attacks based version fork @LeonardoNve/@xtr4nge.
-- [sergio-proxy](https://github.com/supernothing/sergio-proxy) - Sergio Proxy (a Super Effective Recorder of Gathered Inputs and Outputs) is an
-HTTP proxy that was written in Python for the Twisted framework.
+| Plugin | Description | 
+|:-----------|:------------|
+[net-creds](https://github.com/DanMcInerney/net-creds) | Sniff passwords and hashes from an interface or pcap file
+[dns2proxy](https://github.com/LeonardoNve/dns2proxy) | This tools offer a different features for post-explotation once you change the DNS server to a Victim.
+[sslstrip2](https://github.com/LeonardoNve/sslstrip2) | Sslstrip is a MITM tool that implements Moxie Marlinspike's SSL stripping attacks based version fork @LeonardoNve/@xtr4nge.
+[sergio-proxy](https://github.com/supernothing/sergio-proxy) | Sergio Proxy (a Super Effective Recorder of Gathered Inputs and Outputs) is an HTTP proxy that was written in Python for the Twisted framework.
 
 
 ### Transparent Proxy
@@ -82,5 +82,30 @@ class blurpage(PluginProxy):
 ```
  
 ### Screenshots
-![Tool Home](https://dl.dropboxusercontent.com/u/97321327/evil/evil7.3.png)
-![Tool demo](https://dl.dropboxusercontent.com/u/97321327/evil/demo7.3.png)
+[Screenshot](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Screenshots) on the wiki 
+
+### FAQ
+> I can't install it
+
+have a look at the [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Installation)
+
+> I have this message warning [Error Network Card](https://github.com/P0cL4bs/WiFi-Pumpkin/issues/14)
+
+You system not have support run Wifi-Pumpkin with Wireless connection
+
+> hi , is it work on X Wireless Adapters ?
+
+I don't know, check this [page](https://wireless.wiki.kernel.org/welcome)
+
+> I can't install package X 
+
+Try installing the package via pip, Google is your friend!
+
+> It Windows supported?
+
+No, It will never be
+
+### Contact Us
+Whether you want to report a [bug](https://github.com/P0cL4bs/WiFi-Pumpkin/issues/new), send a patch or give some suggestions on this package, drop us or open [pull requests](https://github.com/P0cL4bs/WiFi-Pumpkin/pulls) 
+
+Happy MITM! 

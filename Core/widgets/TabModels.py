@@ -3,8 +3,9 @@ from os import path
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from datetime import datetime
-from Core.Utils import Refactor,ThreadPopen
-from Core.config.Settings import frm_Settings
+from Core.utility.threads import ThreadPopen
+from Core.utility.settings import frm_Settings
+from Core.widgets.docks.DockMonitor import dockAreaAPI
 from Plugins.sergio_proxy.sslstrip.ProxyPlugins import ProxyPlugins
 """
 Description:
@@ -247,25 +248,30 @@ class PumpkinMonitor(QVBoxLayout):
 class PumpkinSettings(QVBoxLayout):
     ''' settings DHCP options'''
     sendMensage = pyqtSignal(str)
-    def __init__(self, parent = None):
+    checkDockArea = pyqtSignal(dict)
+    def __init__(self, parent = None,dockinfo=None,InitialMehtod=None):
         super(PumpkinSettings, self).__init__(parent)
+        self.InitialMehtod   = InitialMehtod
+        self.dockInfo      = dockinfo
         self.SettingsDHCP  = {}
         self.FSettings     = frm_Settings()
         self.mainLayout    = QFormLayout()
         self.GroupDHCP     = QGroupBox()
+        self.GroupArea     = QGroupBox()
         self.layoutDHCP    = QFormLayout()
+        self.layoutArea    = QFormLayout()
         self.layoutbuttons = QHBoxLayout()
         self.btnDefault    = QPushButton('default')
         self.btnSave       = QPushButton('save settings')
         self.btnSave.setIcon(QIcon('Icons/export.png'))
         self.btnDefault.setIcon(QIcon('Icons/settings.png'))
-        self.leaseTime_def = QLineEdit(self.FSettings.xmlSettings('leasetimeDef', 'value',None))
-        self.leaseTime_Max = QLineEdit(self.FSettings.xmlSettings('leasetimeMax', 'value',None))
-        self.netmask       = QLineEdit(self.FSettings.xmlSettings('netmask', 'value',None))
-        self.range_dhcp    = QLineEdit(self.FSettings.xmlSettings('range', 'value',None))
-        self.route         = QLineEdit(self.FSettings.xmlSettings('router', 'value',None))
-        self.subnet        = QLineEdit(self.FSettings.xmlSettings('subnet', 'value',None))
-        self.broadcast     = QLineEdit(self.FSettings.xmlSettings('broadcast', 'value',None))
+        self.leaseTime_def = QLineEdit(self.FSettings.Settings.get_setting('dhcp','leasetimeDef'))
+        self.leaseTime_Max = QLineEdit(self.FSettings.Settings.get_setting('dhcp','leasetimeMax'))
+        self.netmask       = QLineEdit(self.FSettings.Settings.get_setting('dhcp','netmask'))
+        self.range_dhcp    = QLineEdit(self.FSettings.Settings.get_setting('dhcp','range'))
+        self.route         = QLineEdit(self.FSettings.Settings.get_setting('dhcp','router'))
+        self.subnet        = QLineEdit(self.FSettings.Settings.get_setting('dhcp','subnet'))
+        self.broadcast     = QLineEdit(self.FSettings.Settings.get_setting('dhcp','broadcast'))
         self.GroupDHCP.setTitle('DHCP-Settings')
         self.GroupDHCP.setLayout(self.layoutDHCP)
         self.layoutDHCP.addRow('default-lease-time',self.leaseTime_def)
@@ -280,29 +286,110 @@ class PumpkinSettings(QVBoxLayout):
         self.layoutbuttons.addWidget(self.btnDefault)
         self.layoutDHCP.addRow(self.layoutbuttons)
 
+        # Area Group
+        self.gridArea = QGridLayout()
+        self.CB_ActiveMode = QCheckBox('::Advanced Mode:: Monitor MITM Attack')
+        self.CB_phising  = QCheckBox('Phishing')
+        self.CB_Cread    = QCheckBox('Credentials')
+        self.CB_monitorURL = QCheckBox('URL Monitor')
+        self.CB_ActiveMode.setChecked(self.FSettings.Settings.get_setting('dockarea','advanced',format=bool))
+        self.CB_Cread.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_credencials',format=bool))
+        self.CB_monitorURL.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_urlmonitor',format=bool))
+        self.CB_phising.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_phishing',format=bool))
+
+        #connect
+        self.doCheckAdvanced()
+        self.CB_ActiveMode.clicked.connect(self.doCheckAdvanced)
+        self.CB_phising.clicked.connect(self.doCheckAdvanced)
+        self.CB_monitorURL.clicked.connect(self.doCheckAdvanced)
+        self.CB_Cread.clicked.connect(self.doCheckAdvanced)
+        # group
+        self.layoutArea.addRow(self.CB_ActiveMode)
+        self.gridArea.addWidget(self.CB_monitorURL,0,0,)
+        self.gridArea.addWidget(self.CB_Cread,0,1)
+        self.gridArea.addWidget(self.CB_phising,0,2)
+        self.layoutArea.addRow(self.gridArea)
+        self.GroupArea.setTitle('MonitorArea-Settings')
+        self.GroupArea.setLayout(self.layoutArea)
+
         # connects
         self.btnDefault.clicked.connect(self.setdefaultSettings)
         self.btnSave.clicked.connect(self.savesettingsDHCP)
+        self.mainLayout.addRow(self.GroupArea)
         self.mainLayout.addRow(self.GroupDHCP)
         self.addLayout(self.mainLayout)
 
+    def AreaWidgetLoader(self,DockInfo):
+        if hasattr(self,'dockList'):
+            for dock in self.dockList: dock.close()
+        self.AllDockArea = {}
+        if self.FSettings.Settings.get_setting('dockarea','advanced',format=bool):
+            self.dockList = []
+            for key in DockInfo.keys():
+                if DockInfo[key]['active']:
+                    self.dock = QDockWidget(key)
+                    self.AllDockArea[key] = dockAreaAPI(None,DockInfo[key])
+                    self.dock.setWidget(self.AllDockArea[key])
+                    self.dock.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                    self.dock.setAllowedAreas(Qt.AllDockWidgetAreas)
+                    self.dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+                    self.InitialMehtod.addDockWidget(Qt.RightDockWidgetArea, self.dock)
+                    self.dockList.insert(0,self.dock)
+            if len(self.dockList) > 1:
+                for index in range(1, len(self.dockList) - 1):
+                    if self.dockList[index].objectName() != ':: URLMonitor::':
+                        self.InitialMehtod.tabifyDockWidget(self.dockList[index],
+                            self.dockList[index + 1])
+            try:
+                self.dockList[0].raise_()
+            except IndexError:
+                pass
+            self.checkDockArea.emit(self.AllDockArea)
+
+
+    def doCheckAdvanced(self):
+        if self.CB_ActiveMode.isChecked():
+            self.CB_monitorURL.setEnabled(True)
+            self.CB_phising.setEnabled(True)
+            self.CB_Cread.setEnabled(True)
+        else:
+            self.CB_monitorURL.setEnabled(False)
+            self.CB_phising.setEnabled(False)
+            self.CB_Cread.setEnabled(False)
+        self.FSettings.Settings.set_setting('dockarea','dock_credencials',self.CB_Cread.isChecked())
+        self.FSettings.Settings.set_setting('dockarea','dock_phishing',self.CB_phising.isChecked())
+        self.FSettings.Settings.set_setting('dockarea','dock_urlmonitor',self.CB_monitorURL.isChecked())
+        self.FSettings.Settings.set_setting('dockarea','advanced',self.CB_ActiveMode.isChecked())
+        self.dockInfo[':: URLMonitor::']['active'] = self.CB_monitorURL.isChecked()
+        self.dockInfo['::Credentials:: ']['active'] = self.CB_Cread.isChecked()
+        self.dockInfo['::Pumpkin-Phishing:: ']['active'] = self.CB_phising.isChecked()
+        if self.CB_ActiveMode.isChecked():
+            self.AreaWidgetLoader(self.dockInfo)
+            self.checkDockArea.emit(self.AllDockArea)
+        else:
+            if hasattr(self,'dockList'):
+                for dock in self.dockList: dock.close()
+            self.InitialMehtod.setGeometry(0, 0, 370, 520)
+            self.InitialMehtod.center()
+
+
     def setdefaultSettings(self):
-        self.leaseTime_def.setText(self.FSettings.xmlSettings('D-leasetimeDef', 'value',None))
-        self.leaseTime_Max.setText(self.FSettings.xmlSettings('D-leasetimeMax', 'value',None))
-        self.netmask.setText(self.FSettings.xmlSettings('D-netmask', 'value',None))
-        self.range_dhcp.setText(self.FSettings.xmlSettings('D-range', 'value',None))
-        self.route.setText(self.FSettings.xmlSettings('D-router', 'value',None))
-        self.subnet.setText(self.FSettings.xmlSettings('D-subnet', 'value',None))
-        self.broadcast.setText(self.FSettings.xmlSettings('D-broadcast', 'value',None))
+        self.leaseTime_def.setText(self.FSettings.Settings.get_setting('dhcpdefault','leasetimeDef'))
+        self.leaseTime_Max.setText(self.FSettings.Settings.get_setting('dhcpdefault','leasetimeMax'))
+        self.netmask.setText(self.FSettings.Settings.get_setting('dhcpdefault','netmask'))
+        self.range_dhcp.setText(self.FSettings.Settings.get_setting('dhcpdefault','range'))
+        self.route.setText(self.FSettings.Settings.get_setting('dhcpdefault','router'))
+        self.subnet.setText(self.FSettings.Settings.get_setting('dhcpdefault','subnet'))
+        self.broadcast.setText(self.FSettings.Settings.get_setting('dhcpdefault','broadcast'))
 
     def savesettingsDHCP(self):
-        self.FSettings.xmlSettings('leasetimeDef', 'value',str(self.leaseTime_def.text()))
-        self.FSettings.xmlSettings('leasetimeMax', 'value',str(self.leaseTime_Max.text()))
-        self.FSettings.xmlSettings('netmask', 'value', str(self.netmask.text()))
-        self.FSettings.xmlSettings('range', 'value',str(self.range_dhcp.text()))
-        self.FSettings.xmlSettings('router', 'value',str(self.route.text()))
-        self.FSettings.xmlSettings('subnet', 'value',str(self.subnet.text()))
-        self.FSettings.xmlSettings('broadcast', 'value',str(self.broadcast.text()))
+        self.FSettings.Settings.set_setting('dhcp','leasetimeDef',str(self.leaseTime_def.text()))
+        self.FSettings.Settings.set_setting('dhcp','leasetimeMax',str(self.leaseTime_Max.text()))
+        self.FSettings.Settings.set_setting('dhcp','netmask',str(self.netmask.text()))
+        self.FSettings.Settings.set_setting('dhcp','range',str(self.range_dhcp.text()))
+        self.FSettings.Settings.set_setting('dhcp','router',str(self.route.text()))
+        self.FSettings.Settings.set_setting('dhcp','subnet',str(self.subnet.text()))
+        self.FSettings.Settings.set_setting('dhcp','broadcast',str(self.broadcast.text()))
         self.btnSave.setEnabled(False)
         self.sendMensage.emit('settings DHCP saved with success...')
         self.btnSave.setEnabled(True)

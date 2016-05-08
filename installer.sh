@@ -16,7 +16,7 @@ func_Banner(){
 	echo '   ============================='
 	echo "   |$bldblu wifi-pumpkin Installer$txtrst|"
 	echo '   ============================='
-	echo "          Version: $(tput setaf 5)0.7.3 $txtrst"
+	echo "          Version: $(tput setaf 5)0.7.5 $txtrst"
 	echo "usage: ./installer.sh --install | --uninstall"
 }
 
@@ -49,6 +49,7 @@ func_install(){
 	fi
 	apt-get update
 	apt-get install -y python-qt4 python-scapy php5-cli hostapd rfkill
+	apt-get install -y python-dev
     pip install -r requirements.txt
     File="/etc/apt/sources.list"
     if  grep -q '#Wifi Pumpkin' $File;then
@@ -117,7 +118,7 @@ func_install(){
 		echo "[$green✔$txtrst] wifi-pumpkin installed with success"
 		echo "[$green✔$txtrst] execute $bldred wifi-pumpkin$txtrst in terminal"
 	fi
-	echo "[$green+$txtrst]$color_y P0cL4bs Team CopyRight 2015$txtrst"
+	echo "[$green+$txtrst]$color_y P0cL4bs Team CopyRight 2015-2016$txtrst"
 	echo "[$green+$txtrst] Enjoy"
 	exit 0
 }

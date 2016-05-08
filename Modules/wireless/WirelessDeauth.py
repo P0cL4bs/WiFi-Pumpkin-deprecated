@@ -1,8 +1,8 @@
 import threading
 from os import popen,path,makedirs
 from re import search
-from Core.Utils import ProcessThread,airdump_start,\
-get_network_scan,set_monitor_mode,ThreadDeauth,ThreadScannerAP
+from Core.packets.wireless import ThreadDeauth,ThreadScannerAP
+from Core.utility.extract import airdump_start,get_network_scan
 from Core.loaders.Stealth.PackagesUI import *
 threadloading = {'deauth':[],'mdk3':[]}
 
@@ -33,7 +33,6 @@ class frm_deauth(PumpkinModule):
         self.Main           = QVBoxLayout()
         self.setWindowTitle("Deauth Attack wireless Route")
         self.setWindowIcon(QIcon('Icons/icon.ico'))
-        self.interface      = self.configure.xmlSettings("interface", "monitor_mode", None, False)
         self.ApsCaptured    = {}
         self.data           = {'Bssid':[], 'Essid':[], 'Channel':[]}
         self.loadtheme(self.configure.XmlThemeSelected())
@@ -74,6 +73,8 @@ class frm_deauth(PumpkinModule):
         self.tables.setFixedWidth(350)
         self.tables.setRowCount(100)
         self.tables.setFixedHeight(250)
+        self.tables.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.tables.horizontalHeader().setStretchLastSection(True)
         self.tables.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tables.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tables.clicked.connect(self.select_target)
@@ -81,12 +82,13 @@ class frm_deauth(PumpkinModule):
         self.tables.resizeRowsToContents()
         self.tables.horizontalHeader().resizeSection(1,120)
         self.tables.horizontalHeader().resizeSection(0,60)
-        self.tables.horizontalHeader().resizeSection(2,158)
+        self.tables.horizontalHeader().resizeSection(2,150)
         self.tables.verticalHeader().setVisible(False)
         Headers = []
         for n, key in enumerate(self.data.keys()):
             Headers.append(key)
         self.tables.setHorizontalHeaderLabels(Headers)
+        self.tables.verticalHeader().setDefaultSectionSize(23)
 
 
         self.linetarget = QLineEdit(self)
@@ -121,7 +123,7 @@ class frm_deauth(PumpkinModule):
 
         #grid options
         self.Grid = QGridLayout()
-        self.options_scan = self.configure.xmlSettings("scanner_AP", "select", None, False)
+        self.options_scan = self.configure.Settings.get_setting('settings','scanner_AP')
 
         self.Grid.addWidget(self.get_placa,0,1)
         self.Grid.addWidget(self.btn_scan_start,0,2)
@@ -206,7 +208,6 @@ class frm_deauth(PumpkinModule):
             QMessageBox.information(self, "Network Adapter", 'Network Adapter Not found try again.')
         else:
             self.interface = str(set_monitor_mode(self.get_placa.currentText()).setEnable())
-            self.configure.xmlSettings("interface", "monitor_mode", self.interface, False)
             self.btn_scan_stop.setEnabled(True)
             self.btn_scan_start.setEnabled(False)
             if self.interface != None:
@@ -239,8 +240,8 @@ class frm_deauth(PumpkinModule):
             QMessageBox.information(self, 'Target Error', 'Please, first select Target for attack')
         else:
             self.bssid = str(self.linetarget.text())
-            self.deauth_check = self.configure.xmlSettings('deauth', 'select',None,False)
-            self.args = str(self.configure.xmlSettings('mdk3','arguments', None, False))
+            self.deauth_check = self.configure.Settings.get_setting('settings','deauth')
+            self.args = str(self.configure.Settings.get_setting('settings','mdk3'))
             self.interface = str(set_monitor_mode(self.get_placa.currentText()).setEnable())
             if self.deauth_check == 'packets_scapy':
                 self.AttackStatus(True)
