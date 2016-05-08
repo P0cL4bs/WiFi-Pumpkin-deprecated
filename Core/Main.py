@@ -926,8 +926,8 @@ class WifiPumpkin(QWidget):
         if self.FSettings.Settings.get_setting('dockarea','advanced',format=bool):
             self.PumpSettingsTAB.doCheckAdvanced()
             if hasattr(self,'dockAreaList'):
-                filelist = [ f for f in listdir(".") if f.endswith(".log.offset") ]
-                for f in filelist: remove(f)
+                filelist = [ f for f in listdir('Logs/AccessPoint/.') if f.endswith('.log.offset') ]
+                for f in filelist: Popen(['rm',f], stdout=PIPE,shell=False,stderr=PIPE)
                 for dock in self.dockAreaList.keys():
                     self.dockAreaList[dock].RunThread()
 

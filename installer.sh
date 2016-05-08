@@ -50,6 +50,7 @@ func_install(){
 	apt-get update
 	apt-get install -y python-qt4 python-scapy php5-cli hostapd rfkill
 	apt-get install -y python-dev
+	apt-get install -y libpcap-dev
     pip install -r requirements.txt
     File="/etc/apt/sources.list"
     if  grep -q '#Wifi Pumpkin' $File;then
