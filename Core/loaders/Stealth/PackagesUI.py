@@ -1,6 +1,6 @@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from Core.Utils import Refactor
+from Core.Utils import Refactor,set_monitor_mode
 from subprocess import Popen,PIPE
 from Core.utility.settings import frm_Settings
 from Modules.servers.PhishingManager import frm_PhishingManager
