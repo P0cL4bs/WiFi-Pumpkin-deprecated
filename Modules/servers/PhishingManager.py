@@ -61,22 +61,22 @@ class frm_PhishingManager(QWidget):
             self.statusLabel.setStyleSheet("QLabel {  color : red; }")
 
     def UI(self):
-        self.statusBar   = QStatusBar(self)
+        self.statusBar   = QStatusBar()
         self.statusLabel = QLabel('')
         self.statusBar.addWidget(QLabel('Status HTTP Server::'))
         self.StatusServer(False)
         self.statusBar.addWidget(self.statusLabel)
         # left page
-        self.frmHtml     = QFormLayout(self)
-        self.frmOutput   = QFormLayout(self)
+        self.frmHtml     = QFormLayout()
+        self.frmOutput   = QFormLayout()
 
         # right page
-        self.frmSettings = QFormLayout(self)
-        self.frmCheckBox = QFormLayout(self)
-        self.frmClone    = QFormLayout(self)
-        self.frmButtons  = QFormLayout(self)
-        self.frmright    = QFormLayout(self)
-        self.frmleft     = QFormLayout(self)
+        self.frmSettings = QFormLayout()
+        self.frmCheckBox = QFormLayout()
+        self.frmClone    = QFormLayout()
+        self.frmButtons  = QFormLayout()
+        self.frmright    = QFormLayout()
+        self.frmleft     = QFormLayout()
 
         #group checkbox
         self.check_custom   = QRadioButton('index.html  ')
@@ -179,7 +179,7 @@ class frm_PhishingManager(QWidget):
         self.frmleft.addRow(self.Group_Html)
         self.frmleft.addRow(self.Group_List)
 
-        layout = QHBoxLayout(self)
+        layout = QHBoxLayout()
         layout.addLayout(self.frmleft)
         layout.addLayout(self.frmright)
 

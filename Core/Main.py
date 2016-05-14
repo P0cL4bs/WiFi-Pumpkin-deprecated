@@ -81,8 +81,8 @@ class Initialize(QMainWindow):
     ''' Main window settings multi-window opened'''
     def __init__(self, parent=None):
         super(Initialize, self).__init__(parent)
-        self.form_widget    = WifiPumpkin(self,self)
         self.FSettings      = frm_Settings()
+        self.form_widget    = WifiPumpkin(self,self,self.FSettings)
         self.form_widget.setFixedHeight(540)
         self.form_widget.setFixedWidth(370)
         dock = QDockWidget()
@@ -121,17 +121,17 @@ class Initialize(QMainWindow):
 
 class WifiPumpkin(QWidget):
     ''' load main window class'''
-    def __init__(self, parent = None,window=QMainWindow):
+    def __init__(self, parent = None,window=None,Fsettings=None):
         self.InitialMehtod = window
         super(WifiPumpkin, self).__init__(parent)
         #self.create_sys_tray()
-        self.MainControl    = QVBoxLayout(self)
-        self.TabControl     = QTabWidget(self)
-        self.Tab_Default    = QWidget(self)
-        self.Tab_Injector   = QWidget(self)
-        self.Tab_Settings   = QWidget(self)
-        self.Tab_ApMonitor  = QWidget(self)
-        self.FSettings      = frm_Settings()
+        self.MainControl    = QVBoxLayout()
+        self.TabControl     = QTabWidget()
+        self.Tab_Default    = QWidget()
+        self.Tab_Injector   = QWidget()
+        self.Tab_Settings   = QWidget()
+        self.Tab_ApMonitor  = QWidget()
+        self.FSettings      = Fsettings
         #self.TabControl.setTabPosition(QTabWidget.w)
         self.TabControl.addTab(self.Tab_Default,'Home')
         self.TabControl.addTab(self.Tab_Injector,'Pump-Proxy')
@@ -182,7 +182,7 @@ class WifiPumpkin(QWidget):
         self.FormBanner.addRow(self.imagem)
 
     def InjectorTABContent(self):
-        self.ProxyPluginsTAB = PumpkinProxy(self.PopUpPlugins)
+        self.ProxyPluginsTAB = PumpkinProxy(self.PopUpPlugins,self.FSettings)
         self.ProxyPluginsTAB.sendError.connect(self.GetErrorInjector)
         self.ContentTabInject.addLayout(self.ProxyPluginsTAB)
 
@@ -195,11 +195,11 @@ class WifiPumpkin(QWidget):
         QMessageBox.information(self,'Settings DHCP',data)
 
     def ApMonitorTabContent(self):
-        self.PumpMonitorTAB = PumpkinMonitor()
+        self.PumpMonitorTAB = PumpkinMonitor(self.FSettings)
         self.ContentTabMonitor.addLayout(self.PumpMonitorTAB)
 
     def SettingsTABContent(self):
-        self.PumpSettingsTAB = PumpkinSettings(None,self.AreaDockInfo,self.InitialMehtod)
+        self.PumpSettingsTAB = PumpkinSettings(None,self.AreaDockInfo,self.InitialMehtod,self.FSettings)
         self.PumpSettingsTAB.checkDockArea.connect(self.getContentTabDock)
         self.PumpSettingsTAB.sendMensage.connect(self.GetmessageSave)
         self.ContentTabsettings.addLayout(self.PumpSettingsTAB)
@@ -235,7 +235,6 @@ class WifiPumpkin(QWidget):
         self.TabInfoAP.verticalHeader().setVisible(False)
         self.TabInfoAP.setHorizontalHeaderLabels(self.THeaders.keys())
         self.TabInfoAP.verticalHeader().setDefaultSectionSize(23)
-
         #edits
         self.mConfigure()
         self.FormGroup2 = QFormLayout()

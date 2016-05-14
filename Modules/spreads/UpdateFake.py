@@ -49,12 +49,12 @@ class frm_update_attack(PumpkinModule):
         event.ignore()
 
     def GUI(self):
-        self.form   = QFormLayout(self)
-        self.grid   = QGridLayout(self)
-        self.grid1  = QGridLayout(self)
+        self.form   = QFormLayout()
+        self.grid   = QGridLayout()
+        self.grid1  = QGridLayout()
         self.path   = QLineEdit(self)
         self.logBox = QListWidget(self)
-        self.status = QStatusBar(self)
+        self.status = QStatusBar()
         self.status.setFixedHeight(15)
         self.path.setFixedHeight(28)
         self.path.setFixedWidth(400)

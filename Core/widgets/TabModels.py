@@ -32,11 +32,11 @@ class PumpkinProxy(QVBoxLayout):
     ''' settings  Transparent Proxy '''
     sendError = pyqtSignal(str)
     _PluginsToLoader = {'Plugins': None,'Content':''}
-    def __init__(self,popup,parent = None):
+    def __init__(self,popup,FsettingsUI=None,parent = None):
         super(PumpkinProxy, self).__init__(parent)
         self.popup      = popup
         self.urlinjected= []
-        self.FSettings  = frm_Settings()
+        self.FSettings  = FsettingsUI
         self.Home       = QFormLayout()
         self.statusbar  = QStatusBar()
         self.lname      = QLabel('Proxy::scripts::')
@@ -190,9 +190,9 @@ class PumpkinProxy(QVBoxLayout):
 
 class PumpkinMonitor(QVBoxLayout):
     ''' Monitor Access Point cleints connections'''
-    def __init__(self, parent = None):
+    def __init__(self,FsettingsUI=None ,parent = None):
         super(PumpkinMonitor, self).__init__(parent)
-        self.FSettings      = frm_Settings()
+        self.FSettings      = FsettingsUI
         self.Home           = QFormLayout()
         self.GroupMonitor   = QGroupBox()
         self.MonitorTreeView= QTreeView()
@@ -249,12 +249,12 @@ class PumpkinSettings(QVBoxLayout):
     ''' settings DHCP options'''
     sendMensage = pyqtSignal(str)
     checkDockArea = pyqtSignal(dict)
-    def __init__(self, parent = None,dockinfo=None,InitialMehtod=None):
+    def __init__(self, parent = None,dockinfo=None,InitialMehtod=None,FsettingsUI=None):
         super(PumpkinSettings, self).__init__(parent)
         self.InitialMehtod   = InitialMehtod
         self.dockInfo      = dockinfo
         self.SettingsDHCP  = {}
-        self.FSettings     = frm_Settings()
+        self.FSettings     = FsettingsUI
         self.mainLayout    = QFormLayout()
         self.GroupDHCP     = QGroupBox()
         self.GroupArea     = QGroupBox()

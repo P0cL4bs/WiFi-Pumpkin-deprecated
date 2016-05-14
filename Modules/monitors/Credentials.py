@@ -5,7 +5,7 @@ class frm_get_credentials(PumpkinModule):
     def __init__(self, parent = None):
         super(frm_get_credentials, self).__init__(parent)
         self.setGeometry(0, 0, 400, 400)
-        self.Main       = QVBoxLayout(self)
+        self.Main       = QVBoxLayout()
         self.owd        = getcwd()
         self.thread     = []
         self.loadtheme(self.configure.XmlThemeSelected())
@@ -33,7 +33,7 @@ class frm_get_credentials(PumpkinModule):
         for i in self.thread:i.stop()
         self.deleteLater()
     def Qui(self):
-        self.frm0 = QFormLayout(self)
+        self.frm0 = QFormLayout()
         self.listDns = QListWidget(self)
         self.listDns.setFixedHeight(300)
         self.listDns.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)

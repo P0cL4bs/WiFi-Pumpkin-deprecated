@@ -147,7 +147,7 @@ class frm_Settings(QDialog):
     def Qui(self):
         self.Main = QVBoxLayout()
         self.frm  = QFormLayout()
-        self.form = QFormLayout(self)
+        self.form = QFormLayout()
         self.tabcontrol = QTabWidget(self)
 
         # tabs
@@ -207,7 +207,6 @@ class frm_Settings(QDialog):
         self.ListRules = QListWidget(self)
         self.ListRules.setFixedHeight(300)
         self.ListRules.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.ListRules.setMinimumWidth(self.ListRules.sizeHintForColumn(100))
         self.ListRules.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ListRules.connect(self.ListRules,
         SIGNAL('customContextMenuRequested(QPoint)'),

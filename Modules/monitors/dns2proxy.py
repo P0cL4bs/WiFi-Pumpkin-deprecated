@@ -6,7 +6,7 @@ class frm_dns2proxy(PumpkinModule):
     def __init__(self, parent = None):
         super(frm_dns2proxy, self).__init__(parent)
         self.setGeometry(0, 0, 400, 400)
-        self.Main       = QVBoxLayout(self)
+        self.Main       = QVBoxLayout()
         self.owd        = getcwd()
         self.thread     = []
         self.loadtheme(self.configure.XmlThemeSelected())
@@ -34,8 +34,8 @@ class frm_dns2proxy(PumpkinModule):
         for i in self.thread:i.stop()
         self.deleteLater()
     def Qui(self):
-        self.frm0 = QFormLayout(self)
-        self.listDns = QListWidget(self)
+        self.frm0 = QFormLayout()
+        self.listDns = QListWidget()
         self.listDns.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.listDns.setFixedHeight(320)
         self.listDns.setAutoScroll(True)

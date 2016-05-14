@@ -111,7 +111,7 @@ class frm_DnsSpoof(PumpkinModule):
         self.myListDns = QListWidget(self)
         self.SettingsGUI()
 
-        self.myListDns.setMinimumWidth(self.myListDns.sizeHintForColumn(100))
+
         self.myListDns.setContextMenuPolicy(Qt.CustomContextMenu)
         self.myListDns.connect(self.myListDns,
         SIGNAL('customContextMenuRequested(QPoint)' ),

@@ -58,8 +58,8 @@ class frmAbout(PumpkinModule):
     def Qui_update(self):
         self.logoapp = QLabel('')
         self.logoapp.setPixmap(QPixmap('Icons/icon.ico').scaled(96,96))
-        self.form = QFormLayout(self)
-        self.form2 = QHBoxLayout(self)
+        self.form = QFormLayout()
+        self.form2 = QHBoxLayout()
         self.form.addRow(self.logoapp,QLabel(
         QString('<h2>WiFi-Pumpkin {}</h2>'.format(self.version))))
         self.tabwid = QTabWidget(self)
@@ -72,10 +72,10 @@ class frmAbout(PumpkinModule):
         self.btn_exit.setIcon(QIcon('Icons/cancel.png'))
         self.btn_exit.clicked.connect(self.close)
 
-        self.formAbout = QFormLayout(self)
-        self.formVersion = QFormLayout(self)
-        self.formTranks = QFormLayout(self)
-        self.formChange = QFormLayout(self)
+        self.formAbout = QFormLayout()
+        self.formVersion = QFormLayout()
+        self.formTranks = QFormLayout()
+        self.formChange = QFormLayout()
 
         # About section
         self.formAbout.addRow(self.desc)

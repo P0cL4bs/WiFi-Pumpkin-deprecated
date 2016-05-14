@@ -12,6 +12,8 @@ Version 0.7.5
     * support kubuntu 15.10
     * support wifislax - 4.11.1
     * support parrot - 2.0.5
+- fixed performance start GUI::Core
+- fixed Qwidgets which already has a layout, add Exception get_network_scan() #36
 
 Version 0.7.3
 -------------

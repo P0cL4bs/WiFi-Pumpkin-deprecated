@@ -49,12 +49,15 @@ def get_network_scan():
     try:
         xml = BeautifulSoup(open("Settings/Dump/networkdump-01.kismet.netxml", 'r').read())
         for network in xml.findAll('wireless-network'):
+            try:
                 essid = network.find('essid').text
                 if not essid:
                     essid = 'Hidden'
                 channel = network.find('channel').text
                 bssid = network.find('bssid').text
                 list_scan.append(channel + "||" + essid + "||" + bssid)
+            except Exception:
+                pass
         popen("rm Settings/Dump/networkdump*")
         return list_scan
     except IOError:

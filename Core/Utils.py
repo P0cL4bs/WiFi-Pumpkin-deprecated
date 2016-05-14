@@ -261,9 +261,3 @@ class waiter(threading.Thread):
     def run(self):
         sleep(10)
         call(['kill','-9',str(getpid())])
-
-def ExecRootApp(Initialize,root):
-    app = Initialize()
-    app.setWindowIcon(QIcon('Icons/icon.ico'))
-    app.center(),app.show()
-    exit(root.exec_())
