@@ -117,7 +117,7 @@ func_install(){
 		cp -r $path_install /usr/share/WiFi-Pumpkin/
 		bin_install
 		echo "[$green✔$txtrst] wifi-pumpkin installed with success"
-		echo "[$green✔$txtrst] execute $bldred wifi-pumpkin$txtrst in terminal"
+		echo "[$green✔$txtrst] execute $bldred sudo wifi-pumpkin$txtrst in terminal"
 	fi
 	echo "[$green+$txtrst]$color_y P0cL4bs Team CopyRight 2015-2016$txtrst"
 	echo "[$green+$txtrst] Enjoy"
