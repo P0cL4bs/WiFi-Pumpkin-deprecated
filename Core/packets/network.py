@@ -3,6 +3,7 @@ from os import system
 from scapy.all import *
 from threading import Thread
 from PyQt4.QtCore import QThread,SIGNAL
+from datetime import datetime
 
 """
 Description:
@@ -43,7 +44,7 @@ class ThreadAttackStar(QThread):
             sendp(dhcp_discover)
             self.count += 1
             self.data = ("PacketSend:[%s] DISCOVER Interface: %s "%(self.count,self.interface)
-                         + strftime("%c"))
+                         + datetime.now().strftime("%c"))
             self.emit(SIGNAL("Activated( QString )"),self.data.rstrip())
         self.emit(SIGNAL("Activated( QString )"),"[ OFF ] Packet sent: " + str(self.count))
     def stop(self):
