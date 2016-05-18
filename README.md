@@ -14,7 +14,6 @@ Kali 2.0/WifiSlax 4.11.1/Parrot 2.0.5
 ```sh
  git clone https://github.com/P0cL4bs/WiFi-Pumpkin.git
  cd WiFi-Pumpkin
- chmod +x installer.sh
  ./installer.sh --install
 ```
 refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Installation)
