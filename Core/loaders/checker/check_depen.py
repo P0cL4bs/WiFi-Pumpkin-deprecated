@@ -1,5 +1,5 @@
 #coding: utf-8
-from os import path,popen,remove,system
+from os import path,popen,remove,system,chdir
 from shutil import copy
 import sys
 GREEN = '\033[32m'
@@ -25,6 +25,8 @@ def check_dep_pumpkin():
             if k == 0:notinstall('isc-dhcp-server')
             if k == 1:notinstall('hostapd')
     if not path.isfile('Templates/Update/Windows_Update/Settins_WinUpdate.html'):
+        if '/usr/bin/wifi-pumpkin' in sys.argv[0]:
+            chdir('/usr/share/WiFi-Pumpkin')
         copy('Settings/source.tar.gz','Templates/')
         system('cd Templates/ && tar -xf source.tar.gz')
         remove('Templates/source.tar.gz')
