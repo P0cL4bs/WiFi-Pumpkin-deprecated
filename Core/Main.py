@@ -442,7 +442,6 @@ class WifiPumpkin(QWidget):
         self.Farp_posion.show()
 
     def show_update(self):
-        self.FUpdate = frm_githubUpdate(version)
         self.FUpdate.resize(480, 280)
         self.FUpdate.show()
 
@@ -651,6 +650,7 @@ class WifiPumpkin(QWidget):
         with open('/var/lib/dhcp/dhcpd.leases','w') as dhcpLease:
             dhcpLease.write(''),dhcpLease.close()
         self.btn_start_attack.setDisabled(False)
+        popen('ulimit -n 1024')
         Refactor.set_ip_forward(0)
         self.TabInfoAP.clearContents()
         if hasattr(self.FormPopup,'Ftemplates'):
@@ -795,7 +795,17 @@ class WifiPumpkin(QWidget):
             if str(self.interfacesLink['activated']).startswith('wl'):
                 return QMessageBox.information(self,'Error network card',
                     'You are connected with interface wireless, try again with local connection')
+
+        dh, gateway = self.PumpSettingsTAB.getPumpkinSettings()['router'],str(self.EditGateway.text())
+        if dh[:len(dh)-len(dh.split('.').pop())] == gateway[:len(gateway)-len(gateway.split('.').pop())]:
+            return QMessageBox.warning(self,'DHCP Server Settings',
+                'The DHCP server check if range ip class is same.'
+                'it works, but not share internet connection in some case.\n'
+                'for fix this, You need change on tab (Pumpkin-Settings -> Class Ranges)'
+                'now you have choose the Class range different of your network.')
         self.btn_start_attack.setDisabled(True)
+        popen('ulimit -n 64000')
+
         self.APactived = self.FSettings.Settings.get_setting('accesspoint','using')
         if self.APactived == 'hostapd':
             self.ConfigTwin['AP_iface'] = str(self.selectCard.currentText())
@@ -803,12 +813,13 @@ class WifiPumpkin(QWidget):
                str(self.interfacesLink['activated']).startswith('enp'):
                 try:
                     check_output(['nmcli','radio','wifi',"off"])
-                except CalledProcessError:
+                except Exception:
                     try:
                         check_output(['nmcli','nm','wifi',"off"])
-                    except CalledProcessError as e:
+                    except Exception as e:
                         return QMessageBox.warning(self,'Error nmcli',e)
-                call(['rfkill', 'unblock' ,'wifi'])
+                finally:
+                    call(['rfkill', 'unblock' ,'wifi'])
             elif str(self.interfacesLink['activated']).startswith('wl'):
                 if not Refactor.settingsNetworkManager(self.ConfigTwin['AP_iface'],Remove=False):
                     return QMessageBox.warning(self,'Network Manager',
@@ -858,11 +869,6 @@ class WifiPumpkin(QWidget):
         self.ProxyPluginsTAB.GroupSettings.setEnabled(False)
         self.FSettings.Settings.set_setting('accesspoint','statusAP',True)
 
-        if self.FSettings.check_redirect.isChecked() or not self.PopUpPlugins.check_sslstrip.isChecked():
-            popen('iptables -t nat -A PREROUTING -p udp -j DNAT --to {}'.format(str(self.EditGateway.text())))
-            self.FSettings.Settings.set_setting('plugins','sslstrip_plugin',False)
-            self.PopUpPlugins.check_sslstrip.setChecked(False)
-            self.PopUpPlugins.unset_Rules('sslstrip')
 
         if self.PopUpPlugins.check_sslstrip.isChecked() or not self.PopUpPlugins.check_dns2proy.isChecked():
             popen('iptables -t nat -A PREROUTING -p udp -j DNAT --to {}'.format(str(self.EditGateway.text())))
@@ -926,7 +932,7 @@ class WifiPumpkin(QWidget):
             self.PumpSettingsTAB.doCheckAdvanced()
             if hasattr(self,'dockAreaList'):
                 filelist = [ f for f in listdir('Logs/AccessPoint/.') if f.endswith('.log.offset') ]
-                for f in filelist: Popen(['rm',f], stdout=PIPE,shell=False,stderr=PIPE)
+                for f in filelist: system('rm Logs/AccessPoint/{}'.format(f))
                 for dock in self.dockAreaList.keys():
                     self.dockAreaList[dock].RunThread()
 

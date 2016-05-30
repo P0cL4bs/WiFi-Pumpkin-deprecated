@@ -110,7 +110,7 @@ func_install(){
 		cp -r $path_install /usr/share/WiFi-Pumpkin/
 		bin_install
 		echo "[$green✔$txtrst] wifi-pumpkin installed with success"
-		echo "[$green✔$txtrst] execute $bldred sudo wifipumpkin$txtrst in terminal"
+		echo "[$green✔$txtrst] execute $bldred sudo wifi-pumpkin$txtrst in terminal"
 	else
 		rm -r $DIRECTORY
 		mkdir $DIRECTORY

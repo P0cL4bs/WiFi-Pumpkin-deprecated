@@ -29,8 +29,11 @@ class PopUpPlugins(QWidget):
     def __init__(self,FSettings):
         QWidget.__init__(self)
         self.FSettings = FSettings
-        self.layout = QVBoxLayout(self)
-        self.title = QLabel('::Available Plugins::')
+        self.layout = QVBoxLayout()
+        self.layoutform = QFormLayout()
+        self.GroupPlugins = QGroupBox()
+        self.GroupPlugins.setTitle('::Plugins::')
+        self.GroupPlugins.setLayout(self.layoutform)
         self.check_sslstrip = QCheckBox('::ssLstrip')
         self.check_netcreds = QCheckBox('::net-creds')
         self.check_dns2proy = QCheckBox('::dns2proxy')
@@ -39,11 +42,12 @@ class PopUpPlugins(QWidget):
         self.check_sslstrip.clicked.connect(self.checkBoxSslstrip)
         self.check_netcreds.clicked.connect(self.checkBoxNecreds)
         self.check_sergioProxy.clicked.connect(self.checkBoxSergioProxy)
-        self.layout.addWidget(self.title)
-        self.layout.addWidget(self.check_sslstrip)
-        self.layout.addWidget(self.check_netcreds)
-        self.layout.addWidget(self.check_dns2proy)
-        self.layout.addWidget(self.check_sergioProxy)
+        self.layoutform.addRow(self.check_sslstrip)
+        self.layoutform.addRow(self.check_netcreds)
+        self.layoutform.addRow(self.check_dns2proy)
+        self.layoutform.addRow(self.check_sergioProxy)
+        self.layout.addWidget(self.GroupPlugins)
+        self.setLayout(self.layout)
     # control checkbox plugins
     def checkBoxSslstrip(self):
         if not self.check_sslstrip.isChecked():
@@ -113,11 +117,13 @@ class PopUpServer(QWidget):
         QWidget.__init__(self)
         self.FSettings  = FSettings
         self.Ftemplates = GUIs.frm_PhishingManager()
-        self.layout     = QVBoxLayout(self)
+        self.layout     = QVBoxLayout()
         self.FormLayout = QFormLayout()
         self.GridForm   = QGridLayout()
         self.StatusLabel        = QLabel(self)
-        self.title              = QLabel('::Server-HTTP::')
+        self.GroupBox           = QGroupBox()
+        self.GroupBox.setTitle('::Server-HTTP::')
+        self.GroupBox.setLayout(self.FormLayout)
         self.btntemplates       = QPushButton('Phishing M.')
         self.btnStopServer      = QPushButton('Stop Server')
         self.btnRefresh         = QPushButton('ReFresh')
@@ -142,10 +148,10 @@ class PopUpServer(QWidget):
         self.GridForm.addWidget(self.btnRefresh,0,2)
         self.GridForm.addWidget(self.btntemplates,1,1)
         self.GridForm.addWidget(self.btnStopServer,1,2)
-        self.FormLayout.addRow(self.title)
         self.FormLayout.addRow(self.GridForm)
         self.FormLayout.addRow('Status::',self.StatusLabel)
-        self.layout.addLayout(self.FormLayout)
+        self.layout.addWidget(self.GroupBox)
+        self.setLayout(self.layout)
 
 
     def emit_template(self,log):

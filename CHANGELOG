@@ -14,6 +14,9 @@ Version 0.7.5
     * support parrot - 2.0.5
 - fixed performance start GUI::Core
 - fixed Qwidgets which already has a layout, add Exception get_network_scan() #36
+- fixed error when executed from symlink file #50
+- fixed error: too many open files, added ulimit
+- added Tab Pump-Settings -> [Class Ranges] options
 
 Version 0.7.3
 -------------

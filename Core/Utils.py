@@ -122,7 +122,7 @@ class Refactor:
          'credentials': {'Logs/AccessPoint/credentials.log':[]},
          'requestAP': {'Logs/AccessPoint/requestAP.log':[]},
          #'dns2proxy': {'Logs/AccessPoint/dns2proxy.log':[]},
-         'injectionPage': {'Logs/AccessPoint/injectionPage.log':[]},
+         #'injectionPage': {'Logs/AccessPoint/injectionPage.log':[]},
          'phishing': {'Logs/Phishing/Webclone.log':[]},}
         for i in readFile.keys():
             for j in readFile[i]:
@@ -260,4 +260,3 @@ class Refactor:
 class waiter(threading.Thread):
     def run(self):
         sleep(10)
-        call(['kill','-9',str(getpid())])

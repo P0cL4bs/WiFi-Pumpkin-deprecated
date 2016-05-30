@@ -27,7 +27,7 @@ class ThreadPopen(QThread):
 
     def run(self):
         print 'Starting Thread:' + self.objectName()
-        self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
+        self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT,close_fds=True)
         for line in iter(self.process.stdout.readline, b''):
             self.emit(SIGNAL('Activated( QString )'),line.rstrip())
 

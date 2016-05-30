@@ -1,11 +1,13 @@
 from Proxy import *
-from os import path
+from os import path,listdir,system
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from datetime import datetime
+from Core.Utils import Refactor
 from Core.utility.threads import ThreadPopen
 from Core.utility.settings import frm_Settings
 from Core.widgets.docks.DockMonitor import dockAreaAPI
+from Core.widgets.docks.DockMonitor import ThreadLogger
 from Plugins.sergio_proxy.sslstrip.ProxyPlugins import ProxyPlugins
 """
 Description:
@@ -131,13 +133,20 @@ class PumpkinProxy(QVBoxLayout):
 
     def ProcessReadLogger(self):
         if path.exists('Logs/AccessPoint/injectionPage.log'):
-            self.injectionThread = ThreadPopen(['tail','-f','Logs/AccessPoint/injectionPage.log'])
+            with open('Logs/AccessPoint/injectionPage.log','w') as bufferlog:
+                bufferlog.write(''), bufferlog.close()
+            filelist = [ f for f in listdir('Logs/AccessPoint/.') if f.endswith('.log.offset') ]
+            for f in filelist: system('rm Logs/AccessPoint/{}'.format(f))
+            self.injectionThread = ThreadLogger('Logs/AccessPoint/injectionPage.log')
             self.connect(self.injectionThread,SIGNAL('Activated ( QString ) '), self.GetloggerInjection)
             self.injectionThread.setObjectName('Pump-Proxy::Capture')
             return self.injectionThread.start()
         QMessageBox.warning(self,'error proxy logger','Pump-Proxy::capture is not found')
 
     def GetloggerInjection(self,data):
+        if Refactor.getSize('Logs/AccessPoint/injectionPage.log') > 255790:
+            with open('Logs/AccessPoint/injectionPage.log','w') as bufferlog:
+                bufferlog.write(''), bufferlog.close()
         if data not in self.urlinjected:
             self.log_inject.addItem(data)
             self.urlinjected.append(data)
@@ -256,6 +265,14 @@ class PumpkinSettings(QVBoxLayout):
         self.SettingsDHCP  = {}
         self.FSettings     = FsettingsUI
         self.mainLayout    = QFormLayout()
+
+        #scroll area
+        self.scrollwidget = QWidget()
+        self.scrollwidget.setLayout(self.mainLayout)
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(self.scrollwidget)
+
         self.GroupDHCP     = QGroupBox()
         self.GroupArea     = QGroupBox()
         self.layoutDHCP    = QFormLayout()
@@ -265,6 +282,13 @@ class PumpkinSettings(QVBoxLayout):
         self.btnSave       = QPushButton('save settings')
         self.btnSave.setIcon(QIcon('Icons/export.png'))
         self.btnDefault.setIcon(QIcon('Icons/settings.png'))
+        self.dhcpClassIP   = QComboBox()
+        # dhcp class
+        self.classtypes = ['Class-A-Address','Class-B-Address','Class-C-Address','Class-Custom-Address']
+        for types in self.classtypes:
+            if 'Class-{}-Address'.format(self.FSettings.Settings.get_setting('dhcp','classtype')) in types:
+                self.classtypes.remove(types),self.classtypes.insert(0,types)
+        self.dhcpClassIP.addItems(self.classtypes)
         self.leaseTime_def = QLineEdit(self.FSettings.Settings.get_setting('dhcp','leasetimeDef'))
         self.leaseTime_Max = QLineEdit(self.FSettings.Settings.get_setting('dhcp','leasetimeMax'))
         self.netmask       = QLineEdit(self.FSettings.Settings.get_setting('dhcp','netmask'))
@@ -272,8 +296,10 @@ class PumpkinSettings(QVBoxLayout):
         self.route         = QLineEdit(self.FSettings.Settings.get_setting('dhcp','router'))
         self.subnet        = QLineEdit(self.FSettings.Settings.get_setting('dhcp','subnet'))
         self.broadcast     = QLineEdit(self.FSettings.Settings.get_setting('dhcp','broadcast'))
+        self.dhcpClassIP.currentIndexChanged.connect(self.dhcpClassIPClicked)
         self.GroupDHCP.setTitle('DHCP-Settings')
         self.GroupDHCP.setLayout(self.layoutDHCP)
+        self.layoutDHCP.addRow('Class Ranges',self.dhcpClassIP)
         self.layoutDHCP.addRow('default-lease-time',self.leaseTime_def)
         self.layoutDHCP.addRow('max-lease-time',self.leaseTime_Max)
         self.layoutDHCP.addRow('subnet',self.subnet)
@@ -317,7 +343,21 @@ class PumpkinSettings(QVBoxLayout):
         self.btnSave.clicked.connect(self.savesettingsDHCP)
         self.mainLayout.addRow(self.GroupArea)
         self.mainLayout.addRow(self.GroupDHCP)
-        self.addLayout(self.mainLayout)
+        self.layout = QHBoxLayout()
+        self.layout.addWidget(self.scroll)
+        self.addLayout(self.layout)
+
+
+    def dhcpClassIPClicked(self,classIP):
+        self.selected = str(self.dhcpClassIP.currentText())
+        if 'class-Custom-Address' in self.selected: self.selected = 'dhcp'
+        self.leaseTime_def.setText(self.FSettings.Settings.get_setting(self.selected,'leasetimeDef'))
+        self.leaseTime_Max.setText(self.FSettings.Settings.get_setting(self.selected,'leasetimeMax'))
+        self.netmask.setText(self.FSettings.Settings.get_setting(self.selected,'netmask'))
+        self.range_dhcp.setText(self.FSettings.Settings.get_setting(self.selected,'range'))
+        self.route.setText(self.FSettings.Settings.get_setting(self.selected,'router'))
+        self.subnet.setText(self.FSettings.Settings.get_setting(self.selected,'subnet'))
+        self.broadcast.setText(self.FSettings.Settings.get_setting(self.selected,'broadcast'))
 
     def AreaWidgetLoader(self,DockInfo):
         if hasattr(self,'dockList'):
@@ -374,6 +414,7 @@ class PumpkinSettings(QVBoxLayout):
 
 
     def setdefaultSettings(self):
+        self.dhcpClassIP.setCurrentIndex(self.classtypes.index('Class-A-Address'))
         self.leaseTime_def.setText(self.FSettings.Settings.get_setting('dhcpdefault','leasetimeDef'))
         self.leaseTime_Max.setText(self.FSettings.Settings.get_setting('dhcpdefault','leasetimeMax'))
         self.netmask.setText(self.FSettings.Settings.get_setting('dhcpdefault','netmask'))
@@ -383,6 +424,11 @@ class PumpkinSettings(QVBoxLayout):
         self.broadcast.setText(self.FSettings.Settings.get_setting('dhcpdefault','broadcast'))
 
     def savesettingsDHCP(self):
+        self.all_geteway_check = []
+        for types in self.classtypes:
+            if not 'Class-Custom-Address' in types:
+                self.all_geteway_check.append(self.FSettings.Settings.get_by_index_key(5,types))
+        self.FSettings.Settings.set_setting('dhcp','classtype',str(self.dhcpClassIP.currentText()).split('-')[1])
         self.FSettings.Settings.set_setting('dhcp','leasetimeDef',str(self.leaseTime_def.text()))
         self.FSettings.Settings.set_setting('dhcp','leasetimeMax',str(self.leaseTime_Max.text()))
         self.FSettings.Settings.set_setting('dhcp','netmask',str(self.netmask.text()))
@@ -390,6 +436,8 @@ class PumpkinSettings(QVBoxLayout):
         self.FSettings.Settings.set_setting('dhcp','router',str(self.route.text()))
         self.FSettings.Settings.set_setting('dhcp','subnet',str(self.subnet.text()))
         self.FSettings.Settings.set_setting('dhcp','broadcast',str(self.broadcast.text()))
+        if not str(self.route.text()) in self.all_geteway_check:
+            self.FSettings.Settings.set_setting('dhcp','classtype','Custom')
         self.btnSave.setEnabled(False)
         self.sendMensage.emit('settings DHCP saved with success...')
         self.btnSave.setEnabled(True)

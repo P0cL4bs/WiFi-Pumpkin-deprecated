@@ -40,6 +40,10 @@ class SettingsINI(object):
 		self.psettings.setValue(key, value)
 		self.closeGroup()
 
+	def get_by_index_key(self,index,key=str):
+		""" get specific key value by index type(list) """
+		return str(self.get_setting(key,self.get_all_childname(key)[index]))
+
 	def get_all_childname(self,key):
 		""" get list all childskeys on file config.ini """
 		return [x.split('/')[1] for x in self.get_all_keys() if x.split('/')[0] == key]

@@ -216,8 +216,6 @@ class frm_Settings(QDialog):
             item.setText(self.Settings.get_setting('iptables',ech))
             item.setSizeHint(QSize(30,30))
             self.ListRules.addItem(item)
-        self.check_redirect = QCheckBox('add Redirect all Port 80 to ipaddress::10.0.0.1')
-        self.check_redirect.clicked.connect(self.redirectAP)
 
         # page hostpad
         self.ListHostapd = QTextEdit(self)
@@ -313,7 +311,6 @@ class frm_Settings(QDialog):
         #add tab iptables
         self.page_3.addWidget(QLabel('Iptables:'))
         self.page_3.addRow(self.ListRules)
-        self.page_3.addRow(self.check_redirect)
 
         #add tab hostpad
         self.page_4.addWidget(QLabel('Settings hostapd:'))
