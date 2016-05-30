@@ -442,6 +442,7 @@ class WifiPumpkin(QWidget):
         self.Farp_posion.show()
 
     def show_update(self):
+        self.FUpdate = frm_githubUpdate(version)
         self.FUpdate.resize(480, 280)
         self.FUpdate.show()
 
