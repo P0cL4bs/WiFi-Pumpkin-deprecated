@@ -406,6 +406,13 @@ class PumpkinSettings(QVBoxLayout):
         if self.CB_ActiveMode.isChecked():
             self.AreaWidgetLoader(self.dockInfo)
             self.checkDockArea.emit(self.AllDockArea)
+            if hasattr(self.InitialMehtod,'form_widget'):
+                if hasattr(self.InitialMehtod.form_widget,'Apthreads'):
+                    if self.InitialMehtod.form_widget.Apthreads['RougeAP'] != []:
+                        filelist = [ f for f in listdir('Logs/AccessPoint/.') if f.endswith('.log.offset') ]
+                        for f in filelist: system('rm Logs/AccessPoint/{}'.format(f))
+                        for dock in self.InitialMehtod.form_widget.dockAreaList.keys():
+                            self.InitialMehtod.form_widget.dockAreaList[dock].RunThread()
         else:
             if hasattr(self,'dockList'):
                 for dock in self.dockList: dock.close()

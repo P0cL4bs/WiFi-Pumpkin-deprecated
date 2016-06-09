@@ -919,7 +919,7 @@ class WifiPumpkin(QWidget):
                 popen(rules.replace('$$',str(Refactor.get_interfaces()['activated'])))
             else:popen(rules)
 
-        self.PumpSettingsTAB.GroupArea.setEnabled(False)
+        #self.PumpSettingsTAB.GroupArea.setEnabled(False)
         self.progress.change_color('#FFA500')
         for thread in self.Apthreads['RougeAP']:
             thread.start()
