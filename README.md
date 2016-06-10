@@ -84,25 +84,7 @@ class blurpage(PluginProxy):
 [Screenshot](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Screenshots) on the wiki 
 
 ### FAQ
-> I can't install it
-
-have a look at the [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Installation)
-
-> I have this message warning [Error Network Card](https://github.com/P0cL4bs/WiFi-Pumpkin/issues/14)
-
-You system not have support run Wifi-Pumpkin with Wireless connection
-
-> hi , is it work on X Wireless Adapters ?
-
-I don't know, check this [page](https://wireless.wiki.kernel.org/welcome)
-
-> I can't install package X 
-
-Try installing the package via pip, Google is your friend!
-
-> It Windows supported?
-
-No, It will never be
+[FAQ](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/FAQ) on the wiki
 
 ### Contact Us
 Whether you want to report a [bug](https://github.com/P0cL4bs/WiFi-Pumpkin/issues/new), send a patch or give some suggestions on this package, drop us or open [pull requests](https://github.com/P0cL4bs/WiFi-Pumpkin/pulls) 
