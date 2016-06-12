@@ -111,13 +111,22 @@ class Initialize(QMainWindow):
         iwconfig = Popen(['iwconfig'], stdout=PIPE,shell=False,stderr=PIPE)
         for i in iwconfig.stdout.readlines():
             if search('Mode:Monitor',i):
-                reply = QMessageBox.question(self,
+                self.reply = QMessageBox.question(self,
                 'About Exit','Are you sure to quit?', QMessageBox.Yes |
                 QMessageBox.No, QMessageBox.No)
-                if reply == QMessageBox.Yes:
+                if self.reply == QMessageBox.Yes:
                     set_monitor_mode(i.split()[0]).setDisable()
-                    event.accept()
-                    return
+                    return event.accept()
+        if self.form_widget.Apthreads['RougeAP'] != []:
+            self.reply = QMessageBox.question(self,
+            'About Access Point','Are you sure to stop all threads AP ?', QMessageBox.Yes |
+            QMessageBox.No, QMessageBox.No)
+            if self.reply == QMessageBox.Yes:
+                print('killing all threads...')
+                self.form_widget.kill()
+                return event.accept()
+        if hasattr(self,'reply'):
+            event.ignore()
 
 class WifiPumpkin(QWidget):
     ''' load main window class'''
@@ -869,6 +878,7 @@ class WifiPumpkin(QWidget):
         self.Started(True)
         self.ProxyPluginsTAB.GroupSettings.setEnabled(False)
         self.FSettings.Settings.set_setting('accesspoint','statusAP',True)
+        self.FSettings.Settings.set_setting('accesspoint','interfaceAP',str(self.selectCard.currentText()))
 
 
         if self.PopUpPlugins.check_sslstrip.isChecked() or not self.PopUpPlugins.check_dns2proy.isChecked():

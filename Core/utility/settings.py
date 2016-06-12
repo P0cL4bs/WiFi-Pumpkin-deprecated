@@ -198,7 +198,6 @@ class frm_Settings(QDialog):
         self.txt_arguments = QLineEdit(self)
         self.scan1 = QRadioButton('Ping Scan:: Very fast scan IP')
         self.scan2 = QRadioButton('Python-Nmap:: Get hostname from IP')
-        self.interface = QLineEdit(self)
         self.Apname =  QLineEdit(self)
         self.channel = QSpinBox(self)
         self.redirectport = QLineEdit(self)
@@ -292,7 +291,6 @@ class frm_Settings(QDialog):
         self.page_1.addRow(self.theme2)
 
         #settings tab Advanced
-        self.interface.setText(self.Settings.get_setting('accesspoint','interface'))
         self.Apname.setText(self.Settings.get_setting('accesspoint','APname'))
         self.channel.setValue(int(self.Settings.get_setting('accesspoint','channel')))
         self.redirectport.setText(self.Settings.get_setting('settings','redirect_port'))
@@ -301,7 +299,6 @@ class frm_Settings(QDialog):
         self.page_2.addRow(QLabel('Thread ScanIP:'))
         self.page_2.addRow(self.scan1)
         self.page_2.addRow(self.scan2)
-        self.page_2.addRow('Interface Monitor:',self.interface)
         self.page_2.addRow('AP Name:',self.Apname)
         self.page_2.addRow('Channel:',self.channel)
         self.page_2.addRow('Port sslstrip:',self.redirectport)

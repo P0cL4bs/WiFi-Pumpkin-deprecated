@@ -188,6 +188,9 @@ class frm_Arp_Poison(PumpkinModule):
         for i,j in enumerate(n):
             if n[i] != '':
                 self.ComboIface.addItem(n[i])
+        if self.configure.Settings.get_setting('accesspoint','statusAP',format=bool):
+            self.ComboIface.setCurrentIndex(x['all'].index(self.configure.Settings.get_setting('accesspoint',
+            'interfaceAP')))
 
     def thread_scan_reveice(self,info_ip):
         self.StatusMonitor(False,'stas_scan')
@@ -209,14 +212,13 @@ class frm_Arp_Poison(PumpkinModule):
             Headers.append(key)
         self.tables.setHorizontalHeaderLabels(Headers)
 
-    def discoveryIface(self):
-        iface = str(self.ComboIface.currentText())
-        mac = Refactor.getHwAddr(iface)
-        ip = Refactor.get_Ipaddr(iface)
-        if self.configure.Settings.get_setting('accesspoint','statusAP',format=bool):
-            self.txt_gateway.setText('10.0.0.1')
-        self.txt_mac.setText(mac)
-        self.txt_redirect.setText(ip)
+    @pyqtSlot(QModelIndex)
+    def discoveryIface(self,iface):
+        if self.configure.Settings.get_setting('accesspoint','interfaceAP') == str(iface):
+            if self.configure.Settings.get_setting('accesspoint','statusAP',format=bool):
+                self.txt_gateway.setText(self.configure.Settings.get_setting('dhcp','router'))
+        self.txt_mac.setText(Refactor.getHwAddr(str(iface)))
+        self.txt_redirect.setText(Refactor.get_Ipaddr(str(iface)))
 
     def show_frm_fake(self):
         self.n = frm_update_attack()
@@ -270,14 +272,14 @@ class frm_Arp_Poison(PumpkinModule):
                         Refactor.set_ip_forward(1)
                         arp_gateway = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()),
                         get_if_hwaddr(str(self.ComboIface.currentText())))
-                        arp_gateway.setObjectName('Arp Posion:: [gateway]')
+                        arp_gateway.setObjectName('Arp Poison:: [gateway]')
                         self.ThreadDirc['Arp_posion'].append(arp_gateway)
                         arp_gateway.start()
 
                         arp_target = ThARP_posion(str(self.txt_target.text()),str(self.txt_gateway.text()),
                         str(self.txt_mac.text()))
                         self.connect(arp_target,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
-                        arp_target.setObjectName('Arp::Posion => [target]')
+                        arp_target.setObjectName('Arp::Poison => [target]')
                         self.ThreadDirc['Arp_posion'].append(arp_target)
                         arp_target.start()
 

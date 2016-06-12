@@ -215,6 +215,9 @@ class frm_DnsSpoof(PumpkinModule):
                 self.myListDns.addItem(item)
         except Exception:
             pass
+        if self.configure.Settings.get_setting('accesspoint','statusAP',format=bool):
+            self.ComboIface.setCurrentIndex(ifaces['all'].index(self.configure.Settings.get_setting('accesspoint',
+            'interfaceAP')))
 
     def listItemclicked(self,pos):
         item = self.myListDns.selectedItems()
@@ -250,12 +253,12 @@ class frm_DnsSpoof(PumpkinModule):
         elif action == clearitem:
             self.myListDns.clear()
 
-    def discoveryIface(self):
-        iface = str(self.ComboIface.currentText())
-        if self.configure.Settings.get_setting('accesspoint','statusAP',format=bool):
-            self.txt_gateway.setText('10.0.0.1')
-        ip = Refactor.get_Ipaddr(iface)
-        self.txt_redirect.setText(ip)
+    @pyqtSlot(QModelIndex)
+    def discoveryIface(self,iface):
+        if self.configure.Settings.get_setting('accesspoint','interfaceAP') == str(iface):
+            if self.configure.Settings.get_setting('accesspoint','statusAP',format=bool):
+                self.txt_gateway.setText(self.configure.Settings.get_setting('dhcp','router'))
+        self.txt_redirect.setText(Refactor.get_Ipaddr(str(iface)))
 
 
     def thread_scan_reveice(self,info_ip):

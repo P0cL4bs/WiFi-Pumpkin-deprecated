@@ -17,6 +17,8 @@ Version 0.7.5
 - fixed error when executed from symlink file #50
 - fixed error: too many open files, added ulimit
 - added Tab Pump-Settings -> [Class Ranges] options
+- fixed Pump-Settings->Advanced Mode:: allow run after started AP
+- some improvements on module DnsSpoof,ArpPoison and Core::main closeEvent
 
 Version 0.7.3
 -------------
