@@ -19,6 +19,7 @@ Version 0.7.5
 - added Tab Pump-Settings -> [Class Ranges] options
 - fixed Pump-Settings->Advanced Mode:: allow run after started AP
 - some improvements on module DnsSpoof,ArpPoison and Core::main closeEvent
+- fixed error on "Settings" option #58
 
 Version 0.7.3
 -------------
