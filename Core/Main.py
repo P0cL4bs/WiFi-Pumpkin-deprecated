@@ -648,6 +648,7 @@ class WifiPumpkin(QWidget):
         self.Started(False)
         self.progress.setValue(1)
         self.progress.change_color('')
+        self.connectedCount.setText('0')
         self.Apthreads['RougeAP'] = []
         self.APclients = {}
         lines = []
@@ -678,7 +679,7 @@ class WifiPumpkin(QWidget):
                 for keyFile in content['Files']:
                     with open(keyFile,'w') as f:
                         f.write(''),f.close()
-                QMessageBox.information(self,'Logger','Removed all the output .log attack session')
+                QMessageBox.information(self,'Logger','All Looger::Output has been Removed...')
 
     def start_etter(self):
         if self.ConfigTwin['ProgCheck'][1]:
@@ -853,7 +854,7 @@ class WifiPumpkin(QWidget):
                         if not config.startswith(ignore):
                             apconf.write(config+'\n')
                 apconf.close()
-            self.Thread_hostapd = ProcessHostapd(['hostapd','-d','Settings/hostapd.conf'])
+            self.Thread_hostapd = ProcessHostapd({'hostapd':['-d','Settings/hostapd.conf']})
             self.Thread_hostapd.setObjectName('hostapd')
             self.Thread_hostapd.statusAP_connected.connect(self.GetHostapdStatus)
             self.Apthreads['RougeAP'].append(self.Thread_hostapd)
@@ -862,11 +863,11 @@ class WifiPumpkin(QWidget):
         popen('ifconfig {} up'.format(str(self.selectCard.currentText())))
         selected_dhcp = self.FSettings.Settings.get_setting('accesspoint','dhcp_server')
         if selected_dhcp == 'iscdhcpserver':
-            Thread_dhcp = ThRunDhcp(['sudo','dhcpd','-d','-f','-lf','/var/lib/dhcp/dhcpd.leases','-cf',
+            self.Thread_dhcp = ThRunDhcp(['dhcpd','-d','-f','-lf','/var/lib/dhcp/dhcpd.leases','-cf',
             '/etc/dhcp/dhcpd.conf',self.ConfigTwin['AP_iface']])
-            Thread_dhcp.sendRequest.connect(self.GetDHCPRequests)
-            Thread_dhcp.setObjectName('DHCP')
-            self.Apthreads['RougeAP'].append(Thread_dhcp)
+            self.Thread_dhcp.sendRequest.connect(self.GetDHCPRequests)
+            self.Thread_dhcp.setObjectName('DHCP')
+            self.Apthreads['RougeAP'].append(self.Thread_dhcp)
 
         ##### dnsmasq disabled
         # elif selected_dhcp == 'dnsmasq':
@@ -908,16 +909,17 @@ class WifiPumpkin(QWidget):
             self.Threadsslstrip.setObjectName("sslstrip")
             self.Apthreads['RougeAP'].append(self.Threadsslstrip)
 
-        if self.PopUpPlugins.check_dns2proy.isChecked():
-            Thread_dns2proxy = ProcessThread(['python','Plugins/dns2proxy/dns2proxy.py'])
-            Thread_dns2proxy.setName('Dns2Proxy')
-            self.Apthreads['RougeAP'].append(Thread_dns2proxy)
-
         if self.PopUpPlugins.check_netcreds.isChecked():
-            Thread_netcreds = ProcessThread(['python','Plugins/net-creds/net-creds.py','-i',
-            str(self.selectCard.currentText())])
-            Thread_netcreds.setName('Net-Creds')
-            self.Apthreads['RougeAP'].append(Thread_netcreds)
+            self.Thread_netcreds = ProcessThread({'python':['Plugins/net-creds/net-creds.py','-i',
+            str(self.selectCard.currentText())]})
+            self.Thread_netcreds.setObjectName('Net-Creds')
+            self.Apthreads['RougeAP'].append(self.Thread_netcreds)
+
+        if self.PopUpPlugins.check_dns2proy.isChecked():
+            self.Thread_dns2proxy = ProcessThread({'python':['Plugins/dns2proxy/dns2proxy.py','-i',
+            str(self.selectCard.currentText())]})
+            self.Thread_dns2proxy.setObjectName('Dns2Proxy')
+            self.Apthreads['RougeAP'].append(self.Thread_dns2proxy)
 
         iptables = []
         for index in xrange(self.FSettings.ListRules.count()):
@@ -940,8 +942,10 @@ class WifiPumpkin(QWidget):
         self.progress.change_color('grey')
         self.progress.setText('')
         if self.FSettings.Settings.get_setting('dockarea','advanced',format=bool):
+            QThread.sleep(3)
             self.PumpSettingsTAB.doCheckAdvanced()
             if hasattr(self,'dockAreaList'):
+                print('-------------------------------')
                 filelist = [ f for f in listdir('Logs/AccessPoint/.') if f.endswith('.log.offset') ]
                 for f in filelist: system('rm Logs/AccessPoint/{}'.format(f))
                 for dock in self.dockAreaList.keys():

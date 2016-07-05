@@ -20,6 +20,8 @@ Version 0.7.5
 - fixed Pump-Settings->Advanced Mode:: allow run after started AP
 - some improvements on module DnsSpoof,ArpPoison and Core::main closeEvent
 - fixed error on "Settings" option #58
+- added Qprocess into Threads::Process,fixed run plugin::dns2proxy
+- fixed error Advanced Mode::monitor crashed application #60
 
 Version 0.7.3
 -------------

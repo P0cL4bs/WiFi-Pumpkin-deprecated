@@ -9,7 +9,7 @@ from twisted.web import http
 from twisted.internet import reactor
 from Core.Utils import setup_logger
 from subprocess import (Popen,PIPE,STDOUT)
-from PyQt4.QtCore import QThread,pyqtSignal,SIGNAL
+from PyQt4.QtCore import QThread,pyqtSignal,SIGNAL,pyqtSlot,QProcess,QObject,SLOT
 from Plugins.sergio_proxy.plugins import *
 try:
     from nmap import PortScanner
@@ -96,59 +96,55 @@ class ThreadScan(QThread):
 
 
 
-class ProcessThread(threading.Thread):
+class ProcessThread(QObject):
     def __init__(self,cmd,):
-        threading.Thread.__init__(self)
+        QObject.__init__(self)
         self.cmd = cmd
-        self.iface = None
-        self.process = None
-        self.logger = False
-        self.prompt = True
-
-    def getNameThread(self):
-        return 'Starting Thread:' + self.name
-
-    def run(self):
-        print 'Starting Thread:' + self.name
-        if self.name == 'Dns2Proxy':
-            setup_logger('dns2proxy', './Logs/AccessPoint/dns2proxy.log')
-            log_dns2proxy = logging.getLogger('dns2proxy')
-            self.logger = True
-        self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
-        for line in iter(self.process.stdout.readline, b''):
-            if self.logger:
-                if self.name == 'Dns2Proxy':
-                    log_dns2proxy.info(line.rstrip())
-                    self.prompt = False
-            if self.prompt:
-                print (line.rstrip())
-
-    def stop(self):
-        print 'Stop thread:' + self.name
-        if self.process is not None:
-            self.process.terminate()
-            self.process = None
-
-
-class ProcessHostapd(QThread):
-    statusAP_connected = pyqtSignal(object)
-    def __init__(self,cmd):
-        QThread.__init__(self)
-        self.cmd = cmd
-        self.process= None
 
     def getNameThread(self):
         return 'Starting Thread:' + self.objectName()
 
-    def run(self):
+    @pyqtSlot()
+    def readProcessOutput(self):
+        self.data = str(self.procThread.readAllStandardOutput())
+
+    def start(self):
+        print 'Starting Thread:' + self.objectName()
+        self.procThread = QProcess(self)
+        self.procThread.setProcessChannelMode(QProcess.MergedChannels)
+        QObject.connect(self.procThread, SIGNAL('readyReadStandardOutput()'), self, SLOT('readProcessOutput()'))
+        self.procThread.start(self.cmd.keys()[0],self.cmd[self.cmd.keys()[0]])
+
+    def stop(self):
+        print 'Stop thread:' + self.objectName()
+        if hasattr(self,'procThread'):
+            self.procThread.terminate()
+            self.procThread.waitForFinished()
+            self.procThread.kill()
+
+
+class ProcessHostapd(QObject):
+    statusAP_connected = pyqtSignal(object)
+    def __init__(self,cmd):
+        QObject.__init__(self)
+        self.cmd = cmd
+
+    def getNameThread(self):
+        return 'Starting Thread:' + self.objectName()
+
+    @pyqtSlot()
+    def read_OutputCommand(self):
+        self.data = str(self.procHostapd.readAllStandardOutput())
+        if 'AP-STA-DISCONNECTED' in self.data.rstrip() or 'inactivity (timer DEAUTH/REMOVE)' in self.data.rstrip():
+            self.statusAP_connected.emit(self.data.split()[2])
+
+    def start(self):
         print 'Starting Thread:' + self.objectName()
         self.makeLogger()
-        self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
-        for line in iter(self.process.stdout.readline, b''):
-            #self.log_hostapd.info(line.rstrip())
-            if self.objectName() == 'hostapd':
-                if 'AP-STA-DISCONNECTED' in line.rstrip() or 'inactivity (timer DEAUTH/REMOVE)' in line.rstrip():
-                    self.statusAP_connected.emit(line.split()[2])
+        self.procHostapd = QProcess(self)
+        self.procHostapd.setProcessChannelMode(QProcess.MergedChannels)
+        QObject.connect(self.procHostapd, SIGNAL('readyReadStandardOutput()'), self, SLOT('read_OutputCommand()'));
+        self.procHostapd.start(self.cmd.keys()[0],self.cmd[self.cmd.keys()[0]])
 
     def makeLogger(self):
         setup_logger('hostapd', './Logs/AccessPoint/requestAP.log')
@@ -156,8 +152,10 @@ class ProcessHostapd(QThread):
 
     def stop(self):
         print 'Stop thread:' + self.objectName()
-        if self.process is not None:
-            self.process.terminate()
+        if hasattr(self,'procHostapd'):
+            self.procHostapd.terminate()
+            self.procHostapd.waitForFinished()
+            self.procHostapd.kill()
 
 class Thread_sslstrip(QThread):
     '''Thread: run sslstrip on brackground'''

@@ -1,25 +1,31 @@
 from os import path
 from pygtail import Pygtail
 from PyQt4.QtGui import QListWidget,QMessageBox
-from PyQt4.QtCore import SIGNAL,QTimer,QThread
+from PyQt4.QtCore import SIGNAL,QTimer,QThread,QProcess,pyqtSlot,QObject,SLOT
 
-class ThreadLogger(QThread):
+class ThreadLogger(QObject):
     def __init__(self,logger_path=str):
-        QThread.__init__(self)
+        QObject.__init__(self)
         self.logger_path = logger_path
-        self.started = False
-    def run(self):
-        print 'Starting Thread:' + self.objectName()
-        self.started =True
-        while self.started:
-            for line in Pygtail(self.logger_path):
-                try:
-                    self.emit(SIGNAL('Activated( QString )'),line.rstrip().split(' : ')[1])
-                except IndexError:
-                    pass
+
+    @pyqtSlot()
+    def readProcessOutput(self):
+        try:
+            self.emit(SIGNAL('Activated( QString )'),
+            str(self.procLogger.readAllStandardOutput()).rstrip().split(' : ')[1])
+        except Exception: pass
+
+    def start(self):
+        self.procLogger = QProcess(self)
+        self.procLogger.setProcessChannelMode(QProcess.MergedChannels)
+        QObject.connect(self.procLogger, SIGNAL('readyReadStandardOutput()'), self, SLOT('readProcessOutput()'))
+        self.procLogger.start('tail',['-f',self.logger_path])
 
     def stop(self):
-        self.started = False
+        if hasattr(self,'procLogger'):
+            self.procLogger.terminate()
+            self.procLogger.waitForFinished()
+            self.procLogger.kill()
 
 class dockAreaAPI(QListWidget):
     def __init__(self, parent=None,info={}):
@@ -37,9 +43,6 @@ class dockAreaAPI(QListWidget):
             self.processThread.setObjectName(self.logger['thread_name'])
             if path.exists(self.logger['path']):
                 self.processThread.start()
-            if not self.processThread.isRunning():
-                QMessageBox.warning(self,'error in read logger ',self.logger['error'])
-
     def writeModeData(self,data):
         self.addItem(data)
         self.scrollToBottom()

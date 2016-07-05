@@ -48,7 +48,7 @@ func_install(){
 		exit 1
 	fi
 	apt-get update
-	apt-get install -y python-qt4 python-scapy php5-cli hostapd rfkill
+	apt-get install -y python-qt4 python-scapy hostapd rfkill
 	apt-get install -y python-dev
 	apt-get install -y libpcap-dev
     pip install -r requirements.txt
@@ -61,7 +61,6 @@ func_install(){
 	echo "[=]$bldblu checking dependencies $txtrst "
 	func_check_install "hostapd"
 	func_check_install "dhcpd"
-	func_check_install "php"
 	echo "----------------------------------------"
 	dist=$(tr -s ' \011' '\012' < /etc/issue | head -n 1)
 	check_arch=$(uname -m)

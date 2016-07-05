@@ -209,6 +209,10 @@ class frm_PhishingManager(QWidget):
     def start_server(self):
         if len(str(self.txt_redirect.text())) == 0:
             return QMessageBox.warning(self,'localhost','Ip Address not found.')
+        if self.check_server.isChecked():
+            if len(popen('which php').read().split('\n')[0]) == 0:
+                return QMessageBox.warning(self,'Requirement Software',
+                'php-5 is not installed \n\ntry: install sudo apt-get install php5')
         if self.check_clone.isChecked():
             if len(self.cloneLineEdit.text()) == 0:
                 return QMessageBox.warning(self,'Clone','input clone empty')

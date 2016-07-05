@@ -137,7 +137,7 @@ class PumpkinProxy(QVBoxLayout):
                 bufferlog.write(''), bufferlog.close()
             filelist = [ f for f in listdir('Logs/AccessPoint/.') if f.endswith('.log.offset') ]
             for f in filelist: system('rm Logs/AccessPoint/{}'.format(f))
-            self.injectionThread = ThreadLogger('Logs/AccessPoint/injectionPage.log')
+            self.injectionThread = ThreadPopen(['tail','-f','Logs/AccessPoint/injectionPage.log'])
             self.connect(self.injectionThread,SIGNAL('Activated ( QString ) '), self.GetloggerInjection)
             self.injectionThread.setObjectName('Pump-Proxy::Capture')
             return self.injectionThread.start()
