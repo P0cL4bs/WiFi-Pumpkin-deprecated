@@ -23,14 +23,35 @@ class ChangeLog(QTextEdit):
         self.setText(open('CHANGELOG','r').read())
         self.setReadOnly(True)
 
-class TranksTo(QTextEdit):
-    def __init__(self,formLayout,parent = None):
-        super(TranksTo,self).__init__(parent)
-        self.setReadOnly(True)
-        self.setStyleSheet('''QWidget {
-        color: #b1b1b1; background-color: #323232;}''')
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        self.setLayout(formLayout)
+
+class SettingsTranks(QVBoxLayout):
+    def __init__(self,parent = None):
+        super(SettingsTranks, self).__init__(parent)
+        self.mainLayout    = QFormLayout()
+        self.scrollwidget = QWidget()
+        self.scrollwidget.setLayout(self.mainLayout)
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(self.scrollwidget)
+
+        self.formMode = QFormLayout()
+        self.formMode.addRow(QLabel('<a href="https://github.com/xtr4nge"><strong>@xtr4nge</strong></a>'))
+        self.formMode.addRow(QLabel('Sslstrip2 based version fork<br><br>'))
+        self.formMode.addRow(QLabel('<a href="https://github.com/LeonardoNve"><strong>@LeonardoNve</strong></a>'))
+        self.formMode.addRow(QLabel('Plugin SSLstrip version fork,Plugin dns2proxy<br><br>'))
+        self.formMode.addRow(QLabel('<a href="https://github.com/supernothing"><strong>Ben Schmidt @supernothing</strong></a>'))
+        self.formMode.addRow(QLabel('Plugin Sergio Proxy - bypass HSTS<br><br>'))
+        self.formMode.addRow(QLabel('<a href="https://github.com/DanMcInerney"><strong>Dan McInerney @danhmcinerney</strong></a>'))
+        self.formMode.addRow(QLabel('Plugin Netcreds - Sniffs sensitive data<br><br>'))
+        self.formMode.addRow(QLabel('<a href="http://www.yasinuludag.com/darkorange.stylesheet"><strong>Yasin Uludag</strong></a>'))
+        self.formMode.addRow(QLabel('theme1.qss - Qt dark orange stylesheet<br><br>'))
+        self.formMode.addRow(QLabel('<a href="https://github.com/ColinDuquesnoy/QDarkStyleSheet"><strong>Colin Duquesnoy @ColinDuquesnoy</strong></a>'))
+        self.formMode.addRow(QLabel('theme2.qss - Qt dark blue stylesheet<br><br>'))
+        self.mainLayout.addRow(self.formMode)
+
+        self.layout = QHBoxLayout()
+        self.layout.addWidget(self.scroll)
+        self.addLayout(self.layout)
 
 class frmAbout(PumpkinModule):
     def __init__(self,author,emails,version,
@@ -65,7 +86,7 @@ class frmAbout(PumpkinModule):
         self.tabwid = QTabWidget(self)
         self.TabAbout = QWidget(self)
         self.TabVersion = QWidget(self)
-        self.TabTranks  = QWidget(self)
+        self.TabTranks  = QWidget()
         self.TabChangelog = QWidget(self)
         self.btn_exit = QPushButton("Close")
         self.btn_exit.setFixedWidth(90)
@@ -104,17 +125,9 @@ class frmAbout(PumpkinModule):
         self.TabVersion.setLayout(self.formVersion)
 
         # Tranks Section
-        self.formMode = QFormLayout(self)
-        self.formMode.addRow(QLabel('<a href="https://github.com/xtr4nge"><strong>@xtr4nge</strong></a>'))
-        self.formMode.addRow(QLabel('Sslstrip2 based version fork<br><br>'))
-        self.formMode.addRow(QLabel('<a href="https://github.com/LeonardoNve"><strong>@LeonardoNve</strong></a>'))
-        self.formMode.addRow(QLabel('Plugin SSLstrip version fork,Plugin dns2proxy<br><br>'))
-        self.formMode.addRow(QLabel('<a href="https://github.com/supernothing"><strong>Ben Schmidt @supernothing</strong></a>'))
-        self.formMode.addRow(QLabel('Plugin Sergio Proxy - bypass HSTS<br><br>'))
-        self.formMode.addRow(QLabel('<a href="https://github.com/DanMcInerney"><strong>Dan McInerney @danhmcinerney</strong></a>'))
-        self.formMode.addRow(QLabel('Plugin Netcreds - Sniffs sensitive data<br><br>'))
-        self.formTranks.addRow(TranksTo(self.formMode))
-        self.TabTranks.setLayout(self.formTranks)
+        self.TabpageTranks = QVBoxLayout(self.TabTranks)
+        self.formTE = SettingsTranks()
+        self.TabpageTranks.addLayout(self.formTE)
 
         # Changelog Section
         self.formChange.addRow(ChangeLog())

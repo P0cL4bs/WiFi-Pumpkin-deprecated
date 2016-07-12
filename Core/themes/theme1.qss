@@ -1,3 +1,8 @@
+/*
+by: Yasin Uludag. All rights reserved.
+download: http://www.yasinuludag.com/darkorange.stylesheet
+*/
+
 QToolTip
 {
      border: 1px solid black;

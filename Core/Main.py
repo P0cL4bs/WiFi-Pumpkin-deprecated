@@ -377,7 +377,7 @@ class WifiPumpkin(QWidget):
         btn_mac = QAction('Mac Changer', self)
         btn_dhcpStar = QAction('DHCP S. Attack',self)
         btn_winup = QAction('Windows Update',self)
-        btn_arp = QAction('Arp Posion Attack',self)
+        btn_arp = QAction('Arp Poison Attack',self)
         btn_dns = QAction('Dns Spoof Attack',self)
         btn_phishing = QAction('Phishing Manager',self)
         action_settings = QAction('Settings',self)

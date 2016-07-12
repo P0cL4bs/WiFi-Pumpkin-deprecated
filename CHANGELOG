@@ -22,6 +22,7 @@ Version 0.7.5
 - fixed error on "Settings" option #58
 - added Qprocess into Threads::Process,fixed run plugin::dns2proxy
 - fixed error Advanced Mode::monitor crashed application #60
+- added QScrollArea on Settings::General, About::ThanksTo
 
 Version 0.7.3
 -------------
