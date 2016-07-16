@@ -4,7 +4,7 @@ from Core.Utils import Refactor,set_monitor_mode
 from subprocess import Popen,PIPE
 from Core.utility.settings import frm_Settings
 from Modules.servers.PhishingManager import frm_PhishingManager
-from Core.utility.threads import ThreadPopen,ThreadScan,ProcessThread
+from Core.utility.threads import ThreadPopen,ThreadScan,ProcessThread,ThreadFastScanIP
 from Core.packets.network import ThARP_posion,ThSpoofAttack
 class PumpkinModule(QWidget):
     ''' this is Qwidget Module base '''

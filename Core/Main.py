@@ -73,8 +73,8 @@ Copyright:
 author      = 'Marcos Nesster (@mh4x0f)  P0cl4bs Team'
 emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
 license     = ' GNU GPL 3'
-version     = '0.7.5'
-update      = '07/05/2016' # This is Brasil :D
+version     = '0.7.8'
+update      = '16/07/2016' # This is Brasil :D
 desc        = ['Framework for Rogue Wi-Fi Access Point Attacks']
 
 class Initialize(QMainWindow):
@@ -83,7 +83,7 @@ class Initialize(QMainWindow):
         super(Initialize, self).__init__(parent)
         self.FSettings      = frm_Settings()
         self.form_widget    = WifiPumpkin(self,self,self.FSettings)
-        self.form_widget.setFixedHeight(540)
+        self.form_widget.setFixedHeight(520)
         self.form_widget.setFixedWidth(370)
         dock = QDockWidget()
         dock.setTitleBarWidget(QWidget())
@@ -214,7 +214,7 @@ class WifiPumpkin(QWidget):
         self.ContentTabsettings.addLayout(self.PumpSettingsTAB)
 
     def DefaultTABContent(self):
-        self.StatusBar = QStatusBar()
+        self.StatusBar = QStatusBar(self)
         self.StatusBar.setFixedHeight(15)
         self.StatusBar.addWidget(QLabel("::Access|Point::"))
         self.StatusDhcp = QLabel("")
@@ -222,7 +222,9 @@ class WifiPumpkin(QWidget):
         self.StatusDhcp = QLabel('')
         self.StatusBar.addWidget(self.StatusDhcp)
         self.Started(False)
-        self.StatusBar.addWidget(QLabel(''),20)
+        self.progress = ProgressBarWid(total=101)
+        self.progress.setFixedHeight(30)
+        self.StatusBar.addWidget(self.progress,20)
         self.StatusBar.addWidget(QLabel("::Clients::"))
         self.connectedCount.setText("0")
         self.connectedCount.setStyleSheet("QLabel {  color : yellow; }")
@@ -307,9 +309,6 @@ class WifiPumpkin(QWidget):
         self.slipt.addWidget(self.GroupAP)
         self.slipt.addWidget(self.GroupAdapter)
 
-        self.progress = ProgressBarWid(total=101)
-        self.progress.setFixedHeight(20)
-        self.FormGroup2.addRow(self.progress)
         self.FormGroup2.addRow(hBox)
         self.FormGroup2.addRow(self.TabInfoAP)
         self.FormGroup2.addRow(self.StatusBar)
@@ -509,18 +508,17 @@ class WifiPumpkin(QWidget):
         self.Fdns2proxy.show()
 
     def checkPlugins(self):
-        if self.FSettings.Settings.get_setting('plugins','sslstrip_plugin',format=bool):
-            self.PopUpPlugins.check_sslstrip.setChecked(True)
-            self.PopUpPlugins.set_sslStripRule()
         if self.FSettings.Settings.get_setting('plugins','netcreds_plugin',format=bool):
             self.PopUpPlugins.check_netcreds.setChecked(True)
         if self.FSettings.Settings.get_setting('plugins','dns2proxy_plugin',format=bool):
             self.PopUpPlugins.check_dns2proy.setChecked(True)
-            self.PopUpPlugins.set_Dns2proxyRule()
-        if self.FSettings.Settings.get_setting('plugins','sergioproxy_plugin',format=bool):
+            self.PopUpPlugins.checkGeneralOptions()
+        elif self.FSettings.Settings.get_setting('plugins','sergioproxy_plugin',format=bool):
             self.PopUpPlugins.check_sergioProxy.setChecked(True)
-            if not self.FSettings.Settings.get_setting('plugins','sslstrip_plugin',format=bool):
-                self.PopUpPlugins.set_sslStripRule()
+            self.PopUpPlugins.checkGeneralOptions()
+        elif self.FSettings.Settings.get_setting('plugins','noproxy',format=bool):
+            self.PopUpPlugins.check_noproxy.setChecked(True)
+            self.PopUpPlugins.checkGeneralOptions()
 
     def Started(self,bool):
         if bool:
@@ -560,7 +558,7 @@ class WifiPumpkin(QWidget):
                             hostname = item[data[4]]
                     except:
                         hostname = 'unknown'
-                    if hostname == None:hostname = 'unknown'
+                    if hostname == None or len(hostname) == 0:hostname = 'unknown'
                     self.APclients[data[4]] = {'IP': data[2],'device': hostname,
                     'in_tables': False,}
                     self.StatusDHCPRequests(data[4],self.APclients[data[4]])
@@ -616,7 +614,7 @@ class WifiPumpkin(QWidget):
         for i in lista:self.ConfigTwin['ProgCheck'].append(path.isfile(i))
 
     def exportHTML(self):
-        contents = Refactor.exportHtml()
+        contents = Refactor.exportHtml(remove_dns2proxy=True)
         filename = QFileDialog.getSaveFileNameAndFilter(self,
         'Save File Logger HTML','report.html','HTML (*.html)')
         if len(filename) != 0:
@@ -633,6 +631,7 @@ class WifiPumpkin(QWidget):
 
     def kill(self):
         if self.Apthreads['RougeAP'] == []: return
+        print('-------------------------------')
         self.ProxyPluginsTAB.GroupSettings.setEnabled(True)
         self.FSettings.Settings.set_setting('accesspoint','statusAP',False)
         if hasattr(self,'dockAreaList'):
@@ -816,9 +815,10 @@ class WifiPumpkin(QWidget):
                 'now you have choose the Class range different of your network.')
         self.btn_start_attack.setDisabled(True)
         popen('ulimit -n 64000')
-
+        print('\n[*] Loading debugging mode')
         self.APactived = self.FSettings.Settings.get_setting('accesspoint','using')
         if self.APactived == 'hostapd':
+            print('[*] Configuring hostapd...')
             self.ConfigTwin['AP_iface'] = str(self.selectCard.currentText())
             if str(self.interfacesLink['activated']).startswith('eth') or \
                str(self.interfacesLink['activated']).startswith('enp'):
@@ -860,6 +860,7 @@ class WifiPumpkin(QWidget):
             self.Apthreads['RougeAP'].append(self.Thread_hostapd)
 
         # thread dhcp
+        print('[*] Configuring dhcpd...')
         popen('ifconfig {} up'.format(str(self.selectCard.currentText())))
         selected_dhcp = self.FSettings.Settings.get_setting('accesspoint','dhcp_server')
         if selected_dhcp == 'iscdhcpserver':
@@ -882,32 +883,11 @@ class WifiPumpkin(QWidget):
         self.FSettings.Settings.set_setting('accesspoint','interfaceAP',str(self.selectCard.currentText()))
 
 
-        if self.PopUpPlugins.check_sslstrip.isChecked() or not self.PopUpPlugins.check_dns2proy.isChecked():
-            popen('iptables -t nat -A PREROUTING -p udp -j DNAT --to {}'.format(str(self.EditGateway.text())))
         # load ProxyPLugins
         self.plugin_classes = Plugin.PluginProxy.__subclasses__()
         self.plugins = {}
         for p in self.plugin_classes:
             self.plugins[p._name] = p()
-
-        # thread plugins
-        if self.PopUpPlugins.check_sslstrip.isChecked() and not self.PopUpPlugins.check_sergioProxy.isChecked():
-            self.Threadsslstrip = Thread_sslstrip(self.ConfigTwin['PortRedirect'],
-            self.plugins,self.ProxyPluginsTAB._PluginsToLoader)
-            self.Threadsslstrip.setObjectName("sslstrip")
-            self.Apthreads['RougeAP'].append(self.Threadsslstrip)
-
-        elif not self.PopUpPlugins.check_sslstrip.isChecked() and self.PopUpPlugins.check_sergioProxy.isChecked():
-            self.Threadsslstrip = Thread_sergioProxy(self.ConfigTwin['PortRedirect'],
-            self.plugins,self.ProxyPluginsTAB._PluginsToLoader)
-            self.Threadsslstrip.setObjectName("sslstrip")
-            self.Apthreads['RougeAP'].append(self.Threadsslstrip)
-
-        elif self.PopUpPlugins.check_sergioProxy.isChecked() and self.PopUpPlugins.check_sergioProxy.isChecked():
-            self.Threadsslstrip = Thread_sergioProxy(self.ConfigTwin['PortRedirect'],
-            self.plugins,self.ProxyPluginsTAB._PluginsToLoader)
-            self.Threadsslstrip.setObjectName("sslstrip")
-            self.Apthreads['RougeAP'].append(self.Threadsslstrip)
 
         if self.PopUpPlugins.check_netcreds.isChecked():
             self.Thread_netcreds = ProcessThread({'python':['Plugins/net-creds/net-creds.py','-i',
@@ -920,6 +900,20 @@ class WifiPumpkin(QWidget):
             str(self.selectCard.currentText())]})
             self.Thread_dns2proxy.setObjectName('Dns2Proxy')
             self.Apthreads['RougeAP'].append(self.Thread_dns2proxy)
+
+        # thread plugins
+        if self.PopUpPlugins.check_dns2proy.isChecked():
+            self.Threadsslstrip = Thread_sslstrip(self.ConfigTwin['PortRedirect'],
+            self.plugins,self.ProxyPluginsTAB._PluginsToLoader)
+            self.Threadsslstrip.setObjectName("sslstrip2")
+            self.Apthreads['RougeAP'].append(self.Threadsslstrip)
+
+        elif self.PopUpPlugins.check_sergioProxy.isChecked():
+            self.Threadsslstrip = Thread_sergioProxy(self.ConfigTwin['PortRedirect'],
+            self.plugins,self.ProxyPluginsTAB._PluginsToLoader)
+            self.Threadsslstrip.setObjectName("sslstrip")
+            self.Apthreads['RougeAP'].append(self.Threadsslstrip)
+
 
         iptables = []
         for index in xrange(self.FSettings.ListRules.count()):
@@ -934,12 +928,11 @@ class WifiPumpkin(QWidget):
         #self.PumpSettingsTAB.GroupArea.setEnabled(False)
         self.progress.change_color('#FFA500')
         for thread in self.Apthreads['RougeAP']:
-            thread.start()
-            self.progress.setText(thread.getNameThread())
             self.progress.update_bar_simple(20)
             QThread.sleep(3)
+            thread.start()
         self.progress.setValue(100)
-        self.progress.change_color('grey')
+        self.progress.change_color('#FFA500')
         self.progress.setText('')
         if self.FSettings.Settings.get_setting('dockarea','advanced',format=bool):
             QThread.sleep(3)
@@ -950,6 +943,11 @@ class WifiPumpkin(QWidget):
                 for f in filelist: system('rm Logs/AccessPoint/{}'.format(f))
                 for dock in self.dockAreaList.keys():
                     self.dockAreaList[dock].RunThread()
+        if self.PopUpPlugins.check_noproxy.isChecked() or self.PopUpPlugins.check_sergioProxy.isChecked():
+            popen('iptables -t nat -A PREROUTING -p udp -j DNAT --to {}'.format(str(self.EditGateway.text())))
+        print('AP::[{}] Running...'.format(self.EditApName.text()))
+        print('AP::BSSID::[{}] CH {}'.format(Refactor.get_interface_mac(
+        self.selectCard.currentText()),self.EditChannel.text()))
 
     def create_sys_tray(self):
         self.sysTray = QSystemTrayIcon(self)

@@ -31,69 +31,84 @@ class PopUpPlugins(QWidget):
         self.FSettings = FSettings
         self.layout = QVBoxLayout()
         self.layoutform = QFormLayout()
+        self.layoutproxy = QFormLayout()
         self.GroupPlugins = QGroupBox()
-        self.GroupPlugins.setTitle('::Plugins::')
+        self.GroupPluginsProxy = QGroupBox()
+        self.GroupPlugins.setTitle(':: Plugins ::')
+        self.GroupPluginsProxy.setTitle(':: Proxy ::')
+        self.GroupPluginsProxy.setLayout(self.layoutproxy)
         self.GroupPlugins.setLayout(self.layoutform)
-        self.check_sslstrip = QCheckBox('::ssLstrip')
-        self.check_netcreds = QCheckBox('::net-creds')
-        self.check_dns2proy = QCheckBox('::dns2proxy')
-        self.check_sergioProxy  = QCheckBox('::sergio-proxy')
-        self.check_dns2proy.clicked.connect(self.checkBoxDns2proxy)
-        self.check_sslstrip.clicked.connect(self.checkBoxSslstrip)
+        self.check_netcreds     = QCheckBox('net-creds ')
+        self.check_dns2proy     = QRadioButton('sslstrip+/dns2proxy')
+        self.check_sergioProxy  = QRadioButton('sslstrip/sergio-proxy')
+        self.check_noproxy      = QRadioButton('No Proxy')
+        self.proxyGroup = QButtonGroup()
+        self.proxyGroup.addButton(self.check_dns2proy)
+        self.proxyGroup.addButton(self.check_sergioProxy)
+        self.proxyGroup.addButton(self.check_noproxy)
+        self.check_dns2proy.clicked.connect(self.checkGeneralOptions)
         self.check_netcreds.clicked.connect(self.checkBoxNecreds)
-        self.check_sergioProxy.clicked.connect(self.checkBoxSergioProxy)
-        self.layoutform.addRow(self.check_sslstrip)
+        self.check_sergioProxy.clicked.connect(self.checkGeneralOptions)
+        self.check_noproxy.clicked.connect(self.checkGeneralOptions)
         self.layoutform.addRow(self.check_netcreds)
-        self.layoutform.addRow(self.check_dns2proy)
-        self.layoutform.addRow(self.check_sergioProxy)
+        self.layoutproxy.addRow(self.check_dns2proy)
+        self.layoutproxy.addRow(self.check_sergioProxy)
+        self.layoutproxy.addRow(self.check_noproxy)
         self.layout.addWidget(self.GroupPlugins)
+        self.layout.addWidget(self.GroupPluginsProxy)
         self.setLayout(self.layout)
+
     # control checkbox plugins
-    def checkBoxSslstrip(self):
-        if not self.check_sslstrip.isChecked():
-            if not self.check_sergioProxy.isChecked():
-                self.unset_Rules('sslstrip')
-            self.FSettings.Settings.set_setting('plugins','sslstrip_plugin',False)
-        elif self.check_sslstrip.isChecked():
-            if not self.check_sergioProxy.isChecked():
-                self.set_sslStripRule()
-            self.FSettings.Settings.set_setting('plugins','sslstrip_plugin',True)
-
-    def checkBoxSergioProxy(self):
+    def checkGeneralOptions(self):
+        self.unset_Rules('dns2proxy')
+        self.unset_Rules('sslstrip')
         if self.check_sergioProxy.isChecked():
-            if not self.check_sslstrip.isChecked():
-                self.set_sslStripRule()
             self.FSettings.Settings.set_setting('plugins','sergioproxy_plugin',True)
-        elif not self.check_sergioProxy.isChecked():
-            if not self.check_sslstrip.isChecked():
-                self.unset_Rules('sslstrip')
-            self.FSettings.Settings.set_setting('plugins','sergioproxy_plugin',False)
-
-    def checkBoxDns2proxy(self):
-        if not self.check_dns2proy.isChecked():
-            self.unset_Rules('dns2proxy')
             self.FSettings.Settings.set_setting('plugins','dns2proxy_plugin',False)
+            self.FSettings.Settings.set_setting('plugins','noproxy',False)
+            self.set_sslStripRule()
         elif self.check_dns2proy.isChecked():
-            self.set_Dns2proxyRule()
             self.FSettings.Settings.set_setting('plugins','dns2proxy_plugin',True)
+            self.FSettings.Settings.set_setting('plugins','sergioproxy_plugin',False)
+            self.FSettings.Settings.set_setting('plugins','noproxy',False)
+            self.set_sslStripRule()
+            self.set_Dns2proxyRule()
+        elif self.check_noproxy.isChecked():
+            self.FSettings.Settings.set_setting('plugins','dns2proxy_plugin',False)
+            self.FSettings.Settings.set_setting('plugins','sergioproxy_plugin',False)
+            self.FSettings.Settings.set_setting('plugins','noproxy',True)
+            self.unset_Rules('dns2proxy')
+            self.unset_Rules('sslstrip')
+
     def checkBoxNecreds(self):
         if self.check_netcreds.isChecked():
             self.FSettings.Settings.set_setting('plugins','netcreds_plugin',True)
         else:
             self.FSettings.Settings.set_setting('plugins','netcreds_plugin',False)
 
+    def optionsRules(self,type):
+        search = {'sslstrip': str('iptables -t nat -A PREROUTING -p tcp'+
+        ' --destination-port 80 -j REDIRECT --to-port '+self.FSettings.redirectport.text()),
+        'dns2proxy':str('iptables -t nat -A PREROUTING -p '+
+        'udp --destination-port 53 -j REDIRECT --to-port 53')}
+        return search[type]
+
     # set rules to sslstrip
     def set_sslStripRule(self):
+        items = []
+        for index in xrange(self.FSettings.ListRules.count()):
+            items.append(str(self.FSettings.ListRules.item(index).text()))
+        if self.optionsRules('sslstrip') in items:
+            return
         item = QListWidgetItem()
-        item.setText('iptables -t nat -A PREROUTING -p '+
-        'tcp --destination-port 80 -j REDIRECT --to-port '+self.FSettings.redirectport.text())
+        item.setText(self.optionsRules('sslstrip'))
         item.setSizeHint(QSize(30,30))
         self.FSettings.ListRules.addItem(item)
+
     # set redirect port rules dns2proy
     def set_Dns2proxyRule(self):
         item = QListWidgetItem()
-        item.setText('iptables -t nat -A PREROUTING -p '+
-        'udp --destination-port 53 -j REDIRECT --to-port 53')
+        item.setText(self.optionsRules('dns2proxy'))
         item.setSizeHint(QSize(30,30))
         self.FSettings.ListRules.addItem(item)
 
@@ -101,14 +116,9 @@ class PopUpPlugins(QWidget):
         items = []
         for index in xrange(self.FSettings.ListRules.count()):
             items.append(str(self.FSettings.ListRules.item(index).text()))
-        for i,j in enumerate(items):
-            if type == 'sslstrip':
-                if search(str('tcp --destination-port 80 -j REDIRECT --to-port '+
-                    self.FSettings.redirectport.text()),j):
-                    self.FSettings.ListRules.takeItem(i)
-            elif type =='dns2proxy':
-                if search('udp --destination-port 53 -j REDIRECT --to-port 53',j):
-                    self.FSettings.ListRules.takeItem(i)
+        for position,line in enumerate(items):
+            if self.optionsRules(type) == line:
+                self.FSettings.ListRules.takeItem(position)
 
 
 class PopUpServer(QWidget):

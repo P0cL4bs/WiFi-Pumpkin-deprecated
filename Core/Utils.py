@@ -115,15 +115,17 @@ class Refactor:
         }
         return html
     @staticmethod
-    def exportHtml():
+    def exportHtml(remove_dns2proxy=False,remove_inject=False):
         readFile = {
          'dhcp': {'Logs/AccessPoint/dhcp.log':[]},
          'urls': {'Logs/AccessPoint/urls.log':[]},
          'credentials': {'Logs/AccessPoint/credentials.log':[]},
          'requestAP': {'Logs/AccessPoint/requestAP.log':[]},
-         #'dns2proxy': {'Logs/AccessPoint/dns2proxy.log':[]},
-         #'injectionPage': {'Logs/AccessPoint/injectionPage.log':[]},
+         'dns2proxy': {'Logs/AccessPoint/dns2proxy.log':[]},
+         'injectionPage': {'Logs/AccessPoint/injectionPage.log':[]},
          'phishing': {'Logs/Phishing/Webclone.log':[]},}
+        if remove_dns2proxy: readFile.pop('dns2proxy')
+        elif remove_inject: readFile.pop('injectionPage')
         for i in readFile.keys():
             for j in readFile[i]:
                 with open(j,'r') as file:

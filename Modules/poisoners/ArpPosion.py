@@ -325,48 +325,25 @@ class frm_Arp_Poison(PumpkinModule):
 
         elif threadscan_check == 'Ping':
             if self.txt_gateway.text() != '':
-                config = str(self.txt_gateway.text())
-                t = threading.Thread(target=self.scanner_network,args=(config,))
-                t.daemon = True
-                t.start(),t.join()
-                self.StatusMonitor(False,'stas_scan')
+                self.thread_ScanIP = ThreadFastScanIP(str(self.txt_gateway.text()),self.ip_range.text())
+                self.thread_ScanIP.sendDictResultscan.connect(self.get_result_scanner_ip)
+                self.StatusMonitor(True,'stas_scan')
+                self.thread_ScanIP.start()
+                Headers = []
+                for key in reversed(self.data.keys()):
+                    Headers.append(key)
+                self.tables.setHorizontalHeaderLabels(Headers)
             else:
                 QMessageBox.information(self,'Error in gateway','gateway not found.')
         else:
             QMessageBox.information(self,'Error on select thread Scan','thread scan not selected.')
 
-    def working(self,ip,lista):
-        with open(devnull, 'wb') as limbo:
-            result=Popen(['ping', '-c', '1', '-n', '-W', '1', ip],
-            stdout=limbo, stderr=limbo).wait()
-            if not result:
-                if Refactor.get_mac(ip) == None:
-                    lista[ip] = ip + '|' + 'not found'
-                else:
-                    lista[ip] = ip + '|' + Refactor.get_mac(ip)
-
-    def scanner_network(self,gateway):
-        scan = ''
-        config_gateway = gateway.split('.')
-        del config_gateway[-1]
-        for i in config_gateway:
-            scan += str(i) + '.'
-        gateway = scan
-        ranger = str(self.ip_range.text()).split('-')
-        jobs = []
-        manager = Manager()
-        on_ips = manager.dict()
-        for n in xrange(int(ranger[0]),int(ranger[1])):
-            ip='%s{0}'.format(n)%(gateway)
-            p = Process(target=self.working,args=(ip,on_ips))
-            jobs.append(p)
-            p.start()
-        for i in jobs: i.join()
-        for i in on_ips.values():
-            Headers = []
-            n = i.split('|')
-            self.data['IPaddress'].append(n[0])
-            self.data['MacAddress'].append(n[1])
+    def get_result_scanner_ip(self,data):
+        Headers = []
+        for items in data.values():
+            dataIP = items.split('|')
+            self.data['IPaddress'].append(dataIP[0])
+            self.data['MacAddress'].append(dataIP[1])
             self.data['Hostname'].append('<unknown>')
             for n, key in enumerate(reversed(self.data.keys())):
                 Headers.append(key)
@@ -378,9 +355,10 @@ class frm_Arp_Poison(PumpkinModule):
         for key in reversed(self.data.keys()):
             Headers.append(key)
         self.tables.setHorizontalHeaderLabels(Headers)
+        self.StatusMonitor(False,'stas_scan')
 
     def Stop_scan(self):
-        self.ThreadScanner.terminate()
+        self.thread_ScanIP.stop()
         self.StatusMonitor(False,'stas_scan')
         Headers = []
         for key in reversed(self.data.keys()):

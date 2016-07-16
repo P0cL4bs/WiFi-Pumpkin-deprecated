@@ -116,8 +116,8 @@ class PumpkinProxy(QVBoxLayout):
             QMessageBox.information(None, 'Scripts Loaders', 'file has been loaded with success.')
 
     def setPluginsActivated(self):
-        if self.popup.check_sslstrip.isChecked():
-            item = str(self.comboxBox.currentText())
+        item = str(self.comboxBox.currentText())
+        if self.popup.check_dns2proy.isChecked() or self.popup.check_sergioProxy.isChecked():
             if self.plugins[str(item)]._requiresArgs:
                 if len(self.argsScripts.text()) != 0:
                     self._PluginsToLoader['Plugins'] = item
@@ -129,7 +129,8 @@ class PumpkinProxy(QVBoxLayout):
             self.btnEnable.setEnabled(False)
             self.ProcessReadLogger()
             return self.statusInjection(True)
-        self.sendError.emit('sslstrip is not enabled.'.format(self.argsLabel.text()))
+        self.sendError.emit('Plugins::Proxy is not enabled.'
+        '\n\nthis module need a proxy server to work'.format(self.argsLabel.text()))
 
     def ProcessReadLogger(self):
         if path.exists('Logs/AccessPoint/injectionPage.log'):

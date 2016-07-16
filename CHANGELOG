@@ -1,3 +1,10 @@
+Version 0.7.8
+-------------
+- moved progressBar to statusBar
+- fixed thread scanner IP in Modules::DNS,ARP spoof
+- changed plugins options to sslstrip+/dns2proxy, sslstrip/sergio-proxy
+- added option run AP without Proxy
+
 Version 0.7.5
 -------------
 - fixed size QTableWidget on modules

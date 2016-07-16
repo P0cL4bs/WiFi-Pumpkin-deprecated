@@ -4,13 +4,14 @@ import signal
 import threading
 from sys import stdout
 from time import asctime
-from os import path,stat,getpgid,setsid,killpg
+from os import path,stat,getpgid,setsid,killpg,devnull
 from twisted.web import http
 from twisted.internet import reactor
-from Core.Utils import setup_logger
+from Core.Utils import setup_logger,Refactor
 from subprocess import (Popen,PIPE,STDOUT)
 from PyQt4.QtCore import QThread,pyqtSignal,SIGNAL,pyqtSlot,QProcess,QObject,SLOT
 from Plugins.sergio_proxy.plugins import *
+from multiprocessing import Process,Manager
 try:
     from nmap import PortScanner
 except ImportError:
@@ -23,10 +24,10 @@ class ThreadPopen(QThread):
         self.process = None
 
     def getNameThread(self):
-        return 'Starting Thread:' + self.objectName()
+        return '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
 
     def run(self):
-        print 'Starting Thread:' + self.objectName()
+        print '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
         self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT,close_fds=True)
         for line in iter(self.process.stdout.readline, b''):
             self.emit(SIGNAL('Activated( QString )'),line.rstrip())
@@ -46,10 +47,10 @@ class ThRunDhcp(QThread):
         self.process = None
 
     def getNameThread(self):
-        return 'Starting Thread:' + self.objectName()
+        return '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
 
     def run(self):
-        print 'Starting Thread:' + self.objectName()
+        print '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
         self.process = Popen(self.args,
         stdout=PIPE,stderr=STDOUT,preexec_fn=setsid)
         setup_logger('dhcp', './Logs/AccessPoint/dhcp.log')
@@ -63,7 +64,7 @@ class ThRunDhcp(QThread):
             loggerDhcp.info(data.rstrip())
 
     def stop(self):
-        print 'Stop thread:' + self.objectName()
+        print 'Thread::[{}] successfully stopped.'.format(self.objectName())
         if self.process is not None:
             killpg(getpgid(self.process.pid), signal.SIGTERM)
 
@@ -94,6 +95,38 @@ class ThreadScan(QThread):
         except NameError:
             QMessageBox.information(self,'error module','the module Python-nmap not installed')
 
+class ThreadFastScanIP(QThread):
+    sendDictResultscan = pyqtSignal(object)
+    def __init__(self,gateway,iprange,parent=None):
+        super(ThreadFastScanIP, self).__init__(parent)
+        self.ip_range = str(iprange).split('-')
+        self.workingThread = True
+        self.gatewayNT = gateway[:len(gateway)-len(gateway.split('.').pop())]
+
+    def run(self):
+        self.jobs = []
+        manager = Manager()
+        on_ips = manager.dict()
+        for n in xrange(int(self.ip_range[0]),int(self.ip_range[1])):
+            ip='%s{0}'.format(n)%(self.gatewayNT)
+            if not self.workingThread: break
+            p = Process(target=self.working,args=(ip,on_ips))
+            self.jobs.append(p)
+            p.start()
+        for proc in self.jobs: proc.join()
+        self.sendDictResultscan.emit(on_ips)
+
+    def working(self,ip,lista):
+        with open(devnull, 'wb') as limbo:
+            result=Popen(['ping', '-c', '1', '-n', '-W', '1', ip],
+            stdout=limbo, stderr=limbo).wait()
+            if not result:
+                if Refactor.get_mac(ip) == None:
+                    lista[ip] = ip + '|' + 'not found'
+                else:
+                    lista[ip] = ip + '|' + Refactor.get_mac(ip)
+    def stop(self):
+        self.workingThread = False
 
 
 class ProcessThread(QObject):
@@ -102,21 +135,21 @@ class ProcessThread(QObject):
         self.cmd = cmd
 
     def getNameThread(self):
-        return 'Starting Thread:' + self.objectName()
+        return '[New Thread {} ({})]'.format(self.procThread.pid(),self.objectName())
 
     @pyqtSlot()
     def readProcessOutput(self):
         self.data = str(self.procThread.readAllStandardOutput())
 
     def start(self):
-        print 'Starting Thread:' + self.objectName()
         self.procThread = QProcess(self)
         self.procThread.setProcessChannelMode(QProcess.MergedChannels)
         QObject.connect(self.procThread, SIGNAL('readyReadStandardOutput()'), self, SLOT('readProcessOutput()'))
         self.procThread.start(self.cmd.keys()[0],self.cmd[self.cmd.keys()[0]])
+        print '[New Thread {} ({})]'.format(self.procThread.pid(),self.objectName())
 
     def stop(self):
-        print 'Stop thread:' + self.objectName()
+        print 'Thread::[{}] successfully stopped.'.format(self.objectName())
         if hasattr(self,'procThread'):
             self.procThread.terminate()
             self.procThread.waitForFinished()
@@ -130,7 +163,7 @@ class ProcessHostapd(QObject):
         self.cmd = cmd
 
     def getNameThread(self):
-        return 'Starting Thread:' + self.objectName()
+        return '[New Thread {} ({})]'.format(self.procHostapd.pid(),self.objectName())
 
     @pyqtSlot()
     def read_OutputCommand(self):
@@ -139,19 +172,19 @@ class ProcessHostapd(QObject):
             self.statusAP_connected.emit(self.data.split()[2])
 
     def start(self):
-        print 'Starting Thread:' + self.objectName()
         self.makeLogger()
         self.procHostapd = QProcess(self)
         self.procHostapd.setProcessChannelMode(QProcess.MergedChannels)
         QObject.connect(self.procHostapd, SIGNAL('readyReadStandardOutput()'), self, SLOT('read_OutputCommand()'));
         self.procHostapd.start(self.cmd.keys()[0],self.cmd[self.cmd.keys()[0]])
+        print '[New Thread {} ({})]'.format(self.procHostapd.pid(),self.objectName())
 
     def makeLogger(self):
         setup_logger('hostapd', './Logs/AccessPoint/requestAP.log')
         self.log_hostapd = logging.getLogger('hostapd')
 
     def stop(self):
-        print 'Stop thread:' + self.objectName()
+        print 'Thread::[{}] successfully stopped.'.format(self.objectName())
         if hasattr(self,'procHostapd'):
             self.procHostapd.terminate()
             self.procHostapd.waitForFinished()
@@ -166,18 +199,16 @@ class Thread_sslstrip(QThread):
         self.loaderPlugins = data
 
     def getNameThread(self):
-        return 'Starting Thread:' + self.objectName()
+        return '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
 
     def run(self):
+        print 'SSLstrip v0.9 + POC by Leonardo Nve'
         killSessions = True
         spoofFavicon = False
         listenPort   = self.port
         from Plugins.sslstrip.StrippingProxy import StrippingProxy
         from Plugins.sslstrip.URLMonitor import URLMonitor
         from Plugins.sslstrip.CookieCleaner import CookieCleaner
-        print 'Starting Thread:' + self.objectName()
-        print 'SSLstrip v0.9 by Moxie Marlinspike (@xtr4nge v0.9.2)::Online'
-        print "+ POC by Leonardo Nve"
         if self.loaderPlugins['Plugins'] != None:
             self.plugins[self.loaderPlugins['Plugins']].getInstance()._activated = True
             self.plugins[self.loaderPlugins['Plugins']].getInstance().setInjectionCode(
@@ -193,8 +224,8 @@ class Thread_sslstrip(QThread):
             except Exception:
                 pass
     def stop(self):
-        print 'Stop thread:' + self.objectName()
-
+        print 'Thread::[{}] successfully stopped.'.format(self.objectName())
+        reactor.callFromThread(reactor.stop)
 
 
 class Thread_sergioProxy(QThread):
@@ -206,7 +237,7 @@ class Thread_sergioProxy(QThread):
         self.loaderPlugins = options
 
     def getNameThread(self):
-        return 'Starting Thread:' + self.objectName()
+        return '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
 
     def run(self):
         killSessions = True
@@ -315,9 +346,7 @@ class Thread_sergioProxy(QThread):
         CookieCleaner.getInstance().setEnabled(killSessions)
         strippingFactory              = http.HTTPFactory(timeout=10)
         strippingFactory.protocol     = StrippingProxy
-        print 'Starting Thread:' + self.objectName()
-        print "\nsslstrip " + sslstrip_version + " by Moxie Marlinspike running..."
-        print "sergio-proxy v%s online" % sergio_version
+        print 'sslstrip {} + sergio-proxy v{} online'.format(sslstrip_version,sergio_version)
         if not reactor.running:
             self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
             try:
@@ -326,4 +355,5 @@ class Thread_sergioProxy(QThread):
                 pass
 
     def stop(self):
-        print 'Stop thread:' + self.objectName()
+        print 'Thread::[{}] successfully stopped.'.format(self.objectName())
+        reactor.callFromThread(reactor.stop)

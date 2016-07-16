@@ -150,6 +150,9 @@ class ProgressBarWid(QProgressBar):
         super(ProgressBarWid, self).__init__()
         self.setMinimum(1)
         self.setMaximum(total)
+        font=QFont('White Rabbit')
+        font.setPointSize(5)
+        self.setFont(font)
         self._active = False
         self.setAlignment(Qt.AlignCenter)
         self._text = None
@@ -165,8 +168,6 @@ class ProgressBarWid(QProgressBar):
     def update_bar_simple(self, add):
         value = self.value() + add
         self.setValue(value)
-        if value > 50:
-            self.change_color("green")
 
     def update_bar(self, add):
         while True:
