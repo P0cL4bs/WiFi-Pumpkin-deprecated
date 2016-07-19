@@ -427,17 +427,21 @@ class WifiPumpkin(QWidget):
 
         #menu extra
         Menu_extra= self.myQMenuBar.addMenu('&Help')
-        Menu_update = QAction('Update',self)
-        Menu_about = QAction('About',self)
+        Menu_update = QAction('Check for Updates',self)
+        Menu_about = QAction('About WiFi-Pumpkin',self)
         Menu_issue = QAction('Submit issue',self)
+        Menu_donate = QAction('Donate',self)
         Menu_about.setIcon(QIcon('Icons/about.png'))
         Menu_issue.setIcon(QIcon('Icons/report.png'))
         Menu_update.setIcon(QIcon('Icons/update.png'))
+        Menu_donate.setIcon(QIcon('Icons/donate.png'))
         Menu_about.triggered.connect(self.about)
         Menu_issue.triggered.connect(self.issue)
+        Menu_donate.triggered.connect(self.donate)
         Menu_update.triggered.connect(self.show_update)
         Menu_extra.addAction(Menu_issue)
         Menu_extra.addAction(Menu_update)
+        Menu_extra.addAction(Menu_donate)
         Menu_extra.addAction(Menu_about)
 
         self.MainControl.addLayout(self.FormBanner)
@@ -971,4 +975,9 @@ class WifiPumpkin(QWidget):
     def issue(self):
         url = QUrl('https://github.com/P0cL4bs/WiFi-Pumpkin/issues/new')
         if not QDesktopServices.openUrl(url):
-            QMessageBox.warning(self, 'Open Url', 'Could not open url')
+            QMessageBox.warning(self, 'Open Url', 'Could not open url: {}'.format(url))
+
+    def donate(self):
+        url = QUrl('https://pledgie.com/campaigns/32244')
+        if not QDesktopServices.openUrl(url):
+            QMessageBox.warning(self, 'Open Url', 'Could not open url: {}'.format(url))

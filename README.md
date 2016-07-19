@@ -89,4 +89,7 @@ class blurpage(PluginProxy):
 ### Contact Us
 Whether you want to report a [bug](https://github.com/P0cL4bs/WiFi-Pumpkin/issues/new), send a patch or give some suggestions on this package, drop us or open [pull requests](https://github.com/P0cL4bs/WiFi-Pumpkin/pulls) 
 
-Happy MITM! 
+Happy MITM!
+### Donate
+##### Via pledgie:
+<a href='https://pledgie.com/campaigns/32244'><img alt='Click here to lend your support to: WiFi-Pumpkin - Framework for Rogue Wi-Fi Access Point Attack and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/32244.png?skin_name=chrome' border='0' ></a>

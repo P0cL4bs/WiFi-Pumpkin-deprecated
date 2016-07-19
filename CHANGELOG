@@ -4,6 +4,7 @@ Version 0.7.8
 - fixed thread scanner IP in Modules::DNS,ARP spoof
 - changed plugins options to sslstrip+/dns2proxy, sslstrip/sergio-proxy
 - added option run AP without Proxy
+- added donate options
 
 Version 0.7.5
 -------------
