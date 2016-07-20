@@ -7,6 +7,7 @@ import SocketServer
 import threading
 import urllib2
 import logging
+import socket
 import cgi
 
 
@@ -47,7 +48,45 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.redirect(self.redirect_Original_website)
         SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
+
+class MyHTTPServer(BaseHTTPServer.HTTPServer):
+    ''' by: Piotr Dobrogost callback for start and stop event '''
+    def __init__(self, *args, **kwargs):
+        self.on_before_serve = kwargs.pop('on_before_serve', None)
+        BaseHTTPServer.HTTPServer.__init__(self, *args, **kwargs)
+
+    def serve_forever(self, poll_interval=0.5):
+        if self.on_before_serve:
+            self.on_before_serve(self)
+        BaseHTTPServer.HTTPServer.serve_forever(self, poll_interval)
+
+class ThreadHTTPServerPhishing(QThread):
+    ''' server http for website  module::UpdateFake'''
+    request = pyqtSignal(object)
+    def __init__(self,PORT,DIRECTORY,parent=None):
+        super(ThreadHTTPServerPhishing, self).__init__(parent)
+        self.PORT,self.DIRECTORY = PORT,DIRECTORY
+
+    def run(self):
+        try:
+            self.httpd = None
+            self.Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+            self.Handler.log_message = self.Method_GET_REQUEST
+            self.httpd = MyHTTPServer(('', self.PORT), self.Handler,
+            on_before_serve = self.httpd)
+            self.httpd.allow_reuse_address = True
+            self.httpd.serve_forever()
+        except socket.error,eror:
+            self.request.emit('socket.error: [Errno 98] Address already in use')
+
+    def Method_GET_REQUEST(self,format, *args ):
+        self.request.emit('{}'.format(list(args)[0]))
+
+    def stop(self):
+        self.httpd.server_close()
+
 class ServerThreadHTTP(QThread):
+    ''' server http for website custom module Phishing '''
     requestHTTP = pyqtSignal(object)
     def __init__(self,Address,PORT,redirect=None,directory=None):
         self.Address,self.PORT = Address,PORT
