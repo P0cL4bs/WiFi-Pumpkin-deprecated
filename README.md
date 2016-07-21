@@ -87,7 +87,7 @@ class blurpage(PluginProxy):
 [FAQ](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/FAQ) on the wiki
 
 ### Contact Us
-Whether you want to report a [bug](https://github.com/P0cL4bs/WiFi-Pumpkin/issues/new), send a patch or give some suggestions on this package, drop us or open [pull requests](https://github.com/P0cL4bs/WiFi-Pumpkin/pulls) 
+Whether you want to report a [bug](https://github.com/P0cL4bs/WiFi-Pumpkin/issues/new), send a patch or give some suggestions on this project, drop us or open [pull requests](https://github.com/P0cL4bs/WiFi-Pumpkin/pulls) 
 
 Happy MITM!
 ### Donate

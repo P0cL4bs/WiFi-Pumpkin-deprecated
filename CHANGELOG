@@ -6,6 +6,9 @@ Version 0.7.8
 - added option run AP without Proxy
 - added donate options
 - added ThreadHTTPServerPhishing in Module::UpdateFake
+- fixed PhishingManager::ServerThreadHTTP errno 98 address already in use
+- fixed duplicate logging::setup_logger when run more than once
+- fixed Thread::sslstrip added Reactor.run() to Threads
 
 Version 0.7.5
 -------------

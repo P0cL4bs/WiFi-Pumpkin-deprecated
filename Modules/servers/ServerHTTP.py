@@ -68,21 +68,19 @@ class ThreadHTTPServerPhishing(QThread):
         self.PORT,self.DIRECTORY = PORT,DIRECTORY
 
     def run(self):
-        try:
-            self.httpd = None
-            self.Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-            self.Handler.log_message = self.Method_GET_REQUEST
-            self.httpd = MyHTTPServer(('', self.PORT), self.Handler,
-            on_before_serve = self.httpd)
-            self.httpd.allow_reuse_address = True
-            self.httpd.serve_forever()
-        except socket.error,eror:
-            self.request.emit('socket.error: [Errno 98] Address already in use')
+        self.httpd = None
+        self.Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+        self.Handler.log_message = self.Method_GET_REQUEST
+        self.httpd = MyHTTPServer(('', self.PORT), self.Handler,
+        on_before_serve = self.httpd)
+        self.httpd.allow_reuse_address = True
+        self.httpd.serve_forever()
 
     def Method_GET_REQUEST(self,format, *args ):
         self.request.emit('{}'.format(list(args)[0]))
 
     def stop(self):
+        self.httpd.shutdown()
         self.httpd.server_close()
 
 class ServerThreadHTTP(QThread):
@@ -93,11 +91,11 @@ class ServerThreadHTTP(QThread):
         self.Handler = ServerHandler
         self.Handler.redirect_Original_website = redirect
         self.Handler.redirect_Path = directory
-        self.httpd = BaseHTTPServer.HTTPServer((self.Address, self.PORT), self.Handler)
         QThread.__init__(self)
 
     def run(self):
-        print "Serving at: http://%(interface)s:%(port)s\n" % dict(interface=self.Address, port=self.PORT)
+        self.httpd = None
+        self.httpd = MyHTTPServer((self.Address, self.PORT), self.Handler,on_before_serve = self.httpd)
         self.Handler.log_message = self.Method_GET_LOG
         setup_logger('phishing', './Logs/Phishing/Webclone.log')
         self.log_phishing = logging.getLogger('phishing')

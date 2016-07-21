@@ -76,16 +76,21 @@ class ThreadPhishingServer(QThread):
             self.process.terminate()
 
 
-
+loggers = {}
 '''http://stackoverflow.com/questions/17035077/python-logging-to-multiple-log-files-from-different-classes'''
 def setup_logger(logger_name, log_file, level=logging.INFO):
-    l = logging.getLogger(logger_name)
-    formatter = logging.StreamHandler(stdout)
-    formatter = logging.Formatter('%(asctime)s : %(message)s')
-    fileHandler = logging.FileHandler(log_file, mode='a')
-    fileHandler.setFormatter(formatter)
-    l.setLevel(logging.INFO)
-    l.addHandler(fileHandler)
+    global loggers
+    if loggers.get(logger_name):
+        return loggers.get(logger_name)
+    else:
+        logger = logging.getLogger(logger_name)
+        logger.propagate = False
+        formatter = logging.Formatter('%(asctime)s : %(message)s')
+        fileHandler = logging.FileHandler(log_file, mode='a')
+        fileHandler.setFormatter(formatter)
+        logger.setLevel(logging.INFO)
+        logger.addHandler(fileHandler)
+    return logger
 
 class Refactor:
     @staticmethod

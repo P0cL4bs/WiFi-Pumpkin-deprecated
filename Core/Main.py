@@ -36,7 +36,8 @@ from Core.widgets.PopupModels import (
 
 from Core.utility.threads import  (
     ProcessHostapd,Thread_sergioProxy,
-    ThRunDhcp,Thread_sslstrip,ProcessThread
+    ThRunDhcp,Thread_sslstrip,ProcessThread,
+    ThreadReactor
 )
 
 from Proxy import *
@@ -108,6 +109,8 @@ class Initialize(QMainWindow):
         self.move(frameGm.topLeft())
 
     def closeEvent(self, event):
+        if self.form_widget.THReactor.isRunning():
+            self.form_widget.THReactor.stop()
         iwconfig = Popen(['iwconfig'], stdout=PIPE,shell=False,stderr=PIPE)
         for i in iwconfig.stdout.readlines():
             if search('Mode:Monitor',i):
@@ -176,6 +179,7 @@ class WifiPumpkin(QWidget):
         'PortRedirect': None, 'interface':'None'}
         self.THeaders       = {'ip-address':[], 'device':[], 'mac-address':[]}
         self.PopUpPlugins   = PopUpPlugins(self.FSettings)
+        self.THReactor = ThreadReactor()
         self.checkPlugins()
         self.intGUI()
 
@@ -643,7 +647,11 @@ class WifiPumpkin(QWidget):
                 self.dockAreaList[dock].clear()
                 self.dockAreaList[dock].stopProcess()
         self.PumpSettingsTAB.GroupArea.setEnabled(True)
-        for thread in self.Apthreads['RougeAP']: thread.stop()
+        for thread in self.Apthreads['RougeAP']:
+            thread.stop()
+            if hasattr(thread, 'wait'):
+                if not thread.wait(msecs=500):
+                    thread.terminate()
         for kill in self.SettingsAP['kill']:
             Popen(kill.split(), stdout=PIPE,shell=False,stderr=PIPE)
         Refactor.settingsNetworkManager(self.ConfigTwin['AP_iface'],Remove=True)
@@ -893,6 +901,9 @@ class WifiPumpkin(QWidget):
         for p in self.plugin_classes:
             self.plugins[p._name] = p()
 
+        if self.PopUpPlugins.check_dns2proy.isChecked() or self.PopUpPlugins.check_sergioProxy.isChecked():
+            if not self.THReactor.isRunning():
+                self.THReactor.start()
         if self.PopUpPlugins.check_netcreds.isChecked():
             self.Thread_netcreds = ProcessThread({'python':['Plugins/net-creds/net-creds.py','-i',
             str(self.selectCard.currentText())]})

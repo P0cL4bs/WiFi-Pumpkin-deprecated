@@ -7,6 +7,8 @@ from time import asctime
 from os import path,stat,getpgid,setsid,killpg,devnull
 from twisted.web import http
 from twisted.internet import reactor
+from twisted.internet.defer import DebugInfo
+del DebugInfo.__del__
 from Core.Utils import setup_logger,Refactor
 from subprocess import (Popen,PIPE,STDOUT)
 from PyQt4.QtCore import QThread,pyqtSignal,SIGNAL,pyqtSlot,QProcess,QObject,SLOT
@@ -190,6 +192,15 @@ class ProcessHostapd(QObject):
             self.procHostapd.waitForFinished()
             self.procHostapd.kill()
 
+class ThreadReactor(QThread):
+    '''Thread: run reactor twisted on brackground'''
+    def __init__(self,parent=None):
+        super(ThreadReactor, self).__init__(parent)
+    def run(self):
+        reactor.run(installSignalHandlers=False)
+    def stop(self):
+        reactor.callFromThread(reactor.stop)
+
 class Thread_sslstrip(QThread):
     '''Thread: run sslstrip on brackground'''
     def __init__(self,port,plugins={},data= {}):
@@ -217,16 +228,12 @@ class Thread_sslstrip(QThread):
         CookieCleaner.getInstance().setEnabled(killSessions)
         strippingFactory              = http.HTTPFactory(timeout=10)
         strippingFactory.protocol     = StrippingProxy
-        if not reactor.running:
-            self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
-            try:
-                reactor.run(installSignalHandlers=False)
-            except Exception:
-                pass
+        self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
+
     def stop(self):
         print 'Thread::[{}] successfully stopped.'.format(self.objectName())
-        reactor.callFromThread(reactor.stop)
-
+        self.connector.loseConnection()
+        self.connector.connectionLost(reason=None)
 
 class Thread_sergioProxy(QThread):
     '''Thread: run sergio-proxy on brackground'''
@@ -347,13 +354,9 @@ class Thread_sergioProxy(QThread):
         strippingFactory              = http.HTTPFactory(timeout=10)
         strippingFactory.protocol     = StrippingProxy
         print 'sslstrip {} + sergio-proxy v{} online'.format(sslstrip_version,sergio_version)
-        if not reactor.running:
-            self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
-            try:
-                reactor.run(installSignalHandlers=False)
-            except Exception:
-                pass
+        self.connectorSP = reactor.listenTCP(int(listenPort), strippingFactory)
 
     def stop(self):
         print 'Thread::[{}] successfully stopped.'.format(self.objectName())
-        reactor.callFromThread(reactor.stop)
+        self.connectorSP.loseConnection()
+        self.connectorSP.connectionLost(reason=None)
