@@ -9,6 +9,7 @@ Version 0.7.8
 - fixed PhishingManager::ServerThreadHTTP errno 98 address already in use
 - fixed duplicate logging::setup_logger when run more than once
 - fixed Thread::sslstrip added Reactor.run() to Threads
+- fixed error when running ettercap and driftnet in menu::tools #67
 
 Version 0.7.5
 -------------

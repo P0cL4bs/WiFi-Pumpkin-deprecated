@@ -37,7 +37,7 @@ from Core.widgets.PopupModels import (
 from Core.utility.threads import  (
     ProcessHostapd,Thread_sergioProxy,
     ThRunDhcp,Thread_sslstrip,ProcessThread,
-    ThreadReactor
+    ThreadReactor,ThreadPopen
 )
 
 from Proxy import *
@@ -618,7 +618,8 @@ class WifiPumpkin(QWidget):
         dhcpd = popen('which dhcpd').read().split("\n")
         dnsmasq = popen('which dnsmasq').read().split("\n")
         hostapd = popen('which hostapd').read().split("\n")
-        lista = [ '/usr/sbin/airbase-ng', ettercap[0],driftnet[0],dhcpd[0],dnsmasq[0],hostapd[0]]
+        xterm = popen('which xterm').read().split("\n")
+        lista = [ '/usr/sbin/airbase-ng', ettercap[0],driftnet[0],dhcpd[0],dnsmasq[0],hostapd[0],xterm[0]]
         for i in lista:self.ConfigTwin['ProgCheck'].append(path.isfile(i))
 
     def exportHTML(self):
@@ -694,26 +695,33 @@ class WifiPumpkin(QWidget):
 
     def start_etter(self):
         if self.ConfigTwin['ProgCheck'][1]:
-            if search(str(self.ConfigTwin['AP_iface']),str(popen('ifconfig').read())):
-                Thread_Ettercap = ProcessThread(['sudo', 'xterm', '-geometry', '73x25-1+50',
-                '-T', 'ettercap', '-s', '-sb', '-si', '+sk', '-sl',
+            if self.ConfigTwin['ProgCheck'][6]:
+                if self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
+                    Thread_Ettercap = ThreadPopen(['sudo', 'xterm', '-geometry', '73x25-1+50',
+                    '-T', 'ettercap', '-s', '-sb', '-si', '+sk', '-sl',
                     '5000', '-e', 'ettercap', '-p', '-u', '-T', '-q', '-w',
-                      'Logs/passwords', '-i', self.ConfigTwin['AP_iface']])
-                Thread_Ettercap.setName('Tool::Ettercap')
-                self.Apthreads['RougeAP'].append(Thread_Ettercap)
-                Thread_Ettercap.start()
-            return
-        QMessageBox.information(self,'ettercap','ettercap is not found.')
+                    'Logs/Tools/ettercap.log', '-i', self.ConfigTwin['AP_iface']])
+                    Thread_Ettercap.setObjectName('Tool::Ettercap')
+                    self.Apthreads['RougeAP'].append(Thread_Ettercap)
+                    return Thread_Ettercap.start()
+                return QMessageBox.information(self,'Accesspoint is not running',
+                'The access point is not configured, this option require AP is running...')
+            return QMessageBox.information(self,'xterm','xterm is not installed.')
+        return QMessageBox.information(self,'ettercap','ettercap is not found.')
+
     def start_dift(self):
         if self.ConfigTwin['ProgCheck'][2]:
-            if search(str(self.ConfigTwin['AP_iface']),str(popen('ifconfig').read())):
-                Thread_driftnet = ProcessThread(['sudo', 'xterm', '-geometry', '75x15+1+200',
-                    '-T', 'DriftNet', '-e', 'driftnet', '-i', self.ConfigTwin['AP_iface']])
-                Thread_driftnet.setName('Tool::Driftnet')
-                self.Apthreads['RougeAP'].append(Thread_driftnet)
-                Thread_driftnet.start()
-            return
-        QMessageBox.information(self,'driftnet','driftnet is not found.')
+            if self.ConfigTwin['ProgCheck'][6]:
+                if self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
+                    Thread_driftnet = ThreadPopen(['driftnet', '-i',
+                    self.ConfigTwin['AP_iface'],'-d','./Logs/Tools/Driftnet/',])
+                    Thread_driftnet.setObjectName('Tool::Driftnet')
+                    self.Apthreads['RougeAP'].append(Thread_driftnet)
+                    return Thread_driftnet.start()
+                return QMessageBox.information(self,'Accesspoint is not running',
+                'The access point is not configured, this option require AP is running...')
+            return QMessageBox.information(self,'xterm','xterm is not installed.')
+        return QMessageBox.information(self,'driftnet','driftnet is not found.')
 
     def CoreSettings(self):
         self.DHCP = self.PumpSettingsTAB.getPumpkinSettings()
