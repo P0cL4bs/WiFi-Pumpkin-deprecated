@@ -268,28 +268,23 @@ class frm_Arp_Poison(PumpkinModule):
             if (len(self.txt_target.text()) and len(self.txt_gateway.text())) and len(self.txt_mac.text()) != 0:
                 if len(self.txt_redirect.text()) != 0:
                     self.StatusMonitor(True,'stas_arp')
-                    if not self.configure.Settings.get_setting('accesspoint','statusAP'):
-                        Refactor.set_ip_forward(1)
-                        arp_gateway = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()),
-                        get_if_hwaddr(str(self.ComboIface.currentText())))
-                        arp_gateway.setObjectName('Arp Poison:: [gateway]')
-                        self.ThreadDirc['Arp_posion'].append(arp_gateway)
-                        arp_gateway.start()
+                    Refactor.set_ip_forward(1)
+                    arp_gateway = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()),
+                    get_if_hwaddr(str(self.ComboIface.currentText())))
+                    arp_gateway.setObjectName('Arp Poison:: [gateway]')
+                    self.ThreadDirc['Arp_posion'].append(arp_gateway)
+                    arp_gateway.start()
 
-                        arp_target = ThARP_posion(str(self.txt_target.text()),str(self.txt_gateway.text()),
-                        str(self.txt_mac.text()))
-                        self.connect(arp_target,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
-                        arp_target.setObjectName('Arp::Poison => [target]')
-                        self.ThreadDirc['Arp_posion'].append(arp_target)
-                        arp_target.start()
+                    arp_target = ThARP_posion(str(self.txt_target.text()),str(self.txt_gateway.text()),
+                    str(self.txt_mac.text()))
+                    self.connect(arp_target,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
+                    arp_target.setObjectName('Arp::Poison => [target]')
+                    self.ThreadDirc['Arp_posion'].append(arp_target)
+                    arp_target.start()
 
                     redirectPackets = ThSpoofAttack('',
                     str(self.ComboIface.currentText()),'udp port 53',True,str(self.txt_redirect.text()))
                     self.connect(redirectPackets,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
-                    if not self.configure.Settings.get_setting('accesspoint','statusAP'):
-                        redirectPackets.redirection()
-                    else:
-                        redirectPackets.redirectionAP()
                     redirectPackets.setObjectName('Packets Spoof')
                     self.ThreadDirc['Arp_posion'].append(redirectPackets)
                     redirectPackets.start()
@@ -310,13 +305,8 @@ class frm_Arp_Poison(PumpkinModule):
             if  self.txt_gateway.text() != '':
                 self.movie_screen.setDisabled(True)
                 self.tables.setVisible(False)
-                config_gateway = str(self.txt_gateway.text())
-                scan = ''
-                config_gateway = config_gateway.split('.')
-                del config_gateway[-1]
-                for i in config_gateway:
-                    scan += str(i) + '.'
-                self.ThreadScanner = ThreadScan(scan + '0/24')
+                gateway = str(self.txt_gateway.text())
+                self.ThreadScanner = ThreadScan(gateway[:len(gateway)-len(gateway.split('.').pop())] + '0/24')
                 self.connect(self.ThreadScanner,SIGNAL('Activated ( QString ) '), self.thread_scan_reveice)
                 self.StatusMonitor(True,'stas_scan')
                 self.ThreadScanner.start()
@@ -356,6 +346,8 @@ class frm_Arp_Poison(PumpkinModule):
             Headers.append(key)
         self.tables.setHorizontalHeaderLabels(Headers)
         self.StatusMonitor(False,'stas_scan')
+        self.Stop_scan()
+        self.thread_ScanIP.manager.shutdown()
 
     def Stop_scan(self):
         self.thread_ScanIP.stop()

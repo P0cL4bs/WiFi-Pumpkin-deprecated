@@ -10,6 +10,10 @@ Version 0.7.8
 - fixed duplicate logging::setup_logger when run more than once
 - fixed Thread::sslstrip added Reactor.run() to Threads
 - fixed error when running ettercap and driftnet in menu::tools #67
+- fixed directory module in ThreadHTTPServerPhishing
+- fixed domain-name-servers in dhcpd server
+- fixed re-design Modules DNS spoof, Update Fake Attack
+- added new module DNS spoof with NetfilterQueue
 
 Version 0.7.5
 -------------

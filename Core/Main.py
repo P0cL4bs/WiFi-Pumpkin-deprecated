@@ -48,6 +48,7 @@ from isc_dhcp_leases.iscdhcpleases import IscDhcpLeases
 from Core.widgets.docks.DockMonitor import dockAreaAPI
 from Core.utility.settings import frm_Settings
 from Core.helpers.update import ProgressBarWid
+from netfilterqueue import NetfilterQueue
 
 """
 Description:
@@ -467,7 +468,7 @@ class WifiPumpkin(QWidget):
 
     def show_windows_update(self):
         self.FWinUpdate = GUIModules.frm_update_attack()
-        self.FWinUpdate.setGeometry(QRect(100, 100, 450, 300))
+        self.FWinUpdate.setGeometry(QRect(100, 100, 300, 300))
         self.FWinUpdate.show()
 
     def show_dhcpDOS(self):
@@ -492,7 +493,7 @@ class WifiPumpkin(QWidget):
 
     def show_dns_spoof(self):
         self.Fdns = GUIModules.frm_DnsSpoof()
-        self.Fdns.setGeometry(QRect(100, 100, 450, 300))
+        self.Fdns.setGeometry(QRect(100, 100, 450, 500))
         self.Fdns.show()
 
     def show_PhishingManager(self):
@@ -648,11 +649,13 @@ class WifiPumpkin(QWidget):
                 self.dockAreaList[dock].clear()
                 self.dockAreaList[dock].stopProcess()
         self.PumpSettingsTAB.GroupArea.setEnabled(True)
-        for thread in self.Apthreads['RougeAP']:
-            thread.stop()
-            if hasattr(thread, 'wait'):
-                if not thread.wait(msecs=500):
-                    thread.terminate()
+        try:
+            for thread in self.Apthreads['RougeAP']:
+                thread.stop()
+                if hasattr(thread, 'wait'):
+                    if not thread.wait(msecs=500):
+                        thread.terminate()
+        except Exception: pass
         for kill in self.SettingsAP['kill']:
             Popen(kill.split(), stdout=PIPE,shell=False,stderr=PIPE)
         Refactor.settingsNetworkManager(self.ConfigTwin['AP_iface'],Remove=True)
@@ -761,7 +764,7 @@ class WifiPumpkin(QWidget):
                 'option subnet-mask {};\n'.format(self.DHCP['netmask']),
                 'option broadcast-address {};\n'.format(self.DHCP['broadcast']),
                 'option domain-name \"%s\";\n'%(str(self.EditApName.text())),
-                'option domain-name-servers {};\n'.format(self.DHCP['router']),
+                'option domain-name-servers {};\n'.format('8.8.8.8'),
                 'range {};\n'.format(self.DHCP['range'].replace('/',' ')),
                 '}',
             ],
@@ -966,8 +969,6 @@ class WifiPumpkin(QWidget):
                 for f in filelist: system('rm Logs/AccessPoint/{}'.format(f))
                 for dock in self.dockAreaList.keys():
                     self.dockAreaList[dock].RunThread()
-        if self.PopUpPlugins.check_noproxy.isChecked() or self.PopUpPlugins.check_sergioProxy.isChecked():
-            popen('iptables -t nat -A PREROUTING -p udp -j DNAT --to {}'.format(str(self.EditGateway.text())))
         print('AP::[{}] Running...'.format(self.EditApName.text()))
         print('AP::BSSID::[{}] CH {}'.format(Refactor.get_interface_mac(
         self.selectCard.currentText()),self.EditChannel.text()))

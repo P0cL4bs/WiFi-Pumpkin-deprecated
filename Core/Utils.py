@@ -128,6 +128,7 @@ class Refactor:
          'requestAP': {'Logs/AccessPoint/requestAP.log':[]},
          'dns2proxy': {'Logs/AccessPoint/dns2proxy.log':[]},
          'injectionPage': {'Logs/AccessPoint/injectionPage.log':[]},
+         'dnsspoofAP': {'Logs/AccessPoint/DnsSpoofModuleReq.log':[]},
          'phishing': {'Logs/Phishing/Webclone.log':[]},}
         if remove_dns2proxy: readFile.pop('dns2proxy')
         elif remove_inject: readFile.pop('injectionPage')

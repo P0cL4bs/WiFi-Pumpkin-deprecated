@@ -1,12 +1,13 @@
-from os import chdir,getcwd,devnull
+from os import getcwd,devnull
 import threading
 from multiprocessing import Process,Manager
 from socket import gaierror
 from re import search
 from socket import gethostbyname
+from scapy.all import get_if_hwaddr
 from Core.loaders.Stealth.PackagesUI import *
 from Modules.spreads.UpdateFake import frm_update_attack
-from Core.packets.network import ThARP_posion,ThSpoofAttack
+from Core.packets.network import ThARP_posion,ThreadDNSspoofNF
 threadloading = {'template':[],'dnsspoof':[],'arps':[]}
 
 """
@@ -15,7 +16,7 @@ Description:
     for Dns spoof Attack.
 
 Copyright:
-    Copyright (C) 2015 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -63,22 +64,13 @@ class frm_DnsSpoof(PumpkinModule):
     def GUI(self):
         self.form           = QFormLayout()
         self.layoutform     = QFormLayout()
-        self.movie          = QMovie('Icons/loading2.gif', QByteArray(), self)
-        size                = self.movie.scaledSize()
-        self.movie_screen   = QLabel()
-        self.setGeometry(200, 200, size.width(), size.height())
-        self.movie_screen.setFixedHeight(200)
-        self.movie_screen.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.movie_screen.setAlignment(Qt.AlignCenter)
-        self.movie.setCacheMode(QMovie.CacheAll)
-        self.movie.setSpeed(100)
-        self.movie_screen.setMovie(self.movie)
-        self.movie_screen.setDisabled(False)
-
-        self.movie.start()
+        self.layoutHost     = QFormLayout()
+        self.layoutDNSReq   = QFormLayout()
+        self.statusBar      = QStatusBar(self)
         self.tables = QTableWidget(5,3)
         self.tables.setRowCount(100)
-        self.tables.setFixedHeight(200)
+        self.tables.setFixedHeight(245)
+        self.tables.setFixedWidth(350)
         self.tables.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.tables.horizontalHeader().setStretchLastSection(True)
         self.tables.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -86,9 +78,9 @@ class frm_DnsSpoof(PumpkinModule):
         self.tables.clicked.connect(self.list_clicked_scan)
         self.tables.resizeColumnsToContents()
         self.tables.resizeRowsToContents()
-        self.tables.horizontalHeader().resizeSection(1,120)
-        self.tables.horizontalHeader().resizeSection(0,135)
-        self.tables.horizontalHeader().resizeSection(2,150)
+        self.tables.horizontalHeader().resizeSection(1,100)
+        self.tables.horizontalHeader().resizeSection(0,100)
+        self.tables.horizontalHeader().resizeSection(2,100)
         self.tables.verticalHeader().setVisible(False)
         Headers = []
         for key in reversed(self.data.keys()):
@@ -108,7 +100,26 @@ class frm_DnsSpoof(PumpkinModule):
         self.layoutform.addRow('Redirect IP:',self.txt_redirect)
         self.layoutform.addRow('Range Scan:',self.ip_range)
         self.layoutform.addRow('Interface:',self.ComboIface)
+
+        self.GroupOptions = QGroupBox(self)
+        self.GroupOptions.setTitle('Options')
+        self.GroupOptions.setLayout(self.layoutform)
+
         self.myListDns = QListWidget(self)
+        self.myDNsoutput = QListWidget(self)
+        self.myListDns.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+        self.myDNsoutput.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        self.GroupHosts  = QGroupBox(self)
+        self.GroupHosts.setTitle('DNS::spoof')
+        self.GroupHosts.setLayout(self.layoutHost)
+        self.layoutHost.addRow(self.myListDns,self.myDNsoutput)
+
+        self.GroupOuput  = QGroupBox(self)
+        self.GroupOuput.setTitle('DNS::Requests')
+        self.GroupOuput.setLayout(self.layoutDNSReq)
+        self.layoutDNSReq.addRow(self.myDNsoutput)
+
         self.SettingsGUI()
 
 
@@ -128,19 +139,16 @@ class frm_DnsSpoof(PumpkinModule):
         self.ip_range.setText(scan_range)
 
         # button conf
-        self.btn_start_scanner = QPushButton('Scan')
-        self.btn_stop_scanner = QPushButton('Stop')
+        self.btn_start_scanner = QPushButton('Start Scan  ')
+        self.btn_stop_scanner = QPushButton('Stop Scan    ')
         self.btn_Attack_Posion = QPushButton('Start Attack')
         self.btn_Stop_Posion = QPushButton('Stop Attack')
         self.btn_server = QPushButton('Phishing M.')
         self.btn_windows_update = QPushButton('Fake Update')
-        self.btn_server.setFixedHeight(22)
-        self.btn_stop_scanner.setFixedWidth(100)
-        self.btn_start_scanner.setFixedWidth(100)
-        self.btn_start_scanner.setFixedHeight(22)
-        self.btn_stop_scanner.setFixedHeight(22)
-        self.btn_windows_update.setFixedHeight(22)
         self.btn_server.setIcon(QIcon('Icons/page.png'))
+
+        self.layoutform.addRow(self.btn_start_scanner,self.btn_stop_scanner)
+        self.layoutform.addRow(self.btn_server,self.btn_windows_update)
 
 
         # connet buttons
@@ -158,44 +166,34 @@ class frm_DnsSpoof(PumpkinModule):
         self.btn_stop_scanner.setIcon(QIcon('Icons/network_off.png'))
         self.btn_windows_update.setIcon(QIcon('Icons/winUp.png'))
 
-        # grid status modules
-        self.grid0 = QGridLayout()
-        self.grid0.minimumSize()
-        self.grid0.addWidget(QLabel('DnsSpoof:'),0,2)
-        self.grid0.addWidget(QLabel('Phishing:'),0,4)
-        self.grid0.addWidget(QLabel('Scanner:'),0,0)
-        self.grid0.addWidget(self.txt_status_scan,0,1)
-        self.grid0.addWidget(self.txt_statusarp,0,3)
-        self.grid0.addWidget(self.txt_status_phishing,0,5)
+        self.btn_stop_scanner.setEnabled(False)
+        self.btn_Stop_Posion.setEnabled(False)
 
-        # grid options
-        self.grid1 = QGridLayout()
-        self.grid1.addWidget(self.btn_start_scanner,0,0)
-        self.grid1.addWidget(self.btn_stop_scanner,0,1)
-        self.grid1.addWidget(self.btn_server,0,2)
-        self.grid1.addWidget(self.btn_windows_update, 0,3)
+        self.statusBar.addWidget(QLabel('DnsSpoof:'))
+        self.statusBar.addWidget(self.txt_statusarp,10)
+        self.statusBar.addWidget(QLabel('Phishing:'))
+        self.statusBar.addWidget(self.txt_status_phishing,10)
+        self.statusBar.addWidget(QLabel('Scan:'))
+        self.statusBar.addWidget(self.txt_status_scan,10)
 
         #btn start and stop
         self.grid2 = QGridLayout()
         self.grid2.addWidget(self.btn_Attack_Posion,1,0)
         self.grid2.addWidget(self.btn_Stop_Posion,1,5)
 
-
-        self.form0  = QGridLayout()
-        self.form0.addWidget(self.movie_screen,0,0)
-        self.form0.addWidget(self.tables,0,0)
+        self.form0  = QHBoxLayout()
+        self.form0.addWidget(self.tables)
+        self.form0.addWidget(self.GroupOptions)
 
         self.layout = QHBoxLayout()
-        self.layout.addWidget(self.myListDns)
-        self.layout.addLayout(self.layoutform)
-
-        self.form.addRow(self.grid0)
-        self.form.addRow(self.grid1)
+        self.layout.addWidget(self.GroupHosts)
+        self.layout.addWidget(self.GroupOuput)
         self.form.addRow(self.grid2)
 
         self.Main.addLayout(self.form0)
         self.Main.addLayout(self.layout)
         self.Main.addLayout(self.form)
+        self.Main.addWidget(self.statusBar)
         self.setLayout(self.Main)
 
     def SettingsGUI(self):
@@ -206,18 +204,16 @@ class frm_DnsSpoof(PumpkinModule):
         if ifaces['gateway'] != None:
             self.txt_gateway.setText(ifaces['gateway'])
             self.txt_redirect.setText(ifaces['IPaddress'])
-        try:
-            items = ['example.com:{}'.format(gethostbyname('example.com')),]
-            for i in items:
-                item = QListWidgetItem()
-                item.setText(i)
-                item.setSizeHint(QSize(30,30))
-                self.myListDns.addItem(item)
-        except Exception:
-            pass
+        item = QListWidgetItem()
+        item.setIcon(QIcon('Icons/dnsspoof.png'))
+        item.setText('example.com')
+        item.setSizeHint(QSize(30,30))
+        self.myListDns.addItem(item)
         if self.configure.Settings.get_setting('accesspoint','statusAP',format=bool):
             self.ComboIface.setCurrentIndex(ifaces['all'].index(self.configure.Settings.get_setting('accesspoint',
             'interfaceAP')))
+        else:
+            self.myDNsoutput.setEnabled(False)
 
     def listItemclicked(self,pos):
         item = self.myListDns.selectedItems()
@@ -232,19 +228,19 @@ class frm_DnsSpoof(PumpkinModule):
                 self.myListDns.takeItem(self.myListDns.currentRow())
         elif action == additem:
             text, resp = QInputDialog.getText(self, 'Add DNS',
-            'Enter the DNS and IP for spoof hosts: ex: facebook.com:31.13.65.1')
+            'Enter the DNS and IP for spoof hosts: ex: example2.com')
             if resp:
                 try:
-                    host, ip = text.split(':')
                     itemsexits = []
                     for index in xrange(self.myListDns.count()):
                         itemsexits.append(str(self.myListDns.item(index).text()))
                     for i in itemsexits:
-                        if search(str(host+':'+ip),i):
+                        if search(str(text),i):
                             QMessageBox.information(self,'Dns Rsolver','this DNS already exist on List Attack')
                             return
                     item = QListWidgetItem()
-                    item.setText(host+':'+ip)
+                    item.setIcon(QIcon('Icons/dnsspoof.png'))
+                    item.setText(text)
                     item.setSizeHint(QSize(30,30))
                     self.myListDns.addItem(item)
                 except gaierror,e:
@@ -258,12 +254,12 @@ class frm_DnsSpoof(PumpkinModule):
         if self.configure.Settings.get_setting('accesspoint','interfaceAP') == str(iface):
             if self.configure.Settings.get_setting('accesspoint','statusAP',format=bool):
                 self.txt_gateway.setText(self.configure.Settings.get_setting('dhcp','router'))
+                self.txt_target.setEnabled(False)
         self.txt_redirect.setText(Refactor.get_Ipaddr(str(iface)))
 
 
     def thread_scan_reveice(self,info_ip):
         self.StatusMonitor(False,'stas_scan')
-        self.movie_screen.setDisabled(False)
         self.tables.setVisible(True)
         data = info_ip.split('|')
         Headers = []
@@ -308,7 +304,9 @@ class frm_DnsSpoof(PumpkinModule):
         self.ThreadDirc['dns_spoof'] = []
         self.StatusMonitor(False,'dns_spoof')
         self.StatusMonitor(False,'stas_phishing')
-        chdir(self.owd)
+        self.btn_Attack_Posion.setEnabled(True)
+        self.btn_Stop_Posion.setEnabled(False)
+        self.myDNsoutput.clear()
 
     @pyqtSlot(QModelIndex)
     def check_options(self,index):
@@ -326,48 +324,50 @@ class frm_DnsSpoof(PumpkinModule):
     def StopArpAttack(self,data):
         if data == 'finished':
             self.StatusMonitor(False,'dns_spoof')
+
     def Start_Attack(self):
-        self.targets = {}
-        if (len(self.txt_target.text()) and  len(self.txt_gateway.text())) == 0:
-            QMessageBox.warning(self, 'Error Dnsspoof', 'you need set the input correctly')
-        else:
+        self.targets,self.domains = {},[]
+        if self.myListDns.count() != 0:
+            for index in xrange(self.myListDns.count()):
+                self.domains.append(str(self.myListDns.item(index).text()))
+            for i in self.domains: self.targets[i] = ''
+        self.myDNsoutput.clear()
+        if not self.configure.Settings.get_setting('accesspoint','statusAP',format=bool):
+            if (len(self.txt_target.text()) and  len(self.txt_gateway.text())) == 0:
+                return QMessageBox.warning(self, 'Error Dnsspoof', 'you need set the input correctly')
             if (len(self.txt_target.text()) and len(self.txt_gateway.text())) and len(self.txt_redirect.text()) != 0:
-                if len(self.txt_redirect.text()) != 0:
-                    self.domains = []
-                    if self.myListDns.count() != 0:
-                        for index in xrange(self.myListDns.count()):
-                            self.domains.append(str(self.myListDns.item(index).text()))
-                        for i in self.domains:
-                            self.targets[i.split(':')[0]] = (i.split(':')[1]).replace('\n','')
-                    if not self.configure.Settings.get_setting('accesspoint','statusAP'):
-                        Refactor.set_ip_forward(1)
+                Refactor.set_ip_forward(1)
 
-                        arp_gateway = ThARP_posion(str(self.txt_target.text()),str(self.txt_gateway.text()),
-                        get_if_hwaddr(str(self.ComboIface.currentText())))
-                        arp_gateway.setObjectName('Arp Posion:: [gateway]')
-                        threadloading['arps'].append(arp_gateway)
-                        arp_gateway.start()
+                arp_gateway = ThARP_posion(str(self.txt_target.text()),str(self.txt_gateway.text()),
+                get_if_hwaddr(str(self.ComboIface.currentText())))
+                arp_gateway.setObjectName('Arp Posion:: [gateway]')
+                threadloading['arps'].append(arp_gateway)
+                arp_gateway.start()
 
-                        arp_target = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()),
-                        get_if_hwaddr(str(self.ComboIface.currentText())))
-                        arp_target.setObjectName('Arp Posion:: [target]')
-                        threadloading['arps'].append(arp_target)
-                        arp_target.start()
+                arp_target = ThARP_posion(str(self.txt_gateway.text()),str(self.txt_target.text()),
+                get_if_hwaddr(str(self.ComboIface.currentText())))
+                arp_target.setObjectName('Arp Posion:: [target]')
+                threadloading['arps'].append(arp_target)
+                arp_target.start()
 
-                    if self.myListDns.count() == 0:self.targets = ''
-                    thr = ThSpoofAttack(self.targets,
-                    str(self.ComboIface.currentText()),'udp port 53',True,str(self.txt_redirect.text()))
-                    if not self.configure.Settings.get_setting('accesspoint','statusAP'):thr.redirection()
-                    else:thr.redirectionAP()
-                    self.connect(thr,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
-                    thr.setObjectName('Dns Spoof')
-                    self.ThreadDirc['dns_spoof'].append(thr)
-                    self.StatusMonitor(True,'dns_spoof')
-                    thr.start()
-
+                self.thr = ThSpoofAttack(self.targets,str(self.ComboIface.currentText()),
+                'udp port 53',True,str(self.txt_redirect.text()))
+        else:
+            self.thr = ThreadDNSspoofNF(self.targets,str(self.ComboIface.currentText()),
+            str(self.txt_redirect.text()),APmode=True)
+            self.thr.DnsReq.connect(self.get_outputDNSspoof)
+        self.connect(self.thr,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
+        self.thr.setObjectName('Dns Spoof')
+        self.ThreadDirc['dns_spoof'].append(self.thr)
+        self.StatusMonitor(True,'dns_spoof')
+        self.btn_Attack_Posion.setEnabled(False)
+        self.btn_Stop_Posion.setEnabled(True)
+        self.thr.start()
 
     def Start_scan(self):
         self.StatusMonitor(True,'stas_scan')
+        self.btn_start_scanner.setEnabled(False)
+        self.btn_stop_scanner.setEnabled(True)
         threadscan_check = self.configure.Settings.get_setting('settings','Function_scan')
         self.tables.clear()
         self.data = {'IPaddress':[], 'Hostname':[], 'MacAddress':[]}
@@ -378,15 +378,9 @@ class frm_DnsSpoof(PumpkinModule):
                 QMessageBox.information(self,'Error Nmap','The modules python-nmap not installed')
                 return
             if self.txt_gateway.text() != '':
-                self.movie_screen.setDisabled(True)
                 self.tables.setVisible(False)
-                config_gateway = str(self.txt_gateway.text())
-                scan = ''
-                config_gateway = config_gateway.split('.')
-                del config_gateway[-1]
-                for i in config_gateway:
-                    scan += str(i) + '.'
-                self.ThreadScanner = ThreadScan(scan + '0/24')
+                gateway = str(self.txt_gateway.text())
+                self.ThreadScanner = ThreadScan(gateway[:len(gateway)-len(gateway.split('.').pop())] + '0/24')
                 self.connect(self.ThreadScanner,SIGNAL('Activated ( QString ) '), self.thread_scan_reveice)
                 self.StatusMonitor(True,'stas_scan')
                 self.ThreadScanner.start()
@@ -408,6 +402,10 @@ class frm_DnsSpoof(PumpkinModule):
         else:
             QMessageBox.information(self,'Error on select thread Scan','thread scan not selected.')
 
+    def get_outputDNSspoof(self,data):
+        self.myDNsoutput.addItem(data)
+        self.myDNsoutput.scrollToBottom()
+
     def get_result_scanner_ip(self,data):
         Headers = []
         for items in data.values():
@@ -426,6 +424,10 @@ class frm_DnsSpoof(PumpkinModule):
             Headers.append(key)
         self.tables.setHorizontalHeaderLabels(Headers)
         self.StatusMonitor(False,'stas_scan')
+        self.Stop_scan()
+        self.thread_ScanIP.manager.shutdown()
+        self.btn_start_scanner.setEnabled(True)
+        self.btn_stop_scanner.setEnabled(False)
 
     def Stop_scan(self):
         self.thread_ScanIP.stop()

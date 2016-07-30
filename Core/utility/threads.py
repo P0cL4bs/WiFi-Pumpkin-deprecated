@@ -90,8 +90,7 @@ class ThreadScan(QThread):
                         if search('<unknown>',mac):mac = '<unknown>'
                         else:mac = mac[13:32]
                         self.result = ip +'|'+mac.replace('\n','')+'|'+hostname.replace('\n','')
-                        self.emit(SIGNAL('Activated( QString )'),
-                        self.result)
+                        self.emit(SIGNAL('Activated( QString )'),self.result)
                     except :
                         pass
         except NameError:
@@ -104,18 +103,21 @@ class ThreadFastScanIP(QThread):
         self.ip_range = str(iprange).split('-')
         self.workingThread = True
         self.gatewayNT = gateway[:len(gateway)-len(gateway.split('.').pop())]
+        self.setTerminationEnabled(True)
 
     def run(self):
         self.jobs = []
-        manager = Manager()
-        on_ips = manager.dict()
+        self.manager = Manager()
+        on_ips = self.manager.dict()
         for n in xrange(int(self.ip_range[0]),int(self.ip_range[1])):
             ip='%s{0}'.format(n)%(self.gatewayNT)
             if not self.workingThread: break
             p = Process(target=self.working,args=(ip,on_ips))
             self.jobs.append(p)
             p.start()
-        for proc in self.jobs: proc.join()
+        for proc in self.jobs:
+            proc.join()
+            proc.terminate()
         self.sendDictResultscan.emit(on_ips)
 
     def working(self,ip,lista):

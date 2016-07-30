@@ -48,6 +48,7 @@ func_install(){
 		exit 1
 	fi
 	apt-get update
+	apt-get install build-essential libnetfilter-queue-dev
 	apt-get install -y python-qt4 python-scapy hostapd rfkill
 	apt-get install -y python-dev
 	apt-get install -y libpcap-dev

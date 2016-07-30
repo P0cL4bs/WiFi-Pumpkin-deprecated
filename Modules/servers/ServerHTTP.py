@@ -48,6 +48,16 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
             self.redirect(self.redirect_Original_website)
         SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
+class ServerPhishing(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    ''' server http for website clone module Phishing'''
+    redirect_Path = None,None
+    def do_GET(self):
+        self.log_message('',"Connected : %s" %(self.address_string()))
+        if self.path =='/':self.path = self.redirect_Path
+        if self.path.startswith('/'): self.path = self.redirect_Path + self.path
+        SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+
+    def log_message(self, format, *args): return
 
 class MyHTTPServer(BaseHTTPServer.HTTPServer):
     ''' by: Piotr Dobrogost callback for start and stop event '''
@@ -69,7 +79,8 @@ class ThreadHTTPServerPhishing(QThread):
 
     def run(self):
         self.httpd = None
-        self.Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+        self.Handler = ServerPhishing
+        self.Handler.redirect_Path = self.DIRECTORY
         self.Handler.log_message = self.Method_GET_REQUEST
         self.httpd = MyHTTPServer(('', self.PORT), self.Handler,
         on_before_serve = self.httpd)

@@ -1,7 +1,6 @@
-from os import getcwd,popen,chdir,path,remove
-from shutil import copyfile
-from subprocess import Popen,PIPE,STDOUT
+from os import path,remove
 from datetime import date
+from shutil import copyfile
 from Core.loaders.Stealth.PackagesUI import *
 from Modules.servers.ServerHTTP import ThreadHTTPServerPhishing
 
@@ -11,7 +10,7 @@ Description:
     for Fake update windows.
 
 Copyright:
-    Copyright (C) 2015 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -34,7 +33,6 @@ class frm_update_attack(PumpkinModule):
         self.setWindowIcon(QIcon('Icons/icon.ico'))
         self.loadtheme(self.configure.XmlThemeSelected())
         self.Main       = QVBoxLayout()
-        self.owd        = getcwd()
         self.path_file  = None
         self.GUI()
 
@@ -51,34 +49,50 @@ class frm_update_attack(PumpkinModule):
 
     def GUI(self):
         self.form   = QFormLayout()
-        self.grid   = QGridLayout()
+        self.formfinal = QFormLayout()
         self.grid1  = QGridLayout()
         self.path   = QLineEdit(self)
         self.logBox = QListWidget(self)
         self.status = QStatusBar()
         self.status.setFixedHeight(15)
         self.path.setFixedHeight(28)
-        self.path.setFixedWidth(400)
+        self.path.setFixedWidth(300)
         #combobox
         self.cb_interface = QComboBox(self)
         self.refresh_interface(self.cb_interface)
 
-        #label
-        self.lb_interface = QLabel("Network Adapter:")
+
+        #group box
+        self.layoutPage = QFormLayout()
+        self.GroupPages = QGroupBox(self)
+        self.GroupPages.setTitle('Phishing Page:')
+        self.GroupPages.setLayout(self.layoutPage)
+
+        self.layoutAdpter = QFormLayout()
+        self.GroupAdpter = QGroupBox(self)
+        self.GroupAdpter.setTitle('Network Adapter::')
+        self.GroupAdpter.setLayout(self.layoutAdpter)
+
+        self.layoutLogBox = QFormLayout()
+        self.GroupLogger = QGroupBox(self)
+        self.GroupLogger.setTitle('Log::Requests:')
+        self.GroupLogger.setLayout(self.layoutLogBox)
+
         # buttons
         self.btn_open         = QPushButton("...")
-        self.btn_stop         = QPushButton("Stop",self)
-        self.btn_reload       = QPushButton("refresh",self)
-        self.btn_start_server = QPushButton("Start Server",self)
+        self.btn_stop         = QPushButton("Stop Server")
+        self.btn_reload       = QPushButton("refresh")
+        self.btn_start_server = QPushButton("Start Server")
         # size
         self.btn_open.setMaximumWidth(90)
         self.btn_stop.setFixedHeight(50)
         self.btn_start_server.setFixedHeight(50)
+        self.btn_stop.setEnabled(False)
         #icons
         self.btn_open.setIcon(QIcon("Icons/open.png"))
         self.btn_stop.setIcon(QIcon("Icons/Stop.png"))
         self.btn_reload.setIcon(QIcon("Icons/refresh.png"))
-        self.btn_start_server.setIcon(QIcon("Icons/server.png"))
+        self.btn_start_server.setIcon(QIcon("Icons/start.png"))
 
         # connect buttons
         self.btn_open.clicked.connect(self.getpath)
@@ -94,14 +108,20 @@ class frm_update_attack(PumpkinModule):
         self.rb_java = QRadioButton("Java Update", self)
         self.rb_java.setIcon(QIcon("Icons/java.png"))
         self.rb_adobe.setEnabled(False)
-        self.grid.addWidget(self.rb_windows, 0,1)
-        self.grid.addWidget(self.rb_adobe, 0,2)
-        self.grid.addWidget(self.rb_java, 0,3)
+        self.layoutPage.addRow(self.rb_windows)
+        self.layoutPage.addRow(self.rb_java)
+        self.layoutPage.addRow(self.rb_adobe)
 
         # check interface
-        self.grid.addWidget(self.lb_interface,1,1)
-        self.grid.addWidget(self.cb_interface,1,2)
-        self.grid.addWidget(self.btn_reload, 1,3)
+        self.layoutAdpter.addRow(self.cb_interface)
+        self.layoutAdpter.addRow(self.btn_reload)
+
+        self.layoutLogBox.addRow(self.logBox)
+
+        self.layoutsplit = QHBoxLayout()
+        self.layoutsplit.addWidget(self.GroupPages)
+        self.layoutsplit.addWidget(self.GroupAdpter)
+
 
         #grid 2
         self.grid1.addWidget(self.btn_start_server,0,2)
@@ -109,28 +129,29 @@ class frm_update_attack(PumpkinModule):
 
         #form add layout
         self.form.addRow(self.path,self.btn_open)
-        self.form.addRow(self.grid)
-        self.form.addRow(self.grid1)
-        self.form.addRow(self.logBox)
-        self.form.addRow(self.status)
+        self.formfinal.addRow(self.GroupLogger)
+        self.formfinal.addRow(self.grid1)
+        self.formfinal.addRow(self.status)
         self.Main.addLayout(self.form)
+        self.Main.addLayout(self.layoutsplit)
+        self.Main.addLayout(self.formfinal)
         self.setLayout(self.Main)
 
     def removefiles(self):
         pathList = ['Templates/Update/Windows_Update/index.html',
-                    'Templates/Update/Windows_Update/windows-update.exe',
-                    'Templates/Update/Java_Update/index.html',
-                    'Templates/Update/Java_Update/java-update.exe']
+        'Templates/Update/Windows_Update/windows-update.exe',
+        'Templates/Update/Java_Update/index.html',
+        'Templates/Update/Java_Update/java-update.exe']
         for i in pathList:
             if path.isfile(i):remove(i)
 
     def stop_attack(self):
         for i in threadloading['server']:i.stop()
-        chdir(self.owd)
         threadloading['server'] = []
         self.removefiles()
         self.logBox.clear()
         self.status.showMessage('')
+        self.btn_stop.setEnabled(False)
 
     def inter_get(self):
         self.refresh_interface(self.cb_interface)
@@ -170,24 +191,23 @@ class frm_update_attack(PumpkinModule):
         if ip == None:
             return QMessageBox.warning(self, 'Ip not found',
             'the ipaddress not found on network adapter seleted.')
+        self.btn_start_server.setEnabled(False)
+        self.btn_stop.setEnabled(True)
         self.threadServer(directory,ip)
 
     def server_start(self):
         if len(self.path.text()) <= 0:
             return QMessageBox.information(self, 'Path file Error', 'Error in get the file path.')
-        else:
-            if self.rb_windows.isChecked():
-                self.SettingsPage('Templates/Update/Settings_WinUpdate.html',
-                'Templates/Update/Windows_Update/','windows-update.exe',True)
-            if self.rb_java.isChecked():
-                self.SettingsPage('Templates/Update/Settings_java.html',
-                'Templates/Update/Java_Update/','java-update.exe',False)
+        if self.rb_windows.isChecked():
+            return self.SettingsPage('Templates/Update/Settings_WinUpdate.html',
+            'Templates/Update/Windows_Update/','windows-update.exe',True)
+        elif self.rb_java.isChecked():
+            return self.SettingsPage('Templates/Update/Settings_java.html',
+            'Templates/Update/Java_Update/','java-update.exe',False)
+
+        return QMessageBox.information(self, 'Phishing Settings', 'please select the option in Phishing Page:')
 
     def threadServer(self,directory,ip):
-        try:
-            chdir(directory)
-        except OSError,e:
-            return QMessageBox.warning(self, "error directory",e)
         global threadloading
         self.threadHTTP = ThreadHTTPServerPhishing(80,directory)
         self.threadHTTP.request.connect(self.logPhising)

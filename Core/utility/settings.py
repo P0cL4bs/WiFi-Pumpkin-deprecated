@@ -339,13 +339,8 @@ class frm_Settings(QDialog):
         self.txt_arguments.setText(self.Settings.get_setting('settings','mdk3'))
         self.scanIP_selected  = self.Settings.get_setting('settings','Function_scan')
 
-        if self.scanIP_selected == 'Ping':
-            self.scan1.setChecked(True)
-            self.scan2.setChecked(False)
-        elif self.scanIP_selected == 'Nmap':
-            self.scan2.setChecked(True)
-            self.scan1.setChecked(False)
-
+        if self.scanIP_selected == 'Ping': self.scan1.setChecked(True)
+        self.scan2.setEnabled(False)
         #settings tab Advanced
         self.redirectport.setText(self.Settings.get_setting('settings','redirect_port'))
 
