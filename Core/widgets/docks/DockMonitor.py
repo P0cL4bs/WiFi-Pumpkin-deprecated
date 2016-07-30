@@ -1,5 +1,4 @@
 from os import path
-from pygtail import Pygtail
 from PyQt4.QtGui import QListWidget,QMessageBox
 from PyQt4.QtCore import SIGNAL,QTimer,QThread,QProcess,pyqtSlot,QObject,SLOT
 
