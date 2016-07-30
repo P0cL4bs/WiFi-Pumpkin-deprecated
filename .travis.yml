@@ -5,6 +5,7 @@ sudo: required
 before_install:
  - sudo apt-get update -qq
  - sudo apt-get install libpcap-dev -y
+ - sudo apt-get install -y build-essential libnetfilter-queue-dev
  - sudo apt-get -y install python-qt4 python-scapy python-nmap
 
 sudo: required
