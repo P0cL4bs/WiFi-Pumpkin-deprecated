@@ -14,6 +14,7 @@ Version 0.7.8
 - fixed domain-name-servers in dhcpd server
 - fixed re-design Modules DNS spoof, Update Fake Attack
 - added new module DNS spoof with NetfilterQueue
+- added support Parrot 3.0.1 to use AP with wireless connection #69
 
 Version 0.7.5
 -------------

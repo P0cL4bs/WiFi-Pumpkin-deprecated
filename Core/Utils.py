@@ -227,9 +227,10 @@ class Refactor:
     def get_interface_mac(device):
         result = check_output(["ifconfig", device], stderr=STDOUT, universal_newlines=True)
         m = search("(?<=HWaddr\\s)(.*)", result)
-        if not hasattr(m, "group") or m.group(0) == None:
-            return None
-        return m.group(0).strip()
+        n = search("(?<=ether\\s)(.*)", result)
+        if hasattr(m, "group") : return m.group(0).strip()
+        if hasattr(n, "group") : return n.group(0).split()[0]
+        return None
 
     @staticmethod
     def randomMacAddress(prefix):
