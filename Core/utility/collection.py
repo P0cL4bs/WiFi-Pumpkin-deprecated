@@ -24,7 +24,7 @@ Copyright:
 class SettingsINI(object):
 	""" Settings INI file implemented for Wifi-Pumpkin"""
 	def __init__(self,filename):
-		if path.isfile(filename) and filename.endswith('.ini'):
+		if path.isfile(filename):
 			self.psettings = QSettings(filename,QSettings.IniFormat)
 
 	def get_setting(self,name_group,key,format=str):

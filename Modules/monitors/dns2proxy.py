@@ -15,6 +15,8 @@ class frm_dns2proxy(PumpkinModule):
 
     def Start_Get_creds(self):
         self.listDns.clear()
+        self.btn_getdata.setEnabled(False)
+        self.btn_exit.setEnabled(True)
         # Thread Capture logs
         if path.exists('Logs/AccessPoint/dns2proxy.log'):
             dns = ThreadPopen(['tail','-f','Logs/AccessPoint/dns2proxy.log'])
@@ -35,21 +37,23 @@ class frm_dns2proxy(PumpkinModule):
         self.deleteLater()
     def Qui(self):
         self.frm0 = QFormLayout()
-        self.listDns = QListWidget()
+        self.widget = QWidget()
+        self.layout = QVBoxLayout(self.widget)
+        self.listDns = QListWidget(self)
         self.listDns.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.listDns.setFixedHeight(320)
         self.listDns.setAutoScroll(True)
 
         self.btn_getdata = QPushButton('Capture logs')
         self.btn_getdata.setIcon(QIcon('Icons/start.png'))
         self.btn_getdata.clicked.connect(self.Start_Get_creds)
         self.btn_exit = QPushButton('Kill')
+        self.btn_exit.setEnabled(False)
         self.btn_exit.setIcon(QIcon('Icons/cancel.png'))
         self.btn_exit.clicked.connect(self.exit_function)
 
-        self.frm0.addWidget(self.listDns)
+        self.layout.addWidget(self.listDns)
+        self.layout.addLayout(self.frm0)
 
-        self.frm0.addRow(self.btn_getdata)
-        self.frm0.addRow(self.btn_exit)
-        self.Main.addLayout(self.frm0)
+        self.frm0.addRow(self.btn_getdata,self.btn_exit)
+        self.Main.addWidget(self.widget)
         self.setLayout(self.Main)

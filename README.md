@@ -6,10 +6,10 @@ WiFi-Pumpkin
 
 Framework for Rogue Wi-Fi Access Point Attack
 ### Description
-WiFi-Pumpkin is a security tool that provides the Rogue access point to Man-In-The-Middle and network attacks.
+WiFi-Pumpkin is a open source security tool that provides the Rogue access point to Man-In-The-Middle and network attacks.
 ### Installation
 
-Kali 2.0/WifiSlax 4.11.1/Parrot 3.0.1
+Kali 2.0/WifiSlax 4.11.1/Parrot 3.0.1/2.0.5
 - Python 2.7
 ```sh
  git clone https://github.com/P0cL4bs/WiFi-Pumpkin.git
@@ -32,6 +32,7 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 * Mac Changer 
 * ARP Poison 
 * DNS Spoof 
+* Patch Binaries via MITM
 
 ### Plugins
 | Plugin | Description | 
@@ -40,6 +41,7 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 [dns2proxy](https://github.com/LeonardoNve/dns2proxy) | This tools offer a different features for post-explotation once you change the DNS server to a Victim.
 [sslstrip2](https://github.com/LeonardoNve/sslstrip2) | Sslstrip is a MITM tool that implements Moxie Marlinspike's SSL stripping attacks based version fork @LeonardoNve/@xtr4nge.
 [sergio-proxy](https://github.com/supernothing/sergio-proxy) | Sergio Proxy (a Super Effective Recorder of Gathered Inputs and Outputs) is an HTTP proxy that was written in Python for the Twisted framework.
+[BDFProxy-ng](https://github.com/davinerd/BDFProxy-ng) | Patch Binaries via MITM: BackdoorFactory + mitmProxy, bdfproxy-ng is a fork and review of the original BDFProxy @secretsquirrel.
 
 
 ### Transparent Proxy
@@ -47,7 +49,9 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 ### Plugins Example
  The following is a sample module that injects some contents into the <head> tag to set blur filter into body html page:
  ``` python
+import logging
 from Plugin import PluginProxy
+from Core.Utils import setup_logger
 
 class blurpage(PluginProxy):
     ''' this module proxy set blur into body page html response'''
@@ -63,11 +67,15 @@ class blurpage(PluginProxy):
         return blurpage._instance
 
     def __init__(self):
-        self.LoggerInjector()
         self.injection_code = []
 
-    def setInjectionCode(self, code):
+    def LoggerInjector(self,session):
+        setup_logger('injectionPage', './Logs/AccessPoint/injectionPage.log',session)
+        self.logging = logging.getLogger('injectionPage')
+
+    def setInjectionCode(self, code,session):
         self.injection_code.append(code)
+        self.LoggerInjector(session)
 
     def inject(self, data, url):
         injection_code = '''<head> <style type="text/css">

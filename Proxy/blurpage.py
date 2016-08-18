@@ -1,4 +1,6 @@
+import logging
 from Plugin import PluginProxy
+from Core.Utils import setup_logger
 
 class blurpage(PluginProxy):
     ''' this module proxy set blur into body page html response'''
@@ -14,11 +16,15 @@ class blurpage(PluginProxy):
         return blurpage._instance
 
     def __init__(self):
-        self.LoggerInjector()
         self.injection_code = []
 
-    def setInjectionCode(self, code):
+    def LoggerInjector(self,session):
+        setup_logger('injectionPage', './Logs/AccessPoint/injectionPage.log',session)
+        self.logging = logging.getLogger('injectionPage')
+
+    def setInjectionCode(self, code,session):
         self.injection_code.append(code)
+        self.LoggerInjector(session)
 
     def inject(self, data, url):
         injection_code = '''<head> <style type="text/css">

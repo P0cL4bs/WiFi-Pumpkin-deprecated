@@ -14,9 +14,11 @@ class frm_get_credentials(PumpkinModule):
 
     def Start_Get_creds(self):
         self.listDns.clear()
+        self.btn_getdata.setEnabled(False)
+        self.btn_exit.setEnabled(True)
         # Thread Capture logs
-        if path.exists('Logs/Phishing/Webclone.log'):
-            dns = ThreadPopen(['tail','-f','Logs/Phishing/Webclone.log'])
+        if path.exists('Logs/Phishing/requests.log'):
+            dns = ThreadPopen(['tail','-f','Logs/Phishing/requests.log'])
             self.connect(dns,SIGNAL('Activated ( QString ) '), self.loggerdns)
             dns.setObjectName('Phishing::Capture')
             self.thread.append(dns)
@@ -34,8 +36,9 @@ class frm_get_credentials(PumpkinModule):
         self.deleteLater()
     def Qui(self):
         self.frm0 = QFormLayout()
+        self.widget = QWidget()
+        self.layout = QVBoxLayout(self.widget)
         self.listDns = QListWidget(self)
-        self.listDns.setFixedHeight(300)
         self.listDns.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.listDns.setAutoScroll(True)
 
@@ -43,12 +46,13 @@ class frm_get_credentials(PumpkinModule):
         self.btn_getdata.setIcon(QIcon('Icons/start.png'))
         self.btn_getdata.clicked.connect(self.Start_Get_creds)
         self.btn_exit = QPushButton('Kill')
+        self.btn_exit.setEnabled(False)
         self.btn_exit.setIcon(QIcon('Icons/cancel.png'))
         self.btn_exit.clicked.connect(self.exit_function)
 
-        self.frm0.addWidget(self.listDns)
+        self.layout.addWidget(self.listDns)
+        self.layout.addLayout(self.frm0)
 
-        self.frm0.addRow(self.btn_getdata)
-        self.frm0.addRow(self.btn_exit)
-        self.Main.addLayout(self.frm0)
+        self.frm0.addRow(self.btn_getdata,self.btn_exit)
+        self.Main.addWidget(self.widget)
         self.setLayout(self.Main)

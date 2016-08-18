@@ -29,11 +29,12 @@ Copyright:
 
 class frm_Arp_Poison(PumpkinModule):
 
-    def __init__(self, parent=None):
+    def __init__(self,PhishingManager ,parent=None):
         super(frm_Arp_Poison, self).__init__(parent)
         self.setWindowTitle('Arp Poison Attack ')
         self.Main           = QVBoxLayout()
         self.owd            = getcwd()
+        self.Ftemplates     = PhishingManager
         self.loadtheme(self.configure.XmlThemeSelected())
         self.data = {'IPaddress':[], 'Hostname':[], 'MacAddress':[]}
         self.ThreadDirc = {'Arp_posion':[]}
@@ -222,7 +223,7 @@ class frm_Arp_Poison(PumpkinModule):
 
     def show_frm_fake(self):
         self.n = frm_update_attack()
-        self.n.setGeometry(QRect(100, 100, 450, 300))
+        self.n.setGeometry(QRect(100, 100, 300, 300))
         self.n.show()
 
     def emit_template(self,log):

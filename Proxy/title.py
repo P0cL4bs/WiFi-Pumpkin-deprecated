@@ -1,8 +1,10 @@
 from Plugin import PluginProxy
+import logging
+from Core.Utils import setup_logger
 
 class title(PluginProxy):
     ''' this module proxy add title on html page.'''
-    _name          = 'title_change'
+    _name          = 'title_changer'
     _argsname      = 'Title:'
     _activated     = False
     _instance      = None
@@ -15,11 +17,15 @@ class title(PluginProxy):
         return title._instance
 
     def __init__(self):
-        self.LoggerInjector()
         self.title = None
 
-    def setInjectionCode(self, code):
+    def LoggerInjector(self,session):
+        setup_logger('injectionPage', './Logs/AccessPoint/injectionPage.log',session)
+        self.logging = logging.getLogger('injectionPage')
+
+    def setInjectionCode(self, code,session):
         self.title = code
+        self.LoggerInjector(session)
 
     def inject(self, data, url):
         injection_code = '<title> {} '.format(self.title)

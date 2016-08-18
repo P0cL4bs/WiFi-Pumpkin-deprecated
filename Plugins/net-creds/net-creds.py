@@ -64,9 +64,12 @@ T = '\033[93m'  # tan
 
 
 '''http://stackoverflow.com/questions/17035077/python-logging-to-multiple-log-files-from-different-classes'''
-def setup_logger(logger_name, log_file, level=logging.INFO):
+def setup_logger(logger_name, log_file,key, level=logging.INFO):
     l = logging.getLogger(logger_name)
-    formatter = logging.Formatter('%(asctime)s : %(message)s')
+    if 'credentials' in logger_name:
+        formatter = logging.Formatter('SessionID[{}] %(asctime)s :[creds] %(message)s'.format(key),datefmt='%Y-%m-%d %H:%M:%S')
+    elif 'netcreds' in logger_name:
+        formatter = logging.Formatter('SessionID[{}] %(asctime)s :[url] %(message)s'.format(key),datefmt='%Y-%m-%d %H:%M:%S')
     fileHandler = logging.FileHandler(log_file, mode='a')
     fileHandler.setFormatter(formatter)
     streamHandler = logging.StreamHandler()
@@ -80,6 +83,7 @@ def parse_args():
    """Create the arguments"""
    parser = argparse.ArgumentParser()
    parser.add_argument("-i", "--interface", help="Choose an interface")
+   parser.add_argument("-k", "--key", help="session ID for WiFi-pumpkin")
    parser.add_argument("-p", "--pcap", help="Parse info from a pcap file; -p <pcapfilename>")
    parser.add_argument("-f", "--filterip", help="Do not sniff packets from this IP address; -f 192.168.0.4")
    parser.add_argument("-v", "--verbose", help="Display entire URLs and POST loads rather than truncating at 100 characters", action="store_true")
@@ -1003,16 +1007,22 @@ def main(args):
         else:
             conf.iface = iface_finder()
         print '[*] Using interface:', conf.iface
-
+        import signal
+        signal.signal(signal.SIGUSR1, SIGUSR1_handle)
         if args.filterip:
             sniff(iface=conf.iface, prn=pkt_parser, filter="not host %s" % args.filterip, store=0)
         else:
             sniff(iface=conf.iface, prn=pkt_parser, store=0)
 
+def SIGUSR1_handle(signalnum, frame):
+    noserv = 0
+    print('Reconfiguring....')
+    exit()
 
 if __name__ == "__main__":
-    setup_logger('netcreds', './Logs/AccessPoint/urls.log')
-    setup_logger('credentials', './Logs/AccessPoint/credentials.log')
+    args = parse_args()
+    setup_logger('netcreds', './Logs/AccessPoint/urls.log',args.key)
+    setup_logger('credentials', './Logs/AccessPoint/credentials.log',args.key)
     url = logging.getLogger('netcreds')
     creds = logging.getLogger('credentials')
-    main(parse_args())
+    main(args)

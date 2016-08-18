@@ -57,6 +57,7 @@ transform_file = "Plugins/dns2proxy/transform.cfg"
 parser = argparse.ArgumentParser()
 parser.add_argument("-N", "--noforward", help="DNS Fowarding OFF (default ON)", action="store_true")
 parser.add_argument("-i", "--interface", help="Interface to use", default="eth0")
+parser.add_argument("-k", "--key", help="session ID for WiFi-pumpkin")
 parser.add_argument("-u", "--ip1", help="First IP to add at the response", default=None)
 parser.add_argument("-d", "--ip2", help="Second IP to add at the response", default=None)
 parser.add_argument("-I", "--ips", help="List of IPs to add after ip1,ip2 separated with commas", default=None)
@@ -66,6 +67,7 @@ parser.add_argument("-A", "--adminIP", help="Administrator IP for no filtering",
 args = parser.parse_args()
 
 debug = not args.silent
+key_session = args.key
 dev = args.interface
 adminip = args.adminIP
 ip1 = args.ip1
@@ -709,9 +711,9 @@ def make_response(qry=None, id=None, RCODE=0):
 
 
 '''http://stackoverflow.com/questions/17035077/python-logging-to-multiple-log-files-from-different-classes'''
-def setup_logger(logger_name, log_file, level=logging.INFO):
+def setup_logger(logger_name, log_file,key, level=logging.INFO):
     l = logging.getLogger(logger_name)
-    formatter = logging.Formatter('%(asctime)s : %(message)s')
+    formatter = logging.Formatter('SessionID[{}] %(asctime)s : %(message)s'.format(key))
     fileHandler = logging.FileHandler(log_file, mode='a')
     fileHandler.setFormatter(formatter)
     streamHandler = logging.StreamHandler()
@@ -721,7 +723,7 @@ def setup_logger(logger_name, log_file, level=logging.INFO):
     l.addHandler(fileHandler)
     l.addHandler(streamHandler)
 
-setup_logger('Dns2Proxy', './Logs/AccessPoint/dns2proxy.log')
+setup_logger('Dns2Proxy', './Logs/AccessPoint/dns2proxy.log',key_session)
 logdns2proxy = logging.getLogger('Dns2Proxy')
 logdns2proxy.info('---[ Start Dns2proxy '+asctime()+']---')
 process_files()

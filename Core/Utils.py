@@ -2,6 +2,7 @@ from sys import exit,stdout
 from struct import pack
 from time import sleep,asctime,strftime
 from random import randint
+from base64 import b64encode
 from os import popen,path,walk,system,getpid,stat
 from subprocess import call,check_output,Popen,PIPE,STDOUT
 from re import search,compile,VERBOSE,IGNORECASE
@@ -78,14 +79,14 @@ class ThreadPhishingServer(QThread):
 
 loggers = {}
 '''http://stackoverflow.com/questions/17035077/python-logging-to-multiple-log-files-from-different-classes'''
-def setup_logger(logger_name, log_file, level=logging.INFO):
+def setup_logger(logger_name, log_file,key, level=logging.INFO):
     global loggers
     if loggers.get(logger_name):
         return loggers.get(logger_name)
     else:
         logger = logging.getLogger(logger_name)
         logger.propagate = False
-        formatter = logging.Formatter('%(asctime)s : %(message)s')
+        formatter = logging.Formatter('SessionID[{}] %(asctime)s : %(message)s'.format(key))
         fileHandler = logging.FileHandler(log_file, mode='a')
         fileHandler.setFormatter(formatter)
         logger.setLevel(logging.INFO)
@@ -119,38 +120,62 @@ class Refactor:
             ]
         }
         return html
+
     @staticmethod
-    def exportHtml(remove_dns2proxy=False,remove_inject=False):
+    def get_content_by_session(filelines,sessionID=str):
+        filterSession = []
+        sessiongrap = 'SessionID[{}]'.format(sessionID)
+        for line in filelines:
+            if sessiongrap in line:
+                filterSession.append(line)
+        return ''.join(filterSession)
+
+    @staticmethod
+    def exportHtml(unchecked={},sessionID='',dataLogger=[],APname=''):
         readFile = {
          'dhcp': {'Logs/AccessPoint/dhcp.log':[]},
          'urls': {'Logs/AccessPoint/urls.log':[]},
+         'hostapd': {'Logs/AccessPoint/hostapd.log':[]},
+         'bdfproxy': {'Logs/AccessPoint/bdfproxy.log':[]},
          'credentials': {'Logs/AccessPoint/credentials.log':[]},
-         'requestAP': {'Logs/AccessPoint/requestAP.log':[]},
          'dns2proxy': {'Logs/AccessPoint/dns2proxy.log':[]},
          'injectionPage': {'Logs/AccessPoint/injectionPage.log':[]},
          'dnsspoofAP': {'Logs/AccessPoint/DnsSpoofModuleReq.log':[]},
-         'phishing': {'Logs/Phishing/Webclone.log':[]},}
-        if remove_dns2proxy: readFile.pop('dns2proxy')
-        elif remove_inject: readFile.pop('injectionPage')
-        for i in readFile.keys():
-            for j in readFile[i]:
-                with open(j,'r') as file:
-                    readFile[i][j] = file.read()
+         'phishing': {'Logs/Phishing/requests.log':[]},}
+        if unchecked != {}:
+            for key in unchecked.keys(): readFile.pop(key)
+        for key in readFile.keys():
+            for filename in readFile[key]:
+                with open(filename,'r') as file:
+                    if len(sessionID) != 0:
+                        content = Refactor.get_content_by_session(file.readlines(),sessionID)
+                        readFile[key][filename] = content
+                    else:
+                        readFile[key][filename] = file.read()
 
-        contenthtml,HTML = Refactor.htmlContent('Report Logger'),''
+        contenthtml,HTML,emptyFile,activated_Files = Refactor.htmlContent('WiFi-Pumpkin Report Logger'),'',[],[]
         for i in contenthtml['htmlheader']: HTML += i+"\n"
-        HTML += '</span><span class="s5">Report Generated at::</span><span class="s0">'+asctime()+'</span>\n'
+        if dataLogger != []:
+            HTML += '</span><span class="s2">Session information::</span><span class="s1">\n\n'
+            HTML += '</span><span class="s5">[*] ESSID AP: {}</span><span class="s0"></span>\n'.format(APname)
+            HTML += '</span><span class="s5">[*] AP Create at: </span><span class="s0">'+dataLogger[0]+'</span>\n'
+            HTML += '</span><span class="s5">[*] AP Down   at: </span><span class="s0">'+dataLogger[1]+'</span>\n\n'
+        HTML += '</span><span class="s5">Report Generated at::</span><span class="s0">'+asctime()+'</span>\n\n'
         HTML += '</span><span class="s4"><br></span><span class="s1">\n'
         for key in readFile.keys():
-            if Refactor.getSize(readFile[key].keys()[0]) > 0:
+            if len(readFile[key][readFile[key].keys()[0]]) > 0:
                 HTML += '</span><span class="s2">-[ {} Logger ]-</span><span class="s1">\n'.format(key)
                 HTML += readFile[key][readFile[key].keys()[0]]
                 HTML += '</span><span class="s4"><br><br></span><span class="s1">\n'
+                activated_Files.append(key)
+            elif Refactor.getSize(readFile[key].keys()[0]) == 0:
+                emptyFile.append(key)
         HTML += '</span></pre>\n<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#C0C0C0" >\
-        <TR><TD><CENTER>''<FONT FACE="Arial, Helvetica" COLOR="#000000">WiFi-Pumpkin (C) 2015 P0cL4bs Team' \
+        <TR><TD><CENTER>''<FONT FACE="Arial, Helvetica" COLOR="#000000">WiFi-Pumpkin (C) 2015-2016 P0cL4bs Team' \
         '</FONT></center></TD></TR></TABLE></body>\n</html>\n'
 
-        Load_ = {'HTML': HTML,'Files':[readFile[x].keys()[0] for x in readFile.keys()]}
+        Load_ = {'HTML': HTML,'Files':[readFile[x].keys()[0] for x in readFile.keys()],
+        'activated_Files':activated_Files,'empty_files': emptyFile}
         return Load_
 
     @staticmethod
@@ -266,6 +291,13 @@ class Refactor:
         st = stat(filename)
         return st.st_size
 
-class waiter(threading.Thread):
+    @staticmethod
+    def generateSessionID():
+        return str(b64encode(str(random.randint(0,100000))))
+
+class waiterSleepThread(QThread):
+    quit = pyqtSignal(object)
+    def __int__(self,parent=None):
+        super(waiter, self).__init__(self,parent)
     def run(self):
-        sleep(10)
+        sleep(10),self.quit.emit(True)

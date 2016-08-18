@@ -3,6 +3,7 @@ import Modules as GUIs
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from Core.Utils import Refactor
+from Core.widgets.PluginsSettings import BDFProxy_ConfigObject
 """
 Description:
     This program is a Core for wifi-pumpkin.py. file which includes functionality
@@ -41,18 +42,29 @@ class PopUpPlugins(QWidget):
         self.check_netcreds     = QCheckBox('net-creds ')
         self.check_dns2proy     = QRadioButton('sslstrip+/dns2proxy')
         self.check_sergioProxy  = QRadioButton('sslstrip/sergio-proxy')
+        self.check_bdfproxy     = QRadioButton('BDFProxy-ng')
         self.check_noproxy      = QRadioButton('No Proxy')
+
+        self.btnBDFSettings    = QPushButton('Config')
+        self.btnBDFSettings.setIcon(QIcon('Icons/config.png'))
+        self.btnBDFSettings.clicked.connect(self.ConfigOBJBDFproxy)
+
         self.proxyGroup = QButtonGroup()
         self.proxyGroup.addButton(self.check_dns2proy)
         self.proxyGroup.addButton(self.check_sergioProxy)
         self.proxyGroup.addButton(self.check_noproxy)
-        self.check_dns2proy.clicked.connect(self.checkGeneralOptions)
+        self.proxyGroup.addButton(self.check_bdfproxy)
+
         self.check_netcreds.clicked.connect(self.checkBoxNecreds)
+        self.check_dns2proy.clicked.connect(self.checkGeneralOptions)
         self.check_sergioProxy.clicked.connect(self.checkGeneralOptions)
+        self.check_bdfproxy.clicked.connect(self.checkGeneralOptions)
         self.check_noproxy.clicked.connect(self.checkGeneralOptions)
+
         self.layoutform.addRow(self.check_netcreds)
         self.layoutproxy.addRow(self.check_dns2proy)
         self.layoutproxy.addRow(self.check_sergioProxy)
+        self.layoutproxy.addRow(self.check_bdfproxy,self.btnBDFSettings)
         self.layoutproxy.addRow(self.check_noproxy)
         self.layout.addWidget(self.GroupPlugins)
         self.layout.addWidget(self.GroupPluginsProxy)
@@ -62,23 +74,40 @@ class PopUpPlugins(QWidget):
     def checkGeneralOptions(self):
         self.unset_Rules('dns2proxy')
         self.unset_Rules('sslstrip')
+        self.unset_Rules('bdfproxy')
         if self.check_sergioProxy.isChecked():
             self.FSettings.Settings.set_setting('plugins','sergioproxy_plugin',True)
             self.FSettings.Settings.set_setting('plugins','dns2proxy_plugin',False)
             self.FSettings.Settings.set_setting('plugins','noproxy',False)
+            self.FSettings.Settings.set_setting('plugins','bdfproxy_plugin',False)
             self.set_sslStripRule()
         elif self.check_dns2proy.isChecked():
             self.FSettings.Settings.set_setting('plugins','dns2proxy_plugin',True)
             self.FSettings.Settings.set_setting('plugins','sergioproxy_plugin',False)
             self.FSettings.Settings.set_setting('plugins','noproxy',False)
+            self.FSettings.Settings.set_setting('plugins','bdfproxy_plugin',False)
             self.set_sslStripRule()
             self.set_Dns2proxyRule()
+        elif self.check_bdfproxy.isChecked():
+            self.FSettings.Settings.set_setting('plugins','bdfproxy_plugin',True)
+            self.FSettings.Settings.set_setting('plugins','dns2proxy_plugin',False)
+            self.FSettings.Settings.set_setting('plugins','sergioproxy_plugin',False)
+            self.FSettings.Settings.set_setting('plugins','noproxy',False)
+            self.unset_Rules('dns2proxy')
+            self.unset_Rules('sslstrip')
+            self.set_BDFproxyRule()
         elif self.check_noproxy.isChecked():
             self.FSettings.Settings.set_setting('plugins','dns2proxy_plugin',False)
             self.FSettings.Settings.set_setting('plugins','sergioproxy_plugin',False)
+            self.FSettings.Settings.set_setting('plugins','bdfproxy_plugin',False)
             self.FSettings.Settings.set_setting('plugins','noproxy',True)
             self.unset_Rules('dns2proxy')
             self.unset_Rules('sslstrip')
+            self.unset_Rules('bdfproxy')
+
+    def ConfigOBJBDFproxy(self):
+        self.SettingsBDFProxy  = BDFProxy_ConfigObject()
+        self.SettingsBDFProxy.show()
 
     def checkBoxNecreds(self):
         if self.check_netcreds.isChecked():
@@ -87,10 +116,12 @@ class PopUpPlugins(QWidget):
             self.FSettings.Settings.set_setting('plugins','netcreds_plugin',False)
 
     def optionsRules(self,type):
-        search = {'sslstrip': str('iptables -t nat -A PREROUTING -p tcp'+
+        search = {
+        'sslstrip': str('iptables -t nat -A PREROUTING -p tcp'+
         ' --destination-port 80 -j REDIRECT --to-port '+self.FSettings.redirectport.text()),
-        'dns2proxy':str('iptables -t nat -A PREROUTING -p '+
-        'udp --destination-port 53 -j REDIRECT --to-port 53')}
+        'dns2proxy':str('iptables -t nat -A PREROUTING -p udp --destination-port 53 -j REDIRECT --to-port 53'),
+        'bdfproxy':str('iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port '+
+        str(self.FSettings.bdfProxy_port.value()))}
         return search[type]
 
     # set rules to sslstrip
@@ -109,6 +140,18 @@ class PopUpPlugins(QWidget):
     def set_Dns2proxyRule(self):
         item = QListWidgetItem()
         item.setText(self.optionsRules('dns2proxy'))
+        item.setSizeHint(QSize(30,30))
+        self.FSettings.ListRules.addItem(item)
+
+    # set redirect port rules bdfproxy
+    def set_BDFproxyRule(self):
+        items = []
+        for index in xrange(self.FSettings.ListRules.count()):
+            items.append(str(self.FSettings.ListRules.item(index).text()))
+        if self.optionsRules('bdfproxy') in items:
+            return
+        item = QListWidgetItem()
+        item.setText(self.optionsRules('bdfproxy'))
         item.setSizeHint(QSize(30,30))
         self.FSettings.ListRules.addItem(item)
 

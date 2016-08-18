@@ -797,6 +797,15 @@ QTreeView, QListView
     background-color: #201F1F;
 }
 
+QListView::indicator:unchecked { image:url(Icons/checkbox_unchecked.png); }
+
+QListView::indicator:checked, QGroupBox::indicator:checked, QMenu::indicator:non-exclusive:checked
+{
+    image:url(Icons/checkbox.png);
+    color: #b1b1b1;
+    background-color: #302F2F;
+}
+
 QTreeView:branch:selected, QTreeView:branch:hover
 {
     background: url(Icons/transparent.png);

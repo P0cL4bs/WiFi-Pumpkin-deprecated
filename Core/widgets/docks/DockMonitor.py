@@ -36,12 +36,7 @@ class dockAreaAPI(QListWidget):
 
     def RunThread(self):
         self.startThread = True
-        if self.logger != {}:
-            self.processThread = ThreadLogger(self.logger['path'])
-            self.connect(self.processThread,SIGNAL('Activated ( QString ) '), self.writeModeData)
-            self.processThread.setObjectName(self.logger['thread_name'])
-            if path.exists(self.logger['path']):
-                self.processThread.start()
+
     def writeModeData(self,data):
         self.addItem(data)
         self.scrollToBottom()

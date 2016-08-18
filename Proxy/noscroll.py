@@ -1,4 +1,6 @@
 from Plugin import PluginProxy
+import logging
+from Core.Utils import setup_logger
 
 class noscroll(PluginProxy):
     ''' this module proxy not work noscroll on html page.'''
@@ -14,11 +16,15 @@ class noscroll(PluginProxy):
         return noscroll._instance
 
     def __init__(self):
-        self.LoggerInjector()
         self.args = None
 
-    def setInjectionCode(self, code):
+    def LoggerInjector(self,session):
+        setup_logger('injectionPage', './Logs/AccessPoint/injectionPage.log',session)
+        self.logging = logging.getLogger('injectionPage')
+
+    def setInjectionCode(self, code,session):
         self.args = code
+        self.LoggerInjector(session)
 
     def inject(self, data, url):
         injection_code = '''</head> <!-- Put an invisible div over everything -->

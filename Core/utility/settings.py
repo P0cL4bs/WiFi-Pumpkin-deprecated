@@ -153,6 +153,7 @@ class frm_Settings(QDialog):
         super(frm_Settings, self).__init__(parent)
         self.setWindowTitle('Settings WiFi-Pompkin')
         self.Settings = SettingsINI('Core/config/app/config.ini')
+        self.bdfproxyConf  = SettingsINI(self.Settings.get_setting('plugins','bdfproxy_patch_config'))
         self.loadtheme(self.XmlThemeSelected())
         self.setGeometry(0, 0, 420, 440)
         self.center()
@@ -304,6 +305,8 @@ class frm_Settings(QDialog):
 
 
         #page Adavanced
+        self.bdfProxy_port = QSpinBox()
+        self.bdfProxy_port.setMaximum(10000)
         self.txt_ranger = QLineEdit(self)
         self.txt_arguments = QLineEdit(self)
         self.scan1 = QRadioButton('Ping Scan:: Very fast scan IP')
@@ -338,7 +341,7 @@ class frm_Settings(QDialog):
         self.txt_ranger.setText(self.Settings.get_setting('settings','scanner_rangeIP'))
         self.txt_arguments.setText(self.Settings.get_setting('settings','mdk3'))
         self.scanIP_selected  = self.Settings.get_setting('settings','Function_scan')
-
+        self.bdfProxy_port.setValue(int(self.bdfproxyConf.get_setting('Overall','proxyPort')))
         if self.scanIP_selected == 'Ping': self.scan1.setChecked(True)
         self.scan2.setEnabled(False)
         #settings tab Advanced
@@ -348,6 +351,7 @@ class frm_Settings(QDialog):
         self.formGroupAd.addRow(QLabel('Thread Scan IP-Address:'))
         self.formGroupAd.addRow(self.scan1)
         self.formGroupAd.addRow(self.scan2)
+        self.formGroupAd.addRow('Port BDFProxy-ng',self.bdfProxy_port)
         self.formGroupAd.addRow('Port sslstrip:',self.redirectport)
         self.formGroupAd.addRow(QLabel('mdk3 Args:'),self.txt_arguments)
         self.formGroupAd.addRow(QLabel('Range Scanner:'),self.txt_ranger)

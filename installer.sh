@@ -16,7 +16,7 @@ func_Banner(){
 	echo '   ============================='
 	echo "   |$bldblu wifi-pumpkin Installer$txtrst|"
 	echo '   ============================='
-	echo "          Version: $(tput setaf 5)0.7.8 $txtrst"
+	echo "          Version: $(tput setaf 5)0.8.1 $txtrst"
 	echo "usage: ./installer.sh --install | --uninstall"
 }
 
@@ -48,16 +48,18 @@ func_install(){
 		exit 1
 	fi
 	apt-get update
+	apt-get install -y python-pip libffi-dev libssl-dev libxml2-dev libxslt1-dev zlib1g-dev
+	apt-get install -y libarchive-dev
 	apt-get install -y build-essential libnetfilter-queue-dev
 	apt-get install -y python-qt4 python-scapy hostapd rfkill
-	apt-get install -y python-dev
+	apt-get install -y python-dev git
 	apt-get install -y libpcap-dev
-    pip install -r requirements.txt
-    File="/etc/apt/sources.list"
-    if  grep -q '#Wifi Pumpkin' $File;then
+    	pip install -r requirements.txt
+    	File="/etc/apt/sources.list"
+    	if  grep -q '#Wifi Pumpkin' $File;then
 	    cp /etc/apt/sources.list.backup /etc/apt/sources.list
 	    rm /etc/apt/sources.list.backup
-    fi
+    	fi
 	echo "----------------------------------------"
 	echo "[=]$bldblu checking dependencies $txtrst "
 	func_check_install "hostapd"
@@ -73,8 +75,10 @@ func_install(){
 		if [ "$dist" = "Ubuntu" ]; then
 			check_dhcp=$(program_is_installed dhcpd)
 			if [ $check_dhcp = 0 ]; then
-				apt-get install isc-dhcp-server -y
-				func_check_install "dhcpd"
+			    apt-get install libjpeg8-dev -y
+			    pip install mitmproxy==0.16
+                	    apt-get install isc-dhcp-server -y
+                            func_check_install "dhcpd"
 			fi
 		elif [ "$dist" = "Kali" ]; then
 			check_dhcp=$(program_is_installed dhcpd)
@@ -82,11 +86,11 @@ func_install(){
                 cp /etc/apt/sources.list /etc/apt/sources.list.backup
 				File="/etc/apt/sources.list"
                 if ! grep -q 'deb http://ftp.de.debian.org/debian wheezy main' $File;then
-				    echo "deb http://ftp.de.debian.org/debian wheezy main" >> /etc/apt/sources.list
-				    apt-get update
-				    apt-get install isc-dhcp-server -y
-				    cp /etc/apt/sources.list.backup /etc/apt/sources.list
-				    rm /etc/apt/sources.list.backup
+                    echo "deb http://ftp.de.debian.org/debian wheezy main" >> /etc/apt/sources.list
+                    apt-get update
+                    apt-get install isc-dhcp-server -y
+                    cp /etc/apt/sources.list.backup /etc/apt/sources.list
+                    rm /etc/apt/sources.list.backup
                 fi
                 check_dhcp=$(program_is_installed dhcpd)
                 if [ $check_dhcp = 0 ]; then
@@ -125,12 +129,9 @@ func_install(){
 }
 
 bin_install(){
-	if [ ! -f "/usr/bin/wifi-pumpkin" ]; then
-	    echo "[$green✔$txtrst] PATH::$DIRECTORY"
-		echo "[$green✔$txtrst] binary::/usr/bin/"
-        ln -sfT /usr/share/WiFi-Pumpkin/wifi-pumpkin.py /usr/bin/wifi-pumpkin
-		chmod +x /usr/bin/wifi-pumpkin
-	fi
+    echo "[$green✔$txtrst] binary::/usr/bin/"
+    ln -sfT /usr/share/WiFi-Pumpkin/wifi-pumpkin /usr/bin/wifi-pumpkin
+    chmod +x /usr/bin/wifi-pumpkin
 }
 
 uninstall(){
@@ -156,16 +157,16 @@ path_install=$Dir_isntall"/*"
 path_uninstall=$DIRECTORY"/"
 while [ "$1" != "" ]; do
     case $1 in
-        --install )           shift
-                                func_install
-                                ;;
-        --uninstall )    		uninstall
-                                ;;
-        -h | --help )           usage
-                                exit
-                                ;;
-        * )                     usage
-                                exit 1
+        --install ) shift
+        func_install
+        ;;
+        --uninstall ) uninstall
+        ;;
+        -h | --help ) usage
+        exit
+        ;;
+        * ) usage
+        exit 1
     esac
     shift
 done

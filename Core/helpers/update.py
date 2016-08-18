@@ -31,6 +31,7 @@ class frm_githubUpdate(PumpkinModule):
         super(frm_githubUpdate, self).__init__(parent)
         self.setWindowTitle("WiFi-Pumpkin Software Update")
         self.loadtheme(self.configure.XmlThemeSelected())
+        self.checkHasCommits = False
         self.version = version
         self.UrlDownloadCommits = \
         'https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/Core/config/commits/Lcommits.cfg'
@@ -133,6 +134,7 @@ class frm_githubUpdate(PumpkinModule):
             self.LCommits.addItem(item)
             self.btnCheck.setEnabled(True)
             self.btnUpdate.setEnabled(True)
+            self.checkHasCommits = True
         elif 'alive::' in commits:
             self.pb.update_bar(10)
         elif '::updated' in commits:

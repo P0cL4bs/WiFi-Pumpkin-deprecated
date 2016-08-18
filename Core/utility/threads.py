@@ -43,9 +43,10 @@ class ThreadPopen(QThread):
 class ThRunDhcp(QThread):
     ''' thread: run DHCP on background fuctions'''
     sendRequest = pyqtSignal(object)
-    def __init__(self,args):
+    def __init__(self,args,session):
         QThread.__init__(self)
         self.args    = args
+        self.session = session
         self.process = None
 
     def getNameThread(self):
@@ -55,7 +56,7 @@ class ThRunDhcp(QThread):
         print '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
         self.process = Popen(self.args,
         stdout=PIPE,stderr=STDOUT,preexec_fn=setsid)
-        setup_logger('dhcp', './Logs/AccessPoint/dhcp.log')
+        setup_logger('dhcp', './Logs/AccessPoint/dhcp.log',self.session)
         loggerDhcp = logging.getLogger('dhcp')
         loggerDhcp.info('---[ Start DHCP '+asctime()+']---')
         for line,data in enumerate(iter(self.process.stdout.readline, b'')):
@@ -134,6 +135,7 @@ class ThreadFastScanIP(QThread):
 
 
 class ProcessThread(QObject):
+    _ProcssOutput = pyqtSignal(object)
     def __init__(self,cmd,):
         QObject.__init__(self)
         self.cmd = cmd
@@ -144,6 +146,7 @@ class ProcessThread(QObject):
     @pyqtSlot()
     def readProcessOutput(self):
         self.data = str(self.procThread.readAllStandardOutput())
+        self._ProcssOutput.emit(self.data)
 
     def start(self):
         self.procThread = QProcess(self)
@@ -162,9 +165,10 @@ class ProcessThread(QObject):
 
 class ProcessHostapd(QObject):
     statusAP_connected = pyqtSignal(object)
-    def __init__(self,cmd):
+    def __init__(self,cmd,session):
         QObject.__init__(self)
         self.cmd = cmd
+        self.session = session
 
     def getNameThread(self):
         return '[New Thread {} ({})]'.format(self.procHostapd.pid(),self.objectName())
@@ -174,7 +178,7 @@ class ProcessHostapd(QObject):
         self.data = str(self.procHostapd.readAllStandardOutput())
         if 'AP-STA-DISCONNECTED' in self.data.rstrip() or 'inactivity (timer DEAUTH/REMOVE)' in self.data.rstrip():
             self.statusAP_connected.emit(self.data.split()[2])
-
+        self.log_hostapd.info(self.data)
     def start(self):
         self.makeLogger()
         self.procHostapd = QProcess(self)
@@ -184,7 +188,7 @@ class ProcessHostapd(QObject):
         print '[New Thread {} ({})]'.format(self.procHostapd.pid(),self.objectName())
 
     def makeLogger(self):
-        setup_logger('hostapd', './Logs/AccessPoint/requestAP.log')
+        setup_logger('hostapd', './Logs/AccessPoint/hostapd.log',self.session)
         self.log_hostapd = logging.getLogger('hostapd')
 
     def stop(self):
@@ -205,11 +209,12 @@ class ThreadReactor(QThread):
 
 class Thread_sslstrip(QThread):
     '''Thread: run sslstrip on brackground'''
-    def __init__(self,port,plugins={},data= {}):
+    def __init__(self,port,plugins={},data= {},session=None):
         QThread.__init__(self)
         self.port     = port
         self.plugins  = plugins
         self.loaderPlugins = data
+        self.session    = session
 
     def getNameThread(self):
         return '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
@@ -225,7 +230,7 @@ class Thread_sslstrip(QThread):
         if self.loaderPlugins['Plugins'] != None:
             self.plugins[self.loaderPlugins['Plugins']].getInstance()._activated = True
             self.plugins[self.loaderPlugins['Plugins']].getInstance().setInjectionCode(
-                self.loaderPlugins['Content'])
+                self.loaderPlugins['Content'],self.session)
         URLMonitor.getInstance().setFaviconSpoofing(spoofFavicon)
         CookieCleaner.getInstance().setEnabled(killSessions)
         strippingFactory              = http.HTTPFactory(timeout=10)
@@ -239,11 +244,12 @@ class Thread_sslstrip(QThread):
 
 class Thread_sergioProxy(QThread):
     '''Thread: run sergio-proxy on brackground'''
-    def __init__(self,port,plugins={},options= {}):
+    def __init__(self,port,plugins={},data= {},session=None):
         QThread.__init__(self)
         self.port          = port
         self.PumpPlugins   = plugins
-        self.loaderPlugins = options
+        self.loaderPlugins = data
+        self.session       = session
 
     def getNameThread(self):
         return '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
@@ -257,7 +263,7 @@ class Thread_sergioProxy(QThread):
         if self.loaderPlugins['Plugins'] != None:
             self.PumpPlugins[self.loaderPlugins['Plugins']].getInstance()._activated = True
             self.PumpPlugins[self.loaderPlugins['Plugins']].getInstance().setInjectionCode(
-                self.loaderPlugins['Content'])
+                self.loaderPlugins['Content'],self.session)
         # load plugins will be implemented coming soon
         parser = argparse.ArgumentParser(
                description="Sergio Proxy v%s - An HTTP MITM Tool" % sergio_version,

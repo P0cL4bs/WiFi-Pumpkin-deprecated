@@ -1,4 +1,6 @@
 from Plugin import PluginProxy
+import logging
+from Core.Utils import setup_logger
 
 class InjectorCSS(PluginProxy):
     """  inject CSS files inside HTML pages """
@@ -16,12 +18,16 @@ class InjectorCSS(PluginProxy):
         return InjectorCSS._instance
 
     def __init__(self):
-        self.LoggerInjector()
         self.injection_code = []
 
-    def setInjectionCode(self, code):
+    def LoggerInjector(self,session):
+        setup_logger('injectionPage', './Logs/AccessPoint/injectionPage.log',session)
+        self.logging = logging.getLogger('injectionPage')
+
+    def setInjectionCode(self, code,session):
         with open(code,'r') as f:
             self.injection_code.append(f.read())
+        self.LoggerInjector(session)
 
     def inject(self, data, url):
         injection_code = ' '.join(self.injection_code)

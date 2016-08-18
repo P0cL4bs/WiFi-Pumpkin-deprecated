@@ -31,7 +31,7 @@ class frm_PhishingManager(QWidget):
     def __init__(self, parent = None):
         super(frm_PhishingManager, self).__init__(parent)
         self.label = QLabel()
-        self.Main  = QVBoxLayout(self)
+        self.Main  = QVBoxLayout()
         self.owd   = getcwd()
         self.config = frm_Settings()
         self.setWindowTitle('Phishing Manager')

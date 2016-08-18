@@ -1,3 +1,10 @@
+Version 0.8.1
+-------------
+- re-design all GUI Menu->view
+- added new report logger GUI
+- added new sessions for Rogue AP loggers
+- added new plugin BDFProxy-ng
+
 Version 0.7.8
 -------------
 - moved progressBar to statusBar

@@ -1,4 +1,6 @@
 from Plugin import PluginProxy
+import logging
+from Core.Utils import setup_logger
 
 class HTMLInjector(PluginProxy):
     """ This plugins allows you to inject data into the response returned from the web server.
@@ -17,12 +19,16 @@ class HTMLInjector(PluginProxy):
         return HTMLInjector._instance
 
     def __init__(self):
-        self.LoggerInjector()
         self.injection_code = []
 
-    def setInjectionCode(self, code):
+    def LoggerInjector(self,session):
+        setup_logger('injectionPage', './Logs/AccessPoint/injectionPage.log',session)
+        self.logging = logging.getLogger('injectionPage')
+
+    def setInjectionCode(self, code,session):
         with open(code,'r') as f:
             self.injection_code.append(f.read())
+        self.LoggerInjector(session)
 
     def inject(self, data, url):
         injection_code = ' '.join(self.injection_code)

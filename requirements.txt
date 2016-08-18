@@ -10,3 +10,10 @@ netifaces
 pcapy
 configparser
 NetfilterQueue
+configobj
+libarchive-c==2.1
+python-magic==0.4.6
+pefile
+capstone
+hyperframe
+h2

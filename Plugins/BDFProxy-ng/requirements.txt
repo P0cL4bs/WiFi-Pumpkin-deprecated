@@ -1,0 +1,7 @@
+libarchive-c==2.1
+python-magic==0.4.6
+mitmproxy==0.16
+pefile
+capstone
+hyperframe
+h2

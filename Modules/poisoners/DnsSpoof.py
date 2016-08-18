@@ -32,11 +32,12 @@ Copyright:
 """
 
 class frm_DnsSpoof(PumpkinModule):
-    def __init__(self, parent=None):
+    def __init__(self, PhishingManager,parent=None):
         super(frm_DnsSpoof, self).__init__(parent)
         self.setWindowTitle('Dns Spoof Attack')
         self.Main       = QVBoxLayout()
         self.owd        = getcwd()
+        self.Ftemplates = PhishingManager
         self.loadtheme(self.configure.XmlThemeSelected())
         self.data       = {'IPaddress':[], 'Hostname':[], 'MacAddress':[]}
         self.ThreadDirc = {'dns_spoof':[]}
@@ -280,7 +281,7 @@ class frm_DnsSpoof(PumpkinModule):
 
     def show_frm_fake(self):
         self.n = frm_update_attack()
-        self.n.setGeometry(QRect(100, 100, 450, 300))
+        self.n.setGeometry(QRect(100, 100, 300, 300))
         self.n.show()
 
     def emit_template(self,log):

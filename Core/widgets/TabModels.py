@@ -136,8 +136,6 @@ class PumpkinProxy(QVBoxLayout):
         if path.exists('Logs/AccessPoint/injectionPage.log'):
             with open('Logs/AccessPoint/injectionPage.log','w') as bufferlog:
                 bufferlog.write(''), bufferlog.close()
-            filelist = [ f for f in listdir('Logs/AccessPoint/.') if f.endswith('.log.offset') ]
-            for f in filelist: system('rm Logs/AccessPoint/{}'.format(f))
             self.injectionThread = ThreadPopen(['tail','-f','Logs/AccessPoint/injectionPage.log'])
             self.connect(self.injectionThread,SIGNAL('Activated ( QString ) '), self.GetloggerInjection)
             self.injectionThread.setObjectName('Pump-Proxy::Capture')
@@ -316,25 +314,29 @@ class PumpkinSettings(QVBoxLayout):
         # Area Group
         self.gridArea = QGridLayout()
         self.CB_ActiveMode = QCheckBox('::Advanced Mode:: Monitor MITM Attack')
-        self.CB_phising  = QCheckBox('Phishing')
         self.CB_Cread    = QCheckBox('Credentials')
         self.CB_monitorURL = QCheckBox('URL Monitor')
+        self.CB_bdfproxy   = QCheckBox('BDFProxy-ng')
+        self.CB_dns2proxy  = QCheckBox('Dns2Proxy')
         self.CB_ActiveMode.setChecked(self.FSettings.Settings.get_setting('dockarea','advanced',format=bool))
         self.CB_Cread.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_credencials',format=bool))
         self.CB_monitorURL.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_urlmonitor',format=bool))
-        self.CB_phising.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_phishing',format=bool))
+        self.CB_bdfproxy.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_bdfproxy',format=bool))
+        self.CB_dns2proxy.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_dns2proxy',format=bool))
 
         #connect
         self.doCheckAdvanced()
         self.CB_ActiveMode.clicked.connect(self.doCheckAdvanced)
-        self.CB_phising.clicked.connect(self.doCheckAdvanced)
         self.CB_monitorURL.clicked.connect(self.doCheckAdvanced)
         self.CB_Cread.clicked.connect(self.doCheckAdvanced)
+        self.CB_bdfproxy.clicked.connect(self.doCheckAdvanced)
+        self.CB_dns2proxy.clicked.connect(self.doCheckAdvanced)
         # group
         self.layoutArea.addRow(self.CB_ActiveMode)
         self.gridArea.addWidget(self.CB_monitorURL,0,0,)
         self.gridArea.addWidget(self.CB_Cread,0,1)
-        self.gridArea.addWidget(self.CB_phising,0,2)
+        self.gridArea.addWidget(self.CB_bdfproxy,1,0)
+        self.gridArea.addWidget(self.CB_dns2proxy,1,1)
         self.layoutArea.addRow(self.gridArea)
         self.GroupArea.setTitle('MonitorArea-Settings')
         self.GroupArea.setLayout(self.layoutArea)
@@ -391,27 +393,29 @@ class PumpkinSettings(QVBoxLayout):
     def doCheckAdvanced(self):
         if self.CB_ActiveMode.isChecked():
             self.CB_monitorURL.setEnabled(True)
-            self.CB_phising.setEnabled(True)
             self.CB_Cread.setEnabled(True)
+            self.CB_bdfproxy.setEnabled(True)
+            self.CB_dns2proxy.setEnabled(True)
         else:
             self.CB_monitorURL.setEnabled(False)
-            self.CB_phising.setEnabled(False)
             self.CB_Cread.setEnabled(False)
+            self.CB_bdfproxy.setEnabled(False)
+            self.CB_dns2proxy.setEnabled(False)
         self.FSettings.Settings.set_setting('dockarea','dock_credencials',self.CB_Cread.isChecked())
-        self.FSettings.Settings.set_setting('dockarea','dock_phishing',self.CB_phising.isChecked())
         self.FSettings.Settings.set_setting('dockarea','dock_urlmonitor',self.CB_monitorURL.isChecked())
+        self.FSettings.Settings.set_setting('dockarea','dock_bdfproxy',self.CB_bdfproxy.isChecked())
+        self.FSettings.Settings.set_setting('dockarea','dock_dns2proxy',self.CB_dns2proxy.isChecked())
         self.FSettings.Settings.set_setting('dockarea','advanced',self.CB_ActiveMode.isChecked())
         self.dockInfo[':: URLMonitor::']['active'] = self.CB_monitorURL.isChecked()
         self.dockInfo['::Credentials:: ']['active'] = self.CB_Cread.isChecked()
-        self.dockInfo['::Pumpkin-Phishing:: ']['active'] = self.CB_phising.isChecked()
+        self.dockInfo['::bdfproxy:: ']['active'] = self.CB_bdfproxy.isChecked()
+        self.dockInfo['::dns2proxy:: ']['active'] = self.CB_dns2proxy.isChecked()
         if self.CB_ActiveMode.isChecked():
             self.AreaWidgetLoader(self.dockInfo)
             self.checkDockArea.emit(self.AllDockArea)
             if hasattr(self.InitialMehtod,'form_widget'):
                 if hasattr(self.InitialMehtod.form_widget,'Apthreads'):
                     if self.InitialMehtod.form_widget.Apthreads['RougeAP'] != []:
-                        filelist = [ f for f in listdir('Logs/AccessPoint/.') if f.endswith('.log.offset') ]
-                        for f in filelist: system('rm Logs/AccessPoint/{}'.format(f))
                         for dock in self.InitialMehtod.form_widget.dockAreaList.keys():
                             self.InitialMehtod.form_widget.dockAreaList[dock].RunThread()
         else:

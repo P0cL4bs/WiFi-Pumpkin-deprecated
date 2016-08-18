@@ -108,7 +108,7 @@ class ServerThreadHTTP(QThread):
         self.httpd = None
         self.httpd = MyHTTPServer((self.Address, self.PORT), self.Handler,on_before_serve = self.httpd)
         self.Handler.log_message = self.Method_GET_LOG
-        setup_logger('phishing', './Logs/Phishing/Webclone.log')
+        setup_logger('phishing', './Logs/Phishing/requests.log')
         self.log_phishing = logging.getLogger('phishing')
         self.httpd.serve_forever()
 

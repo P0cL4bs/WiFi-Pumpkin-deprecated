@@ -1,4 +1,6 @@
 from Plugin import PluginProxy
+import logging
+from Core.Utils import setup_logger
 
 class background(PluginProxy):
     ''' this module proxy add image background on html page.'''
@@ -15,11 +17,15 @@ class background(PluginProxy):
         return background._instance
 
     def __init__(self):
-        self.LoggerInjector()
         self.url_image = None
 
-    def setInjectionCode(self, code):
+    def LoggerInjector(self,session):
+        setup_logger('injectionPage', './Logs/AccessPoint/injectionPage.log',session)
+        self.logging = logging.getLogger('injectionPage')
+
+    def setInjectionCode(self, code,session):
         self.url_image = code
+        self.LoggerInjector(session)
 
     def inject(self, data, url):
         injection_code = '''<style>
