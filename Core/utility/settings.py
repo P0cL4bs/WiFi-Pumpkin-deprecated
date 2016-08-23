@@ -82,9 +82,12 @@ class SettingsTabGeneral(QVBoxLayout):
         self.dhcp1 = QRadioButton('iscdhcpserver')
         self.dhcp2 = QRadioButton('dnsmasq')
         self.dhcp2.setDisabled(True)
-        self.theme1 = QRadioButton('theme Dark Orange')
-        self.theme2 = QRadioButton('theme Dark blue')
-
+        self.theme1 = QRadioButton('theme Default')
+        self.theme2 = QRadioButton('theme Blue Dark ')
+        self.theme3 = QRadioButton('theme Orange Dark')
+        self.theme1.setObjectName('themes/'+''.join(str(self.theme1.text()).split()))
+        self.theme2.setObjectName('themes/'+''.join(str(self.theme2.text()).split()))
+        self.theme3.setObjectName('themes/'+''.join(str(self.theme3.text()).split()))
         #grup page 1
         self.GruPag0.addButton(self.AP_0)
         self.GruPag0.addButton(self.AP_1)
@@ -96,6 +99,7 @@ class SettingsTabGeneral(QVBoxLayout):
         self.GruPag3.addButton(self.scan_airodump)
         self.GruPag4.addButton(self.theme1)
         self.GruPag4.addButton(self.theme2)
+        self.GruPag4.addButton(self.theme3)
 
         #page 1
         self.Apname.setText(self.Settings.get_setting('accesspoint','APname'))
@@ -120,10 +124,12 @@ class SettingsTabGeneral(QVBoxLayout):
             self.scan_scapy.setChecked(True)
         else:
             self.scan_airodump.setChecked(True)
-        if self.theme_selected == 'themes/theme1':
+        if self.theme_selected in self.theme1.objectName():
             self.theme1.setChecked(True)
-        else:
+        elif self.theme_selected in self.theme2.objectName():
             self.theme2.setChecked(True)
+        elif self.theme_selected in self.theme3.objectName():
+            self.theme3.setChecked(True)
         self.formGroupAP.addRow('AP Name:',self.Apname)
         self.formGroupAP.addRow('Channel:',self.channel)
         self.formGroupAP.addRow(self.AP_0)
@@ -136,6 +142,7 @@ class SettingsTabGeneral(QVBoxLayout):
         self.formGroupDHCP.addRow(self.dhcp2)
         self.formGroupThemes.addRow(self.theme1)
         self.formGroupThemes.addRow(self.theme2)
+        self.formGroupThemes.addRow(self.theme3)
 
         self.mainLayout.addRow(self.groupAP)
         self.mainLayout.addRow(self.groupDhcp)
@@ -185,9 +192,11 @@ class frm_Settings(QDialog):
         if self.pageTab1.dhcp1.isChecked():
             self.Settings.set_setting('accesspoint','dhcp_server','iscdhcpserver')
         if self.pageTab1.theme1.isChecked():
-            self.Settings.set_setting('settings','themes','themes/theme1')
+            self.Settings.set_setting('settings','themes',str(self.pageTab1.theme1.objectName()))
         elif self.pageTab1.theme2.isChecked():
-            self.Settings.set_setting('settings','themes','themes/theme2')
+            self.Settings.set_setting('settings','themes',str(self.pageTab1.theme2.objectName()))
+        elif self.pageTab1.theme3.isChecked():
+            self.Settings.set_setting('settings','themes',str(self.pageTab1.theme3.objectName()))
         if self.scan1.isChecked():
             self.Settings.set_setting('settings','Function_scan','Ping')
         elif self.scan2.isChecked():

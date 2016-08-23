@@ -130,7 +130,8 @@ class PumpkinProxy(QVBoxLayout):
             self.ProcessReadLogger()
             return self.statusInjection(True)
         self.sendError.emit('Plugins::Proxy is not enabled.'
-        '\n\nthis module need a proxy server to work'.format(self.argsLabel.text()))
+        '\n\nthis module need a proxy server(sslstrip) to work,'
+        '\nchoice the plugin options with sslstrip enabled.'.format(self.argsLabel.text()))
 
     def ProcessReadLogger(self):
         if path.exists('Logs/AccessPoint/injectionPage.log'):
