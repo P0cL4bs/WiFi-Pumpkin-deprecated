@@ -2,6 +2,7 @@ import argparse
 import logging
 import signal
 import threading
+from re import search
 from sys import stdout
 from time import asctime
 from os import path,stat,getpgid,setsid,killpg,devnull
@@ -12,12 +13,26 @@ del DebugInfo.__del__
 from Core.Utils import setup_logger,Refactor
 from subprocess import (Popen,PIPE,STDOUT)
 from PyQt4.QtCore import QThread,pyqtSignal,SIGNAL,pyqtSlot,QProcess,QObject,SLOT
+from PyQt4.QtGui import QMessageBox
 from Plugins.sergio_proxy.plugins import *
 from multiprocessing import Process,Manager
 try:
     from nmap import PortScanner
 except ImportError:
     pass
+
+class ProcessThreadScanner(threading.Thread):
+    ''' thread for run airodump-ng backgroung and get data'''
+    def __init__(self, cmd):
+        threading.Thread.__init__(self)
+        self.cmd = cmd
+    def run(self):
+        self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT)
+        for line in iter(self.process.stdout.readline, b''):
+            pass
+    def stop(self):
+        if self.process is not None:
+            self.process.terminate()
 
 class ThreadPopen(QThread):
     def __init__(self,cmd):

@@ -1,7 +1,6 @@
 from os import popen
-
 from BeautifulSoup import BeautifulSoup
-from Core.utility.threads import ProcessThread
+from Core.utility.threads import ProcessThreadScanner
 
 """
 Description:
@@ -25,10 +24,10 @@ Copyright:
 """
 
 def airdump_start(interface):
-    process = ProcessThread(['xterm',
-                '-geometry', '85x15-1+250', '-T',
-            '"Scan AP Airodump-ng"', '-e', 'airodump-ng', interface,
-        '--write', 'Settings/Dump/networkdump'])
+    process = ProcessThreadScanner(['xterm',
+    '-geometry', '85x15-1+250', '-T',
+    'scan AP Airodump-ng', '-e', 'airodump-ng', interface,
+    '--write', 'Settings/Dump/networkdump'])
     process.name = "Airodump-ng scan"
     process.start()
     process.join()

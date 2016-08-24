@@ -5,6 +5,7 @@ Version 0.8.1
 - added new sessions for Rogue AP loggers
 - added new plugin BDFProxy-ng
 - added new theme Orange and set as default
+- fixed error when launch airodump-ng scan the wireless networks #75
 
 Version 0.7.8
 -------------
