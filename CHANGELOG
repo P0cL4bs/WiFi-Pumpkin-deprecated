@@ -8,6 +8,7 @@ Version 0.8.1
 - fixed error when launch airodump-ng scan the wireless networks #75
 - fixed IndexError: list index out of range on BDFProxy get_output #77
 - added new re-design module Deauth Wireless Attack
+- added some improvements in module Probe Wireless Request #78
 
 Version 0.7.8
 -------------

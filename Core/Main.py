@@ -520,7 +520,6 @@ class WifiPumpkin(QWidget):
 
     def showProbe(self):
         self.Fprobe = GUIModules.frm_PMonitor()
-        self.Fprobe.setGeometry(QRect(100, 100, 400, 400))
         self.Fprobe.show()
 
     def formDauth(self):

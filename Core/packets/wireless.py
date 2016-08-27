@@ -3,6 +3,7 @@ from scapy.all import *
 from threading import Thread
 from PyQt4.QtCore import QThread,SIGNAL
 from netaddr import EUI
+from netaddr.core import NotRegisteredError
 
 """
 Description:
@@ -98,6 +99,7 @@ class ThreadProbeScan(QThread):
         QThread.__init__(self)
         self.interface  = interface
         self.finished   = False
+        self.captured   = []
 
     def run(self):
         print "Starting Thread:" + self.objectName()
@@ -111,28 +113,32 @@ class ThreadProbeScan(QThread):
 
     def ProbeResqest(self):
         q = Queue.Queue()
-        sniff = Thread(target =self.Startprobe, args = (q,))
-        sniff.daemon = True
-        sniff.start()
+        self.sniff = Thread(target =self.Startprobe, args = (q,))
+        self.sniff.daemon = True
+        self.sniff.start()
         while (not self.finished):
             try:
                 pkt = q.get(timeout = 1)
                 self.sniff_probe(pkt)
             except Queue.Empty:
               pass
-    def sniff_probe(self,p):
-        if (p.haslayer(Dot11ProbeReq)):
-                mac_address=(p.addr2)
-                ssid=p[Dot11Elt].info
-                ssid=ssid.decode('utf-8','ignore')
-                if ssid == '':ssid='Hidden'
-                try:
-                    devices = EUI(mac_address)
-                    devices = devices.oui.registration().org
-                except:
-                    devices = 'unknown device'
+
+    def sniff_probe(self,pkt):
+        if pkt.haslayer(Dot11ProbeReq) and '\x00' not in pkt[Dot11ProbeReq].info:
+            mac_address = pkt.addr2
+            ssid        = pkt[Dot11Elt].info
+            if len(ssid) == 0:  ssid='Hidden'
+            try:
+                devices = EUI(mac_address)
+                devices = devices.oui.registration().org
+            except NotRegisteredError:
+                devices = 'unknown device'
+            if not mac_address in self.captured:
+                self.captured.append(mac_address)
                 self.emit(SIGNAL("Activated( QString )"),mac_address + '|'+ssid +'|'+devices)
 
     def stop(self):
         print "Stop thread:" + self.objectName()
         self.finished = True
+        self.captured = []
+        self.sniff.join(0)
