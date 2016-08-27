@@ -1041,7 +1041,10 @@ class WifiPumpkin(QWidget):
         if self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
             if hasattr(self,'dockAreaList'):
                 if self.PumpSettingsTAB.dockInfo['::bdfproxy:: ']['active']:
-                    self.dockAreaList['::bdfproxy:: '].writeModeData(str(data).split(' : ')[1])
+                    try:
+                        self.dockAreaList['::bdfproxy:: '].writeModeData(str(data).split(' : ')[1])
+                    except IndexError:
+                        return None
 
     def create_sys_tray(self):
         self.sysTray = QSystemTrayIcon(self)
