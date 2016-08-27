@@ -12,7 +12,7 @@ Description:
     for wireless deauth attack.
 
 Copyright:
-    Copyright (C) 2015 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -62,17 +62,22 @@ class frm_deauth(PumpkinModule):
         self.linetarget.clear()
 
     def window_qt(self):
+        # base form add all widgets
         self.mForm = QFormLayout()
+        # base widget this make Objected responsive
+        self.widget = QWidget()
+        self.layout = QVBoxLayout(self.widget)
+
+        #status bar attack
         self.statusbar = QStatusBar()
-        system = QLabel("Deauthentication::")
+        system = QLabel('Deauthentication::')
         self.statusbar.addWidget(system)
-        self.Controlador = QLabel("")
+        self.Controlador = QLabel('')
         self.AttackStatus(False)
 
-        self.tables = QTableWidget(5,3)
-        self.tables.setFixedWidth(350)
-        self.tables.setRowCount(100)
-        self.tables.setFixedHeight(250)
+        # create table for add info devices APs
+        self.tables = QTableWidget(50,3)
+        self.tables.setMinimumHeight(200)
         self.tables.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.tables.horizontalHeader().setStretchLastSection(True)
         self.tables.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -80,7 +85,7 @@ class frm_deauth(PumpkinModule):
         self.tables.clicked.connect(self.select_target)
         self.tables.resizeColumnsToContents()
         self.tables.resizeRowsToContents()
-        self.tables.horizontalHeader().resizeSection(1,120)
+        self.tables.horizontalHeader().resizeSection(1,115)
         self.tables.horizontalHeader().resizeSection(0,60)
         self.tables.horizontalHeader().resizeSection(2,150)
         self.tables.verticalHeader().setVisible(False)
@@ -90,9 +95,12 @@ class frm_deauth(PumpkinModule):
         self.tables.setHorizontalHeaderLabels(Headers)
         self.tables.verticalHeader().setDefaultSectionSize(23)
 
-
+        # create inputs and controles
         self.linetarget = QLineEdit(self)
         self.input_client = QLineEdit(self)
+        self.checkbox_client = QCheckBox(self)
+        self.checkbox_client.setText('set a Custom client to deauth')
+        self.checkbox_client.clicked.connect(self.get_event_checkbox_client)
         self.input_client.setText("ff:ff:ff:ff:ff:ff")
         self.btn_enviar = QPushButton("Send Attack", self)
         self.btn_enviar.clicked.connect(self.attack_deauth)
@@ -106,57 +114,74 @@ class frm_deauth(PumpkinModule):
         self.btn_stop.setFixedWidth(170)
         self.btn_scan_stop.setEnabled(False)
         self.btn_stop.setEnabled(False)
-
+        self.input_client.setEnabled(False)
         #icons
         self.btn_scan_start.setIcon(QIcon("Icons/network.png"))
         self.btn_scan_stop.setIcon(QIcon('Icons/network_off.png'))
         self.btn_enviar.setIcon(QIcon("Icons/start.png"))
         self.btn_stop.setIcon(QIcon("Icons/Stop.png"))
 
-
         self.get_placa = QComboBox(self)
-
-        n = Refactor.get_interfaces()['all']
-        for i,j in enumerate(n):
-            if search("wl", j):
-                self.get_placa.addItem(n[i])
-
-        #grid options
-        self.Grid = QGridLayout()
         self.options_scan = self.configure.Settings.get_setting('settings','scanner_AP')
+        # get all wireless card avaliable
+        all = Refactor.get_interfaces()['all']
+        for count,card in enumerate(all):
+            if search("wl", card):
+                self.get_placa.addItem(all[count])
 
-        self.Grid.addWidget(self.get_placa,0,1)
-        self.Grid.addWidget(self.btn_scan_start,0,2)
-        self.Grid.addWidget(self.btn_scan_stop,0,3)
+        # group Network card select
+        self.GroupBoxNetwork = QGroupBox()
+        self.layoutGroupNW = QHBoxLayout()
+        self.GroupBoxNetwork.setLayout(self.layoutGroupNW)
+        self.GroupBoxNetwork.setTitle('Network Adapter:')
+        self.layoutGroupNW.addWidget(self.get_placa)
+        self.layoutGroupNW.addWidget(self.btn_scan_start)
+        self.layoutGroupNW.addWidget(self.btn_scan_stop)
 
-        self.Grid.addWidget(QLabel("bssid:"),1,0)
-        self.Grid.addWidget(QLabel("{0:>20}".format('Client:')),1,2)
-        self.Grid.addWidget(self.linetarget,1,1)
-        self.Grid.addWidget(self.input_client,1,3)
+        # group Settings card select
+        self.GroupBoxSettings = QGroupBox()
+        self.layoutGroupST = QVBoxLayout()
+        self.GroupBoxSettings.setLayout(self.layoutGroupST)
+        self.GroupBoxSettings.setTitle('Settings:')
+        self.layoutGroupST.addWidget(QLabel('Target:'))
+        self.layoutGroupST.addWidget(self.linetarget)
+        self.layoutGroupST.addWidget(QLabel('Options:'))
+        self.layoutGroupST.addWidget(self.checkbox_client)
+        self.layoutGroupST.addWidget(self.input_client)
 
-
-        self.form0  = QGridLayout()
-        self.form0.addWidget(self.tables,0,0)
-
+        self.form0  = QVBoxLayout()
+        self.form0.addWidget(self.tables)
+        self.form0.addWidget(self.GroupBoxNetwork)
+        self.form0.addWidget(self.GroupBoxSettings)
         self.mForm.addRow(self.btn_enviar, self.btn_stop)
         self.mForm.addRow(self.statusbar)
-        self.Main.addLayout(self.form0)
-        self.Main.addLayout(self.Grid)
-        self.Main.addLayout(self.mForm)
+
+        self.layout.addLayout(self.form0)
+        self.layout.addLayout(self.mForm)
+        self.Main.addWidget(self.widget)
         self.setLayout(self.Main)
+
+    def get_event_checkbox_client(self):
+        if self.configure.Settings.get_setting('settings','deauth') == 'packets_mdk3':
+            QMessageBox.warning(self,'mdk3 Deauth',
+            'mdk3 Deauth not have this options, you can set custom '
+            'client deauth on Modules->Settings->Advanced tab (mdk3 args option) ')
+            return self.checkbox_client.setCheckable(False)
+        if self.checkbox_client.isChecked():
+            self.input_client.setEnabled(True)
+        else:
+            self.input_client.setEnabled(False)
 
     def scan_diveces_airodump(self):
         dirpath = "Settings/Dump"
-        if not path.isdir(dirpath):
-            makedirs(dirpath)
+        if not path.isdir(dirpath): makedirs(dirpath)
         self.data = {'Bssid':[], 'Essid':[], 'Channel':[]}
         exit_air = airdump_start(self.interface)
-        self.fix = False
         if exit_air == None:
             self.cap = get_network_scan()
             if self.cap != None:
                 for i in self.cap:
-                    i = i.split("||")
+                    i = i.split('||')
                     if Refactor.check_is_mac(i[2]):
                         Headers = []
                         self.data['Channel'].append(i[0])
@@ -234,31 +259,36 @@ class frm_deauth(PumpkinModule):
         if hasattr(self,'thread_airodump'):
             if self.thread_airodump.isAlive():
                 return QMessageBox.warning(self,'scanner','you need to stop the scanner Access Point')
+        if self.linetarget.text() == '':
+            return QMessageBox.warning(self, 'Target Error', 'Please, first select Target for attack')
+        # get args for thread attack
         self.btn_stop.setEnabled(True)
         self.btn_enviar.setEnabled(False)
-        if self.linetarget.text() == '':
-            QMessageBox.information(self, 'Target Error', 'Please, first select Target for attack')
-        else:
-            self.bssid = str(self.linetarget.text())
-            self.deauth_check = self.configure.Settings.get_setting('settings','deauth')
-            self.args = str(self.configure.Settings.get_setting('settings','mdk3'))
-            self.interface = str(set_monitor_mode(self.get_placa.currentText()).setEnable())
-            if self.deauth_check == 'packets_scapy':
+        self.bssid = str(self.linetarget.text())
+        self.deauth_check = self.configure.Settings.get_setting('settings','deauth')
+        self.args = str(self.configure.Settings.get_setting('settings','mdk3'))
+
+        # set card mode monitor
+        self.interface = str(set_monitor_mode(self.get_placa.currentText()).setEnable())
+        if self.deauth_check == 'packets_scapy':
+            self.AttackStatus(True)
+            self.threadDeauth = ThreadDeauth(self.bssid,str(self.input_client.text()),self.interface)
+            threadloading['deauth'].append(self.threadDeauth)
+            self.threadDeauth.setObjectName('Deauth scapy')
+            return self.threadDeauth.start()
+
+        if self.deauth_check == 'packets_mdk3':
+            if  path.isfile(popen('which mdk3').read().split("\n")[0]):
                 self.AttackStatus(True)
-                threadDeauth = ThreadDeauth(self.bssid,str(self.input_client.text()),self.interface)
-                threadloading['deauth'].append(threadDeauth)
-                threadDeauth.setObjectName('Deauth scapy')
-                threadDeauth.start()
-            else:
-                if path.isfile(popen('which mdk3').read().split("\n")[0]):
-                    self.AttackStatus(True)
-                    t = ProcessThread(('mdk3 %s %s %s'%(self.interface,self.args,self.bssid)).split())
-                    t.name = 'Thread mdk3'
-                    threadloading['mdk3'].append(t)
-                    t.start()
-                else:
-                    QMessageBox.information(self,'Error mdk3','mkd3 not installed')
-                    set_monitor_mode(self.get_placa.currentText()).setDisable()
+                self.mdk3_arguments = {'mdk3':[self.interface]}
+                [self.mdk3_arguments['mdk3'].append(x) for x in self.args.split()]
+                self.mdk3_arguments['mdk3'].append(self.bssid)
+                self.processmdk = ProcessThread(self.mdk3_arguments)
+                self.processmdk.setObjectName('Thread::mdk3')
+                threadloading['mdk3'].append(self.processmdk)
+                return self.processmdk.start()
+            QMessageBox.information(self,'Error mdk3','mkd3 not installed')
+            set_monitor_mode(self.get_placa.currentText()).setDisable()
 
     def AttackStatus(self,bool):
         if bool:

@@ -412,8 +412,8 @@ class WifiPumpkin(QWidget):
 
         #menu module
         Menu_module = self.myQMenuBar.addMenu('&Modules')
-        btn_deauth = QAction('Deauth Attack', self)
-        btn_probe = QAction('Probe Request',self)
+        btn_deauth = QAction('Deauth W. Attack', self)
+        btn_probe = QAction('Probe W. Request',self)
         btn_mac = QAction('Mac Changer', self)
         btn_dhcpStar = QAction('DHCP S. Attack',self)
         btn_winup = QAction('Windows Update',self)

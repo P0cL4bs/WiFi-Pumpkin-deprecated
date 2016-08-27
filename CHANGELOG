@@ -7,6 +7,7 @@ Version 0.8.1
 - added new theme Orange and set as default
 - fixed error when launch airodump-ng scan the wireless networks #75
 - fixed IndexError: list index out of range on BDFProxy get_output #77
+- added new re-design module Deauth Wireless Attack
 
 Version 0.7.8
 -------------
