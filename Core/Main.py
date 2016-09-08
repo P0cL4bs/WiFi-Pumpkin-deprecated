@@ -12,6 +12,7 @@ from grp import getgrnam
 from time import asctime
 from shutil import move
 from re import search,sub
+from platform import dist
 
 from os import (
     system,path,getcwd,
@@ -694,7 +695,8 @@ class WifiPumpkin(QWidget):
         except Exception: pass
         for kill in self.SettingsAP['kill']:
             Popen(kill.split(), stdout=PIPE,shell=False,stderr=PIPE)
-        Refactor.settingsNetworkManager(self.ConfigTwin['AP_iface'],Remove=True)
+        if not self.FSettings.Settings.get_setting('accesspoint','persistNetwokManager',format=bool):
+            Refactor.settingsNetworkManager(self.ConfigTwin['AP_iface'],Remove=True)
         set_monitor_mode(self.ConfigTwin['AP_iface']).setDisable()
         self.Started(False)
         self.progress.setValue(1)
@@ -862,8 +864,7 @@ class WifiPumpkin(QWidget):
                     ' : Device or resource busy\n{}'.format(
                     str(self.selectCard.currentText()),line))
 
-        import platform
-        if platform.dist()[0] == 'Kali':
+        if dist()[0] == 'Kali':
             if str(self.interfacesLink['activated']).startswith('wl'):
                 return QMessageBox.information(self,'Error network card',
                     'You are connected with interface wireless, try again with local connection')

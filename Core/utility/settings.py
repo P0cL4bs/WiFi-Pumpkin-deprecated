@@ -71,6 +71,11 @@ class SettingsTabGeneral(QVBoxLayout):
         self.Apname =  QLineEdit()
         self.Apname.setFixedWidth(80)
         self.channel = QSpinBox()
+        self.network_manager = QCheckBox('Ignore USB Wi-Fi Adapter permanently')
+        self.network_manager.setToolTip('We will use this file to tell Network Manager to stop controlling '
+        'a particular interface.\nif you enable this options in next time you start AP the tool will not '
+        'remove the key\nfor exclude card in file of configuration.')
+        self.network_manager.setChecked(self.Settings.get_setting('accesspoint','persistNetwokManager',format=bool))
 
         self.AP_0 = QRadioButton('hostapd')
         self.AP_1 = QRadioButton('airbase-ng')
@@ -134,6 +139,7 @@ class SettingsTabGeneral(QVBoxLayout):
         self.formGroupAP.addRow('Channel:',self.channel)
         self.formGroupAP.addRow(self.AP_0)
         self.formGroupAP.addRow(self.AP_1)
+        self.formGroupAP.addRow(self.network_manager)
         self.formGroupDeauth.addRow(self.d_scapy)
         self.formGroupDeauth.addRow(self.d_mdk)
         self.formGroupScan.addRow(self.scan_scapy)
@@ -206,6 +212,7 @@ class frm_Settings(QDialog):
         self.Settings.set_setting('settings','scanner_rangeIP',str(self.txt_ranger.text()))
         self.Settings.set_setting('accesspoint','APname', str(self.pageTab1.Apname.text()))
         self.Settings.set_setting('accesspoint','channel', str(self.pageTab1.channel.value()))
+        self.Settings.set_setting('accesspoint','persistNetwokManager',self.pageTab1.network_manager.isChecked())
         self.Settings.set_setting('settings','redirect_port', str(self.redirectport.text()))
         with open('Core/config/hostapd/hostapd+.conf','w') as apconf:
             apconf.write(self.ListHostapd.toPlainText())
@@ -351,6 +358,7 @@ class frm_Settings(QDialog):
         self.txt_arguments.setText(self.Settings.get_setting('settings','mdk3'))
         self.scanIP_selected  = self.Settings.get_setting('settings','Function_scan')
         self.bdfProxy_port.setValue(int(self.bdfproxyConf.get_setting('Overall','proxyPort')))
+        self.bdfProxy_port.setEnabled(False)
         if self.scanIP_selected == 'Ping': self.scan1.setChecked(True)
         self.scan2.setEnabled(False)
         #settings tab Advanced
