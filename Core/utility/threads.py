@@ -68,9 +68,9 @@ class ThRunDhcp(QThread):
         return '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
 
     def run(self):
-        print '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
         self.process = Popen(self.args,
         stdout=PIPE,stderr=STDOUT,preexec_fn=setsid)
+        print '[New Thread {} ({})]'.format(self.process.pid,self.objectName())
         setup_logger('dhcp', './Logs/AccessPoint/dhcp.log',self.session)
         loggerDhcp = logging.getLogger('dhcp')
         loggerDhcp.info('---[ Start DHCP '+asctime()+']---')
