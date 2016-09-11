@@ -99,5 +99,5 @@ Whether you want to report a [bug](https://github.com/P0cL4bs/WiFi-Pumpkin/issue
 
 Happy MITM!
 ### Donate
-##### Via pledgie:
-<a href='https://pledgie.com/campaigns/32244'><img alt='Click here to lend your support to: WiFi-Pumpkin - Framework for Rogue Wi-Fi Access Point Attack and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/32244.png?skin_name=chrome' border='0' ></a>
+##### paypal:
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PUPJEGHLJPFQL)

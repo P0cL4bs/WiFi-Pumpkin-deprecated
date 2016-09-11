@@ -1149,6 +1149,6 @@ class WifiPumpkin(QWidget):
 
     def donate(self):
         ''' open page donation the project '''
-        url = QUrl('https://pledgie.com/campaigns/32244')
+        url = QUrl('https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PUPJEGHLJPFQL')
         if not QDesktopServices.openUrl(url):
             QMessageBox.warning(self, 'Open Url', 'Could not open url: {}'.format(url))
