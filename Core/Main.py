@@ -230,6 +230,7 @@ class WifiPumpkin(QWidget):
         session_id = Refactor.generateSessionID()
         while session_id in self.SessionsAP.keys():
             session_id = Refactor.generateSessionID()
+        self.FormPopup.Ftemplates.session = session_id
         return session_id
 
     def get_status_new_commits(self,flag):

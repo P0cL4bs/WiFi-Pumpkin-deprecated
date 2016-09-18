@@ -97,8 +97,9 @@ class ThreadHTTPServerPhishing(QThread):
 class ServerThreadHTTP(QThread):
     ''' server http for website custom module Phishing '''
     requestHTTP = pyqtSignal(object)
-    def __init__(self,Address,PORT,redirect=None,directory=None):
+    def __init__(self,Address,PORT,redirect=None,directory=None,session=str()):
         self.Address,self.PORT = Address,PORT
+        self.session = session
         self.Handler = ServerHandler
         self.Handler.redirect_Original_website = redirect
         self.Handler.redirect_Path = directory
@@ -108,7 +109,7 @@ class ServerThreadHTTP(QThread):
         self.httpd = None
         self.httpd = MyHTTPServer((self.Address, self.PORT), self.Handler,on_before_serve = self.httpd)
         self.Handler.log_message = self.Method_GET_LOG
-        setup_logger('phishing', './Logs/Phishing/requests.log')
+        setup_logger('phishing', './Logs/Phishing/requests.log',key=self.session)
         self.log_phishing = logging.getLogger('phishing')
         self.httpd.serve_forever()
 

@@ -79,7 +79,7 @@ class ThreadPhishingServer(QThread):
 
 loggers = {}
 '''http://stackoverflow.com/questions/17035077/python-logging-to-multiple-log-files-from-different-classes'''
-def setup_logger(logger_name, log_file,key, level=logging.INFO):
+def setup_logger(logger_name, log_file,key=str(), level=logging.INFO):
     global loggers
     if loggers.get(logger_name):
         return loggers.get(logger_name)

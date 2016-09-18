@@ -34,6 +34,7 @@ class frm_PhishingManager(QWidget):
         self.Main  = QVBoxLayout()
         self.owd   = getcwd()
         self.config = frm_Settings()
+        self.session = str()
         self.setWindowTitle('Phishing Manager')
         self.ThreadTemplates = {'Server':[]}
         self.setGeometry(0, 0, 630, 100)
@@ -222,7 +223,7 @@ class frm_PhishingManager(QWidget):
             if self.checkRequests(site):
                 self.ServerHTTPLoad = ServerThreadHTTP(str(self.txt_redirect.text()),
                 self.BoxPort.value(),redirect=str(self.cloneLineEdit.text()),
-                directory='Templates/Phishing/web_server/index.html')
+                directory='Templates/Phishing/web_server/index.html',session=self.session)
                 self.ThreadTemplates['Server'].append(self.ServerHTTPLoad)
                 self.ServerHTTPLoad.requestHTTP.connect(self.ResponseSignal)
                 self.btn_start_template.setEnabled(False)
@@ -244,7 +245,7 @@ class frm_PhishingManager(QWidget):
             self.CheckHookInjection(self.html,'Templates/Phishing/custom/index.html')
             self.ServerHTTPLoad = ServerThreadHTTP(str(self.txt_redirect.text()),
             self.BoxPort.value(),redirect=str(self.cloneLineEdit.text()),
-            directory='Templates/Phishing/custom/index.html')
+            directory='Templates/Phishing/custom/index.html',session=self.session)
             self.ThreadTemplates['Server'].append(self.ServerHTTPLoad)
             self.ServerHTTPLoad.requestHTTP.connect(self.ResponseSignal)
             self.btn_start_template.setEnabled(False)

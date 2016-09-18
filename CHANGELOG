@@ -11,6 +11,8 @@ Version 0.8.1
 - added some improvements in module Probe Wireless Request #78
 - added option: exclude USB Wi-Fi Adapter in NetworkManager persistently #69
 - added Documenting Code, fixed get device hostname from dhcpd
+- removed pledgie campaign and added only PayPal
+- fixed setup_logger in module PhishingManager
 
 Version 0.7.8
 -------------
