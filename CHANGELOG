@@ -13,6 +13,7 @@ Version 0.8.1
 - added Documenting Code, fixed get device hostname from dhcpd
 - removed pledgie campaign and added only PayPal
 - fixed setup_logger in module PhishingManager
+- fixed redirect all HTTP with DNSSpoof when AP is enabled
 
 Version 0.7.8
 -------------
