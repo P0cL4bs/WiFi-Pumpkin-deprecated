@@ -101,3 +101,4 @@ Happy MITM!
 ### Donate
 ##### paypal:
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PUPJEGHLJPFQL)
+Via BTC: 1HBXz6XX3LcHqUnaca5HRqq6rPUmA3pf6f

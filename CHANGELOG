@@ -14,6 +14,7 @@ Version 0.8.1
 - removed pledgie campaign and added only PayPal
 - fixed setup_logger in module PhishingManager
 - fixed redirect all HTTP with DNSSpoof when AP is enabled
+- fixed PhishingManager SetEnv path not working with dnsspoof #90
 
 Version 0.7.8
 -------------
