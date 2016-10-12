@@ -25,29 +25,79 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-class PopUpPlugins(QWidget):
+class PopUpPlugins(QVBoxLayout):
     ''' this module control all plugins to MITM attack'''
-    def __init__(self,FSettings):
-        QWidget.__init__(self)
+    sendSingal_disable = pyqtSignal(object)
+    def __init__(self,FSettings,main,parent=None):
+        super(PopUpPlugins, self).__init__(parent)
+        self.main_method = main
         self.FSettings = FSettings
         self.layout = QVBoxLayout()
         self.layoutform = QFormLayout()
-        self.layoutproxy = QFormLayout()
+        self.layoutproxy = QVBoxLayout()
         self.GroupPlugins = QGroupBox()
         self.GroupPluginsProxy = QGroupBox()
-        self.GroupPlugins.setTitle(':: Plugins ::')
-        self.GroupPluginsProxy.setTitle(':: Proxy ::')
+        self.GroupPlugins.setTitle('Plugins:')
+        self.GroupPluginsProxy.setTitle('Enable proxy server:')
+        self.GroupPluginsProxy.setCheckable(True)
+        self.GroupPluginsProxy.clicked.connect(self.get_disable_proxyserver)
         self.GroupPluginsProxy.setLayout(self.layoutproxy)
         self.GroupPlugins.setLayout(self.layoutform)
+
         self.check_netcreds     = QCheckBox('net-creds ')
-        self.check_dns2proy     = QRadioButton('sslstrip+/dns2proxy')
-        self.check_sergioProxy  = QRadioButton('sslstrip/sergio-proxy')
+        self.check_dns2proy     = QRadioButton('SSLstrip+|Dns2proxy')
+        self.check_sergioProxy  = QRadioButton('SSLstrip|Sergio-proxy')
         self.check_bdfproxy     = QRadioButton('BDFProxy-ng')
         self.check_noproxy      = QRadioButton('No Proxy')
 
         self.btnBDFSettings    = QPushButton('Config')
         self.btnBDFSettings.setIcon(QIcon('Icons/config.png'))
         self.btnBDFSettings.clicked.connect(self.ConfigOBJBDFproxy)
+
+        self.tableplugins = QTableWidget()
+        self.tableplugins.setColumnCount(3)
+        self.tableplugins.setRowCount(4)
+        self.tableplugins.resizeRowsToContents()
+        self.tableplugins.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.tableplugins.horizontalHeader().setStretchLastSection(True)
+        self.tableplugins.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tableplugins.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tableplugins.verticalHeader().setVisible(False)
+        self.tableplugins.verticalHeader().setDefaultSectionSize(23)
+        self.tableplugins.setSortingEnabled(True)
+        self.Headers = ('Plugins','Settings','Description')
+        self.tableplugins.setHorizontalHeaderLabels(self.Headers)
+        self.tableplugins.horizontalHeader().resizeSection(0,158)
+        self.tableplugins.horizontalHeader().resizeSection(1,80)
+        self.tableplugins.resizeRowsToContents()
+
+        desc_dns2proxy = QTableWidgetItem()
+        desc_sergioproxy = QTableWidgetItem()
+        desc_bdfproxy  = QTableWidgetItem()
+        desc_netcreds  = QTableWidgetItem()
+
+        # set text description plugins
+        desc_dns2proxy.setText('This tools offer a different features '
+        'for post-explotation once you change the DNS server to a Victim. coded by: LeonardoNve')
+        desc_sergioproxy.setText('Sergio Proxy is an HTTP proxy that was written '
+        'in Python for the Twisted framework. coded by: LeonardoNve')
+        desc_bdfproxy.setText('Patch Binaries via MITM: BackdoorFactory + mitmProxy, '
+        'bdfproxy-ng is a fork and review of the original BDFProxy. coded by: secretsquirrel.')
+        desc_netcreds.setText('Sniff passwords and hashes from an interface or pcap file. coded by: Dan McInerney')
+
+        self.tableplugins.setItem(0, 2, desc_dns2proxy)
+        self.tableplugins.setItem(1, 2, desc_sergioproxy)
+        self.tableplugins.setItem(2, 2, desc_bdfproxy)
+        self.tableplugins.setItem(3, 2, desc_netcreds)
+        self.tableplugins.setCellWidget(0,0,self.check_dns2proy)
+        self.tableplugins.setCellWidget(1,0,self.check_sergioProxy)
+        self.tableplugins.setCellWidget(2,0,self.check_bdfproxy)
+        self.tableplugins.setCellWidget(3,0,self.check_netcreds)
+
+        self.tableplugins.setCellWidget(0,1,QPushButton('None'))
+        self.tableplugins.setCellWidget(1,1,QPushButton('None'))
+        self.tableplugins.setCellWidget(2,1,self.btnBDFSettings)
+        self.tableplugins.setCellWidget(3,1,QPushButton('None'))
 
         self.proxyGroup = QButtonGroup()
         self.proxyGroup.addButton(self.check_dns2proy)
@@ -61,17 +111,22 @@ class PopUpPlugins(QWidget):
         self.check_bdfproxy.clicked.connect(self.checkGeneralOptions)
         self.check_noproxy.clicked.connect(self.checkGeneralOptions)
 
-        self.layoutform.addRow(self.check_netcreds)
-        self.layoutproxy.addRow(self.check_dns2proy)
-        self.layoutproxy.addRow(self.check_sergioProxy)
-        self.layoutproxy.addRow(self.check_bdfproxy,self.btnBDFSettings)
-        self.layoutproxy.addRow(self.check_noproxy)
-        self.layout.addWidget(self.GroupPlugins)
+        self.layoutproxy.addWidget(self.tableplugins)
         self.layout.addWidget(self.GroupPluginsProxy)
-        self.setLayout(self.layout)
+        self.addLayout(self.layout)
+
+    def get_disable_proxyserver(self):
+        ''' set disable or activate plugin proxy '''
+        if self.GroupPluginsProxy.isChecked():
+            self.check_noproxy.setChecked(True)
+        else:
+            self.check_noproxy.setChecked(True)
+        self.sendSingal_disable.emit(self.check_noproxy.isChecked())
+        self.checkBoxNecreds()
 
     # control checkbox plugins
     def checkGeneralOptions(self):
+        ''' settings plugins proxy options and rules iptables '''
         self.unset_Rules('dns2proxy')
         self.unset_Rules('sslstrip')
         self.unset_Rules('bdfproxy')
@@ -80,12 +135,14 @@ class PopUpPlugins(QWidget):
             self.FSettings.Settings.set_setting('plugins','dns2proxy_plugin',False)
             self.FSettings.Settings.set_setting('plugins','noproxy',False)
             self.FSettings.Settings.set_setting('plugins','bdfproxy_plugin',False)
+            self.main_method.set_proxy_statusbar('SSLstrip|Sergio-proxy')
             self.set_sslStripRule()
         elif self.check_dns2proy.isChecked():
             self.FSettings.Settings.set_setting('plugins','dns2proxy_plugin',True)
             self.FSettings.Settings.set_setting('plugins','sergioproxy_plugin',False)
             self.FSettings.Settings.set_setting('plugins','noproxy',False)
             self.FSettings.Settings.set_setting('plugins','bdfproxy_plugin',False)
+            self.main_method.set_proxy_statusbar('SSLstrip+|Dns2-proxy')
             self.set_sslStripRule()
             self.set_Dns2proxyRule()
         elif self.check_bdfproxy.isChecked():
@@ -93,6 +150,7 @@ class PopUpPlugins(QWidget):
             self.FSettings.Settings.set_setting('plugins','dns2proxy_plugin',False)
             self.FSettings.Settings.set_setting('plugins','sergioproxy_plugin',False)
             self.FSettings.Settings.set_setting('plugins','noproxy',False)
+            self.main_method.set_proxy_statusbar('BDF-proxy-ng')
             self.unset_Rules('dns2proxy')
             self.unset_Rules('sslstrip')
             self.set_BDFproxyRule()
@@ -101,11 +159,13 @@ class PopUpPlugins(QWidget):
             self.FSettings.Settings.set_setting('plugins','sergioproxy_plugin',False)
             self.FSettings.Settings.set_setting('plugins','bdfproxy_plugin',False)
             self.FSettings.Settings.set_setting('plugins','noproxy',True)
+            self.main_method.set_proxy_statusbar('',disabled=True)
             self.unset_Rules('dns2proxy')
             self.unset_Rules('sslstrip')
             self.unset_Rules('bdfproxy')
 
     def ConfigOBJBDFproxy(self):
+        ''' show BDFproxy settings page '''
         self.SettingsBDFProxy  = BDFProxy_ConfigObject()
         self.SettingsBDFProxy.show()
 
@@ -116,6 +176,7 @@ class PopUpPlugins(QWidget):
             self.FSettings.Settings.set_setting('plugins','netcreds_plugin',False)
 
     def optionsRules(self,type):
+        ''' add rules iptable by type plugins'''
         search = {
         'sslstrip': str('iptables -t nat -A PREROUTING -p tcp'+
         ' --destination-port 80 -j REDIRECT --to-port '+self.FSettings.redirectport.text()),
@@ -156,6 +217,7 @@ class PopUpPlugins(QWidget):
         self.FSettings.ListRules.addItem(item)
 
     def unset_Rules(self,type):
+        ''' remove rules from Listwidget in Settings widget'''
         items = []
         for index in xrange(self.FSettings.ListRules.count()):
             items.append(str(self.FSettings.ListRules.item(index).text()))

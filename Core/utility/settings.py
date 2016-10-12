@@ -138,7 +138,6 @@ class SettingsTabGeneral(QVBoxLayout):
         self.formGroupAP.addRow('AP Name:',self.Apname)
         self.formGroupAP.addRow('Channel:',self.channel)
         self.formGroupAP.addRow(self.AP_0)
-        self.formGroupAP.addRow(self.AP_1)
         self.formGroupAP.addRow(self.network_manager)
         self.formGroupDeauth.addRow(self.d_scapy)
         self.formGroupDeauth.addRow(self.d_mdk)

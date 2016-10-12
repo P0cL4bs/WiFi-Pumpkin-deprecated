@@ -1,3 +1,11 @@
+Version 0.8.3
+-------------
+- added new design main tool
+- added new column VendorMac in man Table
+- added set sorted in all Tablewidget
+- added new plugins options and description
+- added more options in statusbar main
+
 Version 0.8.1
 -------------
 - re-design all GUI Menu->view

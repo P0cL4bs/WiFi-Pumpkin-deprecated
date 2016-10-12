@@ -87,6 +87,7 @@ class frm_Arp_Poison(PumpkinModule):
         self.tables.horizontalHeader().resizeSection(0,135)
         self.tables.horizontalHeader().resizeSection(2,150)
         self.tables.verticalHeader().setVisible(False)
+        self.tables.setSortingEnabled(True)
         Headers = []
         for key in reversed(self.data.keys()):
             Headers.append(key)

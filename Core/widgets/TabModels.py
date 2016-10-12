@@ -34,15 +34,22 @@ class PumpkinProxy(QVBoxLayout):
     ''' settings  Transparent Proxy '''
     sendError = pyqtSignal(str)
     _PluginsToLoader = {'Plugins': None,'Content':''}
-    def __init__(self,popup,FsettingsUI=None,parent = None):
+    def __init__(self,popup,main_method,FsettingsUI=None,parent = None):
         super(PumpkinProxy, self).__init__(parent)
+        self.main_method = main_method
         self.popup      = popup
         self.urlinjected= []
         self.FSettings  = FsettingsUI
-        self.Home       = QFormLayout()
-        self.statusbar  = QStatusBar()
-        self.lname      = QLabel('Proxy::scripts::')
-        self.lstatus    = QLabel('')
+        self.mainLayout    = QVBoxLayout()
+
+        #scroll area
+        self.scrollwidget = QWidget()
+        self.scrollwidget.setLayout(self.mainLayout)
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(self.scrollwidget)
+
+        # create widgets
         self.argsLabel  = QLabel('')
         self.hBox       = QHBoxLayout()
         self.hBoxargs   = QHBoxLayout()
@@ -50,6 +57,13 @@ class PumpkinProxy(QVBoxLayout):
         self.btnEnable  = QPushButton('Enable')
         self.btncancel  = QPushButton('Cancel')
         self.btnbrownser= QPushButton('Browser')
+
+        # size buttons
+        self.btnLoader.setFixedWidth(100)
+        self.btnEnable.setFixedWidth(100)
+        self.btncancel.setFixedWidth(100)
+        self.btnbrownser.setFixedWidth(100)
+
         self.comboxBox  = QComboBox()
         self.log_inject = QListWidget()
         self.docScripts = QTextEdit()
@@ -58,10 +72,6 @@ class PumpkinProxy(QVBoxLayout):
         self.btnLoader.setIcon(QIcon('Icons/search.png'))
         self.btnEnable.setIcon(QIcon('Icons/accept.png'))
         self.btnbrownser.setIcon(QIcon("Icons/open.png"))
-        self.statusbar.addWidget(self.lname)
-        self.statusbar.addWidget(self.lstatus)
-        self.docScripts.setFixedHeight(40)
-        self.statusInjection(False)
         self.argsScripts.setEnabled(False)
         self.btnbrownser.setEnabled(False)
 
@@ -79,12 +89,14 @@ class PumpkinProxy(QVBoxLayout):
         self.SettingsLayout.addRow(self.hBox)
         self.SettingsLayout.addRow(self.hBoxargs)
         self.GroupSettings.setLayout(self.SettingsLayout)
+        #self.GroupSettings.setFixedWidth(450)
         #group logger
         self.GroupLogger  = QGroupBox()
         self.GroupLogger.setTitle('Logger Injection:')
-        self.LoggerLayout = QFormLayout()
-        self.LoggerLayout.addRow(self.log_inject)
+        self.LoggerLayout = QVBoxLayout()
+        self.LoggerLayout.addWidget(self.log_inject)
         self.GroupLogger.setLayout(self.LoggerLayout)
+        #self.GroupLogger.setFixedWidth(450)
 
         #group descriptions
         self.GroupDoc  = QGroupBox()
@@ -92,6 +104,7 @@ class PumpkinProxy(QVBoxLayout):
         self.DocLayout = QFormLayout()
         self.DocLayout.addRow(self.docScripts)
         self.GroupDoc.setLayout(self.DocLayout)
+        self.GroupDoc.setFixedHeight(100)
 
         #connections
         self.SearchProxyPlugins()
@@ -102,11 +115,12 @@ class PumpkinProxy(QVBoxLayout):
         self.btncancel.clicked.connect(self.unsetPluginsConf)
         self.btnbrownser.clicked.connect(self.get_filenameToInjection)
         # add widgets
-        self.Home.addRow(self.GroupSettings)
-        self.Home.addRow(self.GroupDoc)
-        self.Home.addRow(self.GroupLogger)
-        self.Home.addRow(self.statusbar)
-        self.addLayout(self.Home)
+        self.mainLayout.addWidget(self.GroupSettings)
+        self.mainLayout.addWidget(self.GroupDoc)
+        self.mainLayout.addWidget(self.GroupLogger)
+        self.layout = QHBoxLayout()
+        self.layout.addWidget(self.scroll)
+        self.addLayout(self.layout)
 
     def get_filenameToInjection(self):
         filename = QFileDialog.getOpenFileName(None,
@@ -128,7 +142,7 @@ class PumpkinProxy(QVBoxLayout):
                 self._PluginsToLoader['Plugins'] = item
             self.btnEnable.setEnabled(False)
             self.ProcessReadLogger()
-            return self.statusInjection(True)
+            return self.main_method.set_proxy_scripts(True)
         self.sendError.emit('Plugins::Proxy is not enabled.'
         '\n\nthis module need a proxy server(sslstrip) to work,'
         '\nchoice the plugin options with sslstrip enabled.'.format(self.argsLabel.text()))
@@ -152,14 +166,6 @@ class PumpkinProxy(QVBoxLayout):
             self.urlinjected.append(data)
         self.log_inject.scrollToBottom()
 
-    def statusInjection(self,server):
-        if server:
-            self.lstatus.setText('[ ON ]')
-            self.lstatus.setStyleSheet('QLabel {  color : green; }')
-        else:
-            self.lstatus.setText('[ OFF ]')
-            self.lstatus.setStyleSheet('QLabel {  color : red; }')
-
     def readDocScripts(self,item):
         try:
             self.docScripts.setText(self.plugins[str(item)].__doc__)
@@ -181,7 +187,7 @@ class PumpkinProxy(QVBoxLayout):
         if hasattr(self,'injectionThread'): self.injectionThread.stop()
         self._PluginsToLoader = {'Plugins': None,'args':''}
         self.btnEnable.setEnabled(True)
-        self.statusInjection(False)
+        self.main_method.set_proxy_scripts(False)
         self.argsScripts.clear()
         self.log_inject.clear()
         self.urlinjected = []
@@ -195,29 +201,30 @@ class PumpkinProxy(QVBoxLayout):
         self.comboxBox.addItems(self.plugins.keys())
 
 
-
-
 class PumpkinMonitor(QVBoxLayout):
     ''' Monitor Access Point cleints connections'''
     def __init__(self,FsettingsUI=None ,parent = None):
         super(PumpkinMonitor, self).__init__(parent)
         self.FSettings      = FsettingsUI
-        self.Home           = QFormLayout()
+        self.Home   = QVBoxLayout()
+        self.widget = QWidget()
+        self.layout = QVBoxLayout(self.widget)
+
         self.GroupMonitor   = QGroupBox()
         self.MonitorTreeView= QTreeView()
         self.MonitorTreeView.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.MonitorTreeView.setFixedHeight(330)
         self.model = QStandardItemModel()
         self.model.setHorizontalHeaderLabels(['Devices','Informations'])
         self.MonitorTreeView.setModel(self.model)
         self.MonitorTreeView.setUniformRowHeights(True)
         self.MonitorTreeView.setColumnWidth(0,130)
 
-        self.GroupMonitor.setTitle('Pump-Monitor::')
-        self.MonitorLayout = QFormLayout()
-        self.MonitorLayout.addRow(self.MonitorTreeView)
+        self.GroupMonitor.setTitle('Station Monitor AP:')
+        self.MonitorLayout = QVBoxLayout()
+        self.MonitorLayout.addWidget(self.MonitorTreeView)
         self.GroupMonitor.setLayout(self.MonitorLayout)
-        self.Home.addRow(self.GroupMonitor)
+        self.layout.addWidget(self.GroupMonitor)
+        self.Home.addWidget(self.widget)
         self.addLayout(self.Home)
 
     def addRequests(self,macddress,user,status):
@@ -251,15 +258,13 @@ class PumpkinMonitor(QVBoxLayout):
         self.MonitorTreeView.rootIndex(), True)
 
 
-
-
-
 class PumpkinSettings(QVBoxLayout):
     ''' settings DHCP options'''
     sendMensage = pyqtSignal(str)
     checkDockArea = pyqtSignal(dict)
-    def __init__(self, parent = None,dockinfo=None,InitialMehtod=None,FsettingsUI=None):
+    def __init__(self, parent=None,settingsAP=None,dockinfo=None,InitialMehtod=None,FsettingsUI=None):
         super(PumpkinSettings, self).__init__(parent)
+        self.SettingsAp      = settingsAP
         self.InitialMehtod   = InitialMehtod
         self.dockInfo      = dockinfo
         self.SettingsDHCP  = {}
@@ -289,6 +294,7 @@ class PumpkinSettings(QVBoxLayout):
             if 'Class-{}-Address'.format(self.FSettings.Settings.get_setting('dhcp','classtype')) in types:
                 self.classtypes.remove(types),self.classtypes.insert(0,types)
         self.dhcpClassIP.addItems(self.classtypes)
+
         self.leaseTime_def = QLineEdit(self.FSettings.Settings.get_setting('dhcp','leasetimeDef'))
         self.leaseTime_Max = QLineEdit(self.FSettings.Settings.get_setting('dhcp','leasetimeMax'))
         self.netmask       = QLineEdit(self.FSettings.Settings.get_setting('dhcp','netmask'))
@@ -307,6 +313,7 @@ class PumpkinSettings(QVBoxLayout):
         self.layoutDHCP.addRow('netmask',self.netmask)
         self.layoutDHCP.addRow('broadcast-address',self.broadcast)
         self.layoutDHCP.addRow('range-dhcp',self.range_dhcp)
+        self.GroupDHCP.setFixedWidth(350)
         # layout add
         self.layoutbuttons.addWidget(self.btnSave)
         self.layoutbuttons.addWidget(self.btnDefault)
@@ -315,8 +322,8 @@ class PumpkinSettings(QVBoxLayout):
         # Area Group
         self.gridArea = QGridLayout()
         self.CB_ActiveMode = QCheckBox('::Advanced Mode:: Monitor MITM Attack')
-        self.CB_Cread    = QCheckBox('Credentials')
-        self.CB_monitorURL = QCheckBox('URL Monitor')
+        self.CB_Cread    = QCheckBox('HTTP-Authentication')
+        self.CB_monitorURL = QCheckBox('HTTP-Requests')
         self.CB_bdfproxy   = QCheckBox('BDFProxy-ng')
         self.CB_dns2proxy  = QCheckBox('Dns2Proxy')
         self.CB_ActiveMode.setChecked(self.FSettings.Settings.get_setting('dockarea','advanced',format=bool))
@@ -345,6 +352,7 @@ class PumpkinSettings(QVBoxLayout):
         # connects
         self.btnDefault.clicked.connect(self.setdefaultSettings)
         self.btnSave.clicked.connect(self.savesettingsDHCP)
+        self.mainLayout.addRow(self.SettingsAp)
         self.mainLayout.addRow(self.GroupArea)
         self.mainLayout.addRow(self.GroupDHCP)
         self.layout = QHBoxLayout()
@@ -377,11 +385,11 @@ class PumpkinSettings(QVBoxLayout):
                     self.dock.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
                     self.dock.setAllowedAreas(Qt.AllDockWidgetAreas)
                     self.dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-                    self.InitialMehtod.addDockWidget(Qt.RightDockWidgetArea, self.dock)
+                    self.InitialMehtod.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
                     self.dockList.insert(0,self.dock)
             if len(self.dockList) > 1:
                 for index in range(1, len(self.dockList) - 1):
-                    if self.dockList[index].objectName() != ':: URLMonitor::':
+                    if self.dockList[index].objectName() != 'HTTP-Requests':
                         self.InitialMehtod.tabifyDockWidget(self.dockList[index],
                             self.dockList[index + 1])
             try:
@@ -407,10 +415,10 @@ class PumpkinSettings(QVBoxLayout):
         self.FSettings.Settings.set_setting('dockarea','dock_bdfproxy',self.CB_bdfproxy.isChecked())
         self.FSettings.Settings.set_setting('dockarea','dock_dns2proxy',self.CB_dns2proxy.isChecked())
         self.FSettings.Settings.set_setting('dockarea','advanced',self.CB_ActiveMode.isChecked())
-        self.dockInfo[':: URLMonitor::']['active'] = self.CB_monitorURL.isChecked()
-        self.dockInfo['::Credentials:: ']['active'] = self.CB_Cread.isChecked()
-        self.dockInfo['::bdfproxy:: ']['active'] = self.CB_bdfproxy.isChecked()
-        self.dockInfo['::dns2proxy:: ']['active'] = self.CB_dns2proxy.isChecked()
+        self.dockInfo['HTTP-Requests']['active'] = self.CB_monitorURL.isChecked()
+        self.dockInfo['HTTP-Authentication']['active'] = self.CB_Cread.isChecked()
+        self.dockInfo['::bdfproxy::']['active'] = self.CB_bdfproxy.isChecked()
+        self.dockInfo['::dns2proxy::']['active'] = self.CB_dns2proxy.isChecked()
         if self.CB_ActiveMode.isChecked():
             self.AreaWidgetLoader(self.dockInfo)
             self.checkDockArea.emit(self.AllDockArea)
@@ -422,8 +430,6 @@ class PumpkinSettings(QVBoxLayout):
         else:
             if hasattr(self,'dockList'):
                 for dock in self.dockList: dock.close()
-            self.InitialMehtod.setGeometry(0, 0, 370, 520)
-            self.InitialMehtod.center()
 
 
     def setdefaultSettings(self):

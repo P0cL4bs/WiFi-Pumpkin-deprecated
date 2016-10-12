@@ -76,7 +76,8 @@ class frm_deauth(PumpkinModule):
         self.AttackStatus(False)
 
         # create table for add info devices APs
-        self.tables = QTableWidget(50,3)
+        self.tables = QTableWidget(5,3)
+        self.tables.setRowCount(50)
         self.tables.setMinimumHeight(200)
         self.tables.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.tables.horizontalHeader().setStretchLastSection(True)
@@ -86,9 +87,10 @@ class frm_deauth(PumpkinModule):
         self.tables.resizeColumnsToContents()
         self.tables.resizeRowsToContents()
         self.tables.horizontalHeader().resizeSection(1,115)
-        self.tables.horizontalHeader().resizeSection(0,60)
+        self.tables.horizontalHeader().resizeSection(0,80)
         self.tables.horizontalHeader().resizeSection(2,150)
         self.tables.verticalHeader().setVisible(False)
+        self.tables.setSortingEnabled(True)
         Headers = []
         for n, key in enumerate(self.data.keys()):
             Headers.append(key)

@@ -83,6 +83,7 @@ class frm_DnsSpoof(PumpkinModule):
         self.tables.horizontalHeader().resizeSection(0,100)
         self.tables.horizontalHeader().resizeSection(2,100)
         self.tables.verticalHeader().setVisible(False)
+        self.tables.setSortingEnabled(True)
         Headers = []
         for key in reversed(self.data.keys()):
             Headers.append(key)

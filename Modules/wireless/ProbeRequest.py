@@ -59,6 +59,7 @@ class frm_PMonitor(PumpkinModule):
         self.tables.horizontalHeader().resizeSection(1,110)
         self.tables.horizontalHeader().resizeSection(2,130)
         self.tables.verticalHeader().setVisible(False)
+        self.tables.setSortingEnabled(True)
         Headers = []
         for key in reversed(self.data.keys()):
             Headers.append(key)
