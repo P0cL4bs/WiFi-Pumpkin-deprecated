@@ -338,7 +338,7 @@ class frm_Settings(QDialog):
         self.listItemclicked)
         for ech in self.Settings.get_all_childname('iptables'):
             item = QListWidgetItem()
-            item.setText(self.Settings.get_setting('iptables',ech))
+            item.setText(str(self.Settings.get_setting('iptables',ech,format=str)))
             item.setSizeHint(QSize(30,30))
             self.ListRules.addItem(item)
 

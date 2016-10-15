@@ -1002,6 +1002,7 @@ class WifiPumpkin(QWidget):
                 'dhcp-option=6, 10.0.0.1\n',
             ]
         }
+        print('[*] enable forwarding in iptables...')
         Refactor.set_ip_forward(1)
         for i in self.SettingsAP['kill']: Popen(i.split(), stdout=PIPE,shell=False,stderr=PIPE)
         for i in self.SettingsAP['interface']: Popen(i.split(), stdout=PIPE,shell=False,stderr=PIPE)
@@ -1202,12 +1203,13 @@ class WifiPumpkin(QWidget):
         # get all rules in Settings->iptables
         for index in xrange(self.FSettings.ListRules.count()):
            iptables.append(str(self.FSettings.ListRules.item(index).text()))
-        for rules in iptables:
-            if search('--append FORWARD --in-interface',
-            rules):popen(rules.replace('$$',self.ConfigTwin['AP_iface']))
-            elif search('--append POSTROUTING --out-interface',rules):
-                popen(rules.replace('$$',str(Refactor.get_interfaces()['activated'])))
-            else:popen(rules)
+        for rulesetfilter in iptables:
+            if '$inet' in rulesetfilter:
+                rulesetfilter = rulesetfilter.replace('$inet',str(Refactor.get_interfaces()['activated']))
+            if '$wlan' in rulesetfilter:
+                rulesetfilter = rulesetfilter.replace('$wlan',self.ConfigTwin['AP_iface'])
+            popen(rulesetfilter)
+        print('[*] Sharing Internet Connections with NAT...')
 
         # start all Thread in sessions
         self.progress.change_color('#FFA500')

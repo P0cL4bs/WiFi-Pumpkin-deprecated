@@ -5,6 +5,7 @@ Version 0.8.3
 - added set sorted in all Tablewidget
 - added new plugins options and description
 - added more options in statusbar main
+- fixed allow traffic to/from wlan (iptables)
 
 Version 0.8.1
 -------------
