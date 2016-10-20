@@ -1,5 +1,6 @@
 import time
-from os import path
+import fnmatch
+from os import path,walk
 from subprocess import check_output,CalledProcessError
 from Core.loaders.master.github import GithubUpdate,UrllibDownload
 from Core.loaders.Stealth.PackagesUI import *
@@ -35,8 +36,8 @@ class frm_githubUpdate(PumpkinModule):
         self.version = version
         self.UrlDownloadCommits = \
         'https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/Core/config/commits/Lcommits.cfg'
-        self.PathUrlRcommits = 'Core/config/commits/Rcommits.cfg'
-        self.PathUrlLcommits = 'Core/config/commits/Lcommits.cfg'
+        self.PathUrlLcommits = self.get_file_cfg_Update('Core')
+        self.PathUrlRcommits = self.PathUrlLcommits.replace('L','R')
         self.center()
         self.GUI()
 
@@ -88,7 +89,18 @@ class frm_githubUpdate(PumpkinModule):
         if hasattr(self,'git'):
             self.git.UpdateRepository()
 
+    def get_file_cfg_Update(self,base_path):
+        ''' find file in directory cfg for check update '''
+        matches = []
+        if not path.exists(base_path):
+            base_path = base_path.lower()
+        for root, dirnames, filenames in walk(base_path):
+            for filename in fnmatch.filter(filenames, '*.cfg'):
+                matches.append(path.join(root, filename))
+        return matches[0]
+
     def checkUpdate(self):
+        ''' chec if github is installed and download config'''
         try:
             if not path.isfile(check_output(['which','git']).rstrip()):
                 return QMessageBox.warning(self,'git','git is not installed')
@@ -102,6 +114,7 @@ class frm_githubUpdate(PumpkinModule):
         self.downloaderUrl.start()
 
     def Get_ContentUrl(self,data):
+        ''' get output thread download file '''
         if data == 'URLError':
             self.btnCheck.setEnabled(True)
             return QMessageBox.warning(self,'Update Warning','Checking internet connection failed.')
@@ -112,6 +125,7 @@ class frm_githubUpdate(PumpkinModule):
 
 
     def RcheckCommits(self,commits):
+        ''' check commits,updates and new version from github'''
         if 'no changes into' in commits:
             item = QListWidgetItem()
             item.setText(commits)

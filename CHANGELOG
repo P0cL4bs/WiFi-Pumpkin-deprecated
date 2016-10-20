@@ -6,6 +6,7 @@ Version 0.8.3
 - added new plugins options and description
 - added more options in statusbar main
 - fixed allow traffic to/from wlan (iptables)
+- added find file in directory cfg for check update
 
 Version 0.8.1
 -------------

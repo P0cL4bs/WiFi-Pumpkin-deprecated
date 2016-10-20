@@ -46,9 +46,12 @@ class UrllibDownload(QThread):
     def run(self):
         try:
             self.response = urllib2.urlopen(self.url).read()
-            self.data_downloaded.emit(self.response)
         except urllib2.URLError:
-            self.data_downloaded.emit('URLError')
+            try:
+                self.response = urllib2.urlopen(self.url.replace('Core','core')).read()
+            except urllib2.URLError:
+                return self.data_downloaded.emit('URLError')
+        return self.data_downloaded.emit(self.response)
 
 class GithubUpdate(QThread):
     ''' thread github update from file .cfg'''
