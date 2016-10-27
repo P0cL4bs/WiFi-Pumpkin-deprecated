@@ -1067,23 +1067,13 @@ class WifiPumpkin(QWidget):
                 'it works, but not share internet connection in some case.\n'
                 'for fix this, You need change on tab (Pumpkin-settings -> Class Ranges)'
                 'now you have choose the Class range different of your network.')
-        self.btn_start_attack.setDisabled(True)
-        print('\n[*] Loading debugging mode')
 
+        print('\n[*] Loading debugging mode')
         # create session ID to logging process
         self.currentSessionID = self.sessionGenerate()
         self.SessionsAP.update({self.currentSessionID : {'started': None,'stoped': None}})
         self.SessionsAP[self.currentSessionID]['started'] = asctime()
         print('[*] Current Session::ID [{}]'.format(self.currentSessionID))
-        self.btn_cancelar.setEnabled(True)
-
-        # disable options when started AP
-        self.EditApName.setEnabled(False)
-        self.EditGateway.setEnabled(False)
-        self.selectCard.setEnabled(False)
-        self.EditChannel.setEnabled(False)
-        self.PumpSettingsTAB.GroupDHCP.setEnabled(False)
-        self.PopUpPlugins.tableplugins.setEnabled(False)
 
         # check if using ethernet or wireless connection
         self.APactived = self.FSettings.Settings.get_setting('accesspoint','using')
@@ -1098,8 +1088,9 @@ class WifiPumpkin(QWidget):
                 except Exception:
                     try:
                         check_output(['nmcli','nm','wifi',"off"]) # new version
-                    except Exception as e:
-                        return QMessageBox.warning(self,'Error nmcli',e)
+                    except Exception,e:
+                        print '[!] ' + e
+                        return QMessageBox.warning(self,'Error nmcli',str(e))
                 finally:
                     call(['rfkill', 'unblock' ,'wifi'])
             elif str(self.interfacesLink['activated']).startswith('wl'):
@@ -1135,6 +1126,16 @@ class WifiPumpkin(QWidget):
             self.Thread_hostapd.setObjectName('hostapd')
             self.Thread_hostapd.statusAP_connected.connect(self.GetHostapdStatus)
             self.Apthreads['RougeAP'].append(self.Thread_hostapd)
+
+        # disable options when started AP
+        self.btn_start_attack.setDisabled(True)
+        self.EditApName.setEnabled(False)
+        self.EditGateway.setEnabled(False)
+        self.selectCard.setEnabled(False)
+        self.EditChannel.setEnabled(False)
+        self.PumpSettingsTAB.GroupDHCP.setEnabled(False)
+        self.PopUpPlugins.tableplugins.setEnabled(False)
+        self.btn_cancelar.setEnabled(True)
 
         # create thread dhcpd and connect fuction GetDHCPRequests
         print('[*] Configuring dhcpd...')

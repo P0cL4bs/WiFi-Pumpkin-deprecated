@@ -9,6 +9,7 @@ Version 0.8.3
 - added find file in directory cfg for check update
 - changed the all directory structure characters to lowercase
 - ffixed No such file or directory [logs] #102
+- fixed Error nmcli exceptions.OSError #104
 
 Version 0.8.1
 -------------
