@@ -10,6 +10,7 @@ Version 0.8.3
 - changed the all directory structure characters to lowercase
 - ffixed No such file or directory [logs] #102
 - fixed Error nmcli exceptions.OSError #104
+- added error messages more explained
 
 Version 0.8.1
 -------------

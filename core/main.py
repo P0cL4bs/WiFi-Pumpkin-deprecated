@@ -1049,23 +1049,28 @@ class WifiPumpkin(QWidget):
             iwconfig = Popen(['iwconfig'], stdout=PIPE,shell=False,stderr=PIPE)
             for line in iwconfig.stdout.readlines():
                 if str(self.selectCard.currentText()) in line:
-                    return QMessageBox.warning(self,'Wireless Interface',
-                    'An connection with {} has been detected '
-                    ' : Device or resource busy\n{}'.format(
+                    return QMessageBox.warning(self,'Wireless interface is busy',
+                    'Connection has been detected, this {} is joined the correct Wi-Fi network'
+                    ' : Device or resource busy\n{}\nYou may need to another Wi-Fi USB Adapter'
+                    ' for create AP or try use with local connetion(Ethernet).'.format(
                     str(self.selectCard.currentText()),line))
 
         # check if kali linux is using wireless interface for share internet
-        if dist()[0] == 'Kali':
-            if str(self.interfacesLink['activated']).startswith('wl'):
-                return QMessageBox.information(self,'Error network card',
-                    'You are connected with interface wireless, try again with local connection')
+        if str(self.interfacesLink['activated']).startswith('wl') and dist()[0] == 'Kali':
+            return QMessageBox.information(self,'Network Information',
+            "The Kali Linux don't have support to use with 2 wireless"
+            "(1 for connected internet/2 for WiFi-Pumpkin AP)."
+            " because does not exclude correctly "
+            "adapter in '/etc/NetworkManager/NetworkManager.conf'.\n\n"
+            "( if you have any solution for this send me feedback ).")
+
         # check if range ip class is same
         dh, gateway = self.PumpSettingsTAB.getPumpkinSettings()['router'],str(self.EditGateway.text())
         if dh[:len(dh)-len(dh.split('.').pop())] == gateway[:len(gateway)-len(gateway.split('.').pop())]:
             return QMessageBox.warning(self,'DHCP Server settings',
                 'The DHCP server check if range ip class is same.'
                 'it works, but not share internet connection in some case.\n'
-                'for fix this, You need change on tab (Pumpkin-settings -> Class Ranges)'
+                'for fix this, You need change on tab (settings -> Class Ranges)'
                 'now you have choose the Class range different of your network.')
 
         print('\n[*] Loading debugging mode')
