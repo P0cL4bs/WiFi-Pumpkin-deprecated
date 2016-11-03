@@ -33,6 +33,7 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 * ARP Poison 
 * DNS Spoof 
 * Patch Binaries via MITM
+* Karma Attacks (support hostapd-mana)
 
 ### Plugins
 | Plugin | Description | 
@@ -45,13 +46,13 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 
 
 ### Transparent Proxy
- Transparent proxies that you can use to intercept and manipulate HTTP/HTTPS traffic modifying requests and responses, that allow to inject javascripts into the targets visited.  You can easily implement a module to inject data into pages creating a python file in directory "Proxy" automatically will be listed on PumpProxy tab.
+ Transparent proxies that you can use to intercept and manipulate HTTP/HTTPS traffic modifying requests and responses, that allow to inject javascripts into the targets visited.  You can easily implement a module to inject data into pages creating a python file in directory "proxy" automatically will be listed on Injector-Proxy tab.
 ### Plugins Example
  The following is a sample module that injects some contents into the <head> tag to set blur filter into body html page:
  ``` python
 import logging
 from Plugin import PluginProxy
-from Core.Utils import setup_logger
+from core.Utils import setup_logger
 
 class blurpage(PluginProxy):
     ''' this module proxy set blur into body page html response'''
@@ -70,7 +71,7 @@ class blurpage(PluginProxy):
         self.injection_code = []
 
     def LoggerInjector(self,session):
-        setup_logger('injectionPage', './Logs/AccessPoint/injectionPage.log',session)
+        setup_logger('injectionPage', './logs/AccessPoint/injectionPage.log',session)
         self.logging = logging.getLogger('injectionPage')
 
     def setInjectionCode(self, code,session):
@@ -97,9 +98,10 @@ class blurpage(PluginProxy):
 ### Contact Us
 Whether you want to report a [bug](https://github.com/P0cL4bs/WiFi-Pumpkin/issues/new), send a patch or give some suggestions on this project, drop us or open [pull requests](https://github.com/P0cL4bs/WiFi-Pumpkin/pulls) 
 
-Happy MITM!
 ### Donate
 ##### paypal:
 [![donate](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PUPJEGHLJPFQL)
 
 Via BTC: 1HBXz6XX3LcHqUnaca5HRqq6rPUmA3pf6f
+
+Happy MITM!

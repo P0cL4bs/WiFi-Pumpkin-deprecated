@@ -1,3 +1,4 @@
+from os import path,popen
 from re import search
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -77,9 +78,12 @@ class SettingsTabGeneral(QVBoxLayout):
         'remove the key\nfor exclude card in file of configuration.')
         self.network_manager.setChecked(self.Settings.get_setting('accesspoint','persistNetwokManager',format=bool))
 
-        self.AP_0 = QRadioButton('hostapd')
-        self.AP_1 = QRadioButton('airbase-ng')
-        self.AP_1.setEnabled(False)
+        #page 1 widgets
+        self.AP_0 = QRadioButton('Hostapd')
+        self.AP_1 = QRadioButton('Hostapd C. Binary (support hostapd-mana)')
+        self.AP_0.setObjectName('hostapd_normal')
+        self.AP_1.setObjectName('hostapd_edit')
+        self.edit_hostapd_path = QLineEdit('')
         self.d_scapy = QRadioButton('Scapy Deauth')
         self.d_mdk = QRadioButton('mdk3 Deauth')
         self.scan_scapy = QRadioButton('Scan from scapy')
@@ -106,17 +110,25 @@ class SettingsTabGeneral(QVBoxLayout):
         self.GruPag4.addButton(self.theme2)
         self.GruPag4.addButton(self.theme3)
 
-        #page 1
+        #page 1 config widgets
+        self.GruPag0.buttonClicked.connect(self.get_options_hostapd)
         self.Apname.setText(self.Settings.get_setting('accesspoint','APname'))
         self.channel.setValue(int(self.Settings.get_setting('accesspoint','channel')))
-        self.AP_check = self.Settings.get_setting('accesspoint','using')
         self.deauth_check = self.Settings.get_setting('settings','deauth')
         self.scan_AP_check = self.Settings.get_setting('settings','scanner_AP')
         self.dhcp_check = self.Settings.get_setting('accesspoint', 'dhcp_server')
         self.theme_selected = self.Settings.get_setting('settings','themes')
 
+        check_path_hostapd = self.Settings.get_setting('accesspoint','hostapd_path')
+        if len(check_path_hostapd) > 2: self.edit_hostapd_path.setText(check_path_hostapd)
+        check_hostapd_custom = self.Settings.get_setting('accesspoint','hostapd_custom',format=bool)
+        if check_hostapd_custom:
+            self.AP_1.setChecked(True)
+        else:
+            self.edit_hostapd_path.setEnabled(False)
+            self.AP_0.setChecked(True)
+
         # setting page 1
-        if self.AP_check == 'hostapd': self.AP_0.setChecked(True)
         if self.deauth_check == 'packets_mdk3':
             self.d_mdk.setChecked(True)
         else:
@@ -138,6 +150,8 @@ class SettingsTabGeneral(QVBoxLayout):
         self.formGroupAP.addRow('AP Name:',self.Apname)
         self.formGroupAP.addRow('Channel:',self.channel)
         self.formGroupAP.addRow(self.AP_0)
+        self.formGroupAP.addRow(self.AP_1)
+        self.formGroupAP.addRow('Location:',self.edit_hostapd_path)
         self.formGroupAP.addRow(self.network_manager)
         self.formGroupDeauth.addRow(self.d_scapy)
         self.formGroupDeauth.addRow(self.d_mdk)
@@ -159,6 +173,16 @@ class SettingsTabGeneral(QVBoxLayout):
         self.layout.addWidget(self.scroll)
         self.addLayout(self.layout)
 
+    def get_options_hostapd(self,option):
+        '''check if Qradiobox is clicked '''
+        if option.objectName() ==  'hostapd_edit':
+            return self.edit_hostapd_path.setEnabled(True)
+        if option.objectName() == 'hostapd_normal':
+            hostapd = popen('which hostapd').read().split('\n')[0]
+            if path.isfile(hostapd):
+                self.edit_hostapd_path.setText(hostapd)
+            self.edit_hostapd_path.setEnabled(False)
+
 
 class frm_Settings(QDialog):
     def __init__(self, parent = None):
@@ -172,14 +196,17 @@ class frm_Settings(QDialog):
         self.Qui()
 
     def loadtheme(self,theme):
+        ''' load theme widgets '''
         sshFile=("core/%s.qss"%(theme))
         with open(sshFile,"r") as fh:
             self.setStyleSheet(fh.read())
 
     def XmlThemeSelected(self):
+        ''' get theme selected path'''
         return self.Settings.get_setting('settings','themes')
 
     def center(self):
+        ''' set center widgets '''
         frameGm = self.frameGeometry()
         centerPoint = QDesktopWidget().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
@@ -206,6 +233,10 @@ class frm_Settings(QDialog):
             self.Settings.set_setting('settings','Function_scan','Ping')
         elif self.scan2.isChecked():
             self.Settings.set_setting('settings','Function_scan','Nmap')
+        if self.pageTab1.AP_0.isChecked():
+            self.Settings.set_setting('accesspoint','hostapd_custom',False)
+        elif self.pageTab1.AP_1.isChecked():
+            self.Settings.set_setting('accesspoint','hostapd_custom',True)
 
         self.Settings.set_setting('settings','mdk3',str(self.txt_arguments.text()))
         self.Settings.set_setting('settings','scanner_rangeIP',str(self.txt_ranger.text()))
@@ -213,12 +244,16 @@ class frm_Settings(QDialog):
         self.Settings.set_setting('accesspoint','channel', str(self.pageTab1.channel.value()))
         self.Settings.set_setting('accesspoint','persistNetwokManager',self.pageTab1.network_manager.isChecked())
         self.Settings.set_setting('settings','redirect_port', str(self.redirectport.text()))
+        if not path.isfile(self.pageTab1.edit_hostapd_path.text()):
+            return QMessageBox.warning(self,'Path Hostapd Error','hostapd binary path is not found')
+        self.Settings.set_setting('accesspoint','hostapd_path',self.pageTab1.edit_hostapd_path.text())
         with open('core/config/hostapd/hostapd+.conf','w') as apconf:
             apconf.write(self.ListHostapd.toPlainText())
         self.close()
 
 
     def listItemclicked(self,pos):
+        ''' add,remove and edit rules iptables from WIFi-Pumpkin'''
         item = self.ListRules.selectedItems()
         self.listMenu= QMenu()
         menu = QMenu()
@@ -271,19 +306,6 @@ class frm_Settings(QDialog):
         elif action == clearitem:
             self.ListRules.clear()
 
-    def redirectAP(self):
-        item = QListWidgetItem()
-        if self.check_redirect.isChecked():
-            item.setText('iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 10.0.0.1:80')
-            item.setSizeHint(QSize(30,30))
-            self.ListRules.addItem(item)
-            return
-        rules = []
-        for index in xrange(self.ListRules.count()):
-            rules.append(str(self.ListRules.item(index).text()))
-        for i,j in enumerate(rules):
-            if search('--to-destination 10.0.0.1:80',j):
-                self.ListRules.takeItem(i)
     def Qui(self):
         self.Main = QVBoxLayout()
         self.formGroupAd  = QFormLayout()

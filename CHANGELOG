@@ -11,6 +11,7 @@ Version 0.8.3
 - ffixed No such file or directory [logs] #102
 - fixed Error nmcli exceptions.OSError #104
 - added error messages more explained
+- added option to set Hostapd binary path (support hostapd-mana)
 
 Version 0.8.1
 -------------

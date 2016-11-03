@@ -1023,7 +1023,8 @@ class WifiPumpkin(QWidget):
 
     def SoftDependencies(self):
         ''' check if Hostapd, isc-dhcp-server is installed '''
-        if not self.ConfigTwin['ProgCheck'][5]:
+        self.hostapd_path = self.FSettings.Settings.get_setting('accesspoint','hostapd_path')
+        if not path.isfile(self.hostapd_path):
             return QMessageBox.information(self,'Error Hostapd','hostapd is not installed')
         dhcp_select = self.FSettings.Settings.get_setting('accesspoint','dhcp_server')
         if dhcp_select == 'iscdhcpserver':
@@ -1081,56 +1082,54 @@ class WifiPumpkin(QWidget):
         print('[*] Current Session::ID [{}]'.format(self.currentSessionID))
 
         # check if using ethernet or wireless connection
-        self.APactived = self.FSettings.Settings.get_setting('accesspoint','using')
-        if self.APactived == 'hostapd':
-            print('[*] Configuring hostapd...')
-            self.ConfigTwin['AP_iface'] = str(self.selectCard.currentText())
-            if str(self.interfacesLink['activated']).startswith('eth') or \
-               str(self.interfacesLink['activated']).startswith('enp'):
-                # change Wi-Fi state card
+        print('[*] Configuring hostapd...')
+        self.ConfigTwin['AP_iface'] = str(self.selectCard.currentText())
+        if str(self.interfacesLink['activated']).startswith('eth') or \
+           str(self.interfacesLink['activated']).startswith('enp'):
+            # change Wi-Fi state card
+            try:
+                check_output(['nmcli','radio','wifi',"off"]) # old version
+            except Exception:
                 try:
-                    check_output(['nmcli','radio','wifi',"off"]) # old version
-                except Exception:
-                    try:
-                        check_output(['nmcli','nm','wifi',"off"]) # new version
-                    except Exception,e:
-                        print '[!] ' + e
-                        return QMessageBox.warning(self,'Error nmcli',str(e))
-                finally:
-                    call(['rfkill', 'unblock' ,'wifi'])
-            elif str(self.interfacesLink['activated']).startswith('wl'):
-                # exclude USB wireless adapter in file NetworkManager
-                if not Refactor.settingsNetworkManager(self.ConfigTwin['AP_iface'],Remove=False):
-                    return QMessageBox.warning(self,'Network Manager',
-                    'Not found file NetworkManager.conf in folder /etc/NetworkManager/')
+                    check_output(['nmcli','nm','wifi',"off"]) # new version
+                except Exception,e:
+                    print '[!] ' + e
+                    return QMessageBox.warning(self,'Error nmcli',str(e))
+            finally:
+                call(['rfkill', 'unblock' ,'wifi'])
+        elif str(self.interfacesLink['activated']).startswith('wl'):
+            # exclude USB wireless adapter in file NetworkManager
+            if not Refactor.settingsNetworkManager(self.ConfigTwin['AP_iface'],Remove=False):
+                return QMessageBox.warning(self,'Network Manager',
+                'Not found file NetworkManager.conf in folder /etc/NetworkManager/')
 
-            # create dhcpd.leases and set permission for acesss DHCPD
-            leases = '/var/lib/dhcp/dhcpd.leases'
-            if not path.exists(leases[:-12]):
-                mkdir(leases[:-12])
-            if not path.isfile(leases):
-                with open(leases,'wb') as leaconf:
-                    leaconf.close()
-            uid = getpwnam('root').pw_uid
-            gid = getgrnam('root').gr_gid
-            chown(leases, uid, gid)
+        # create dhcpd.leases and set permission for acesss DHCPD
+        leases = '/var/lib/dhcp/dhcpd.leases'
+        if not path.exists(leases[:-12]):
+            mkdir(leases[:-12])
+        if not path.isfile(leases):
+            with open(leases,'wb') as leaconf:
+                leaconf.close()
+        uid = getpwnam('root').pw_uid
+        gid = getgrnam('root').gr_gid
+        chown(leases, uid, gid)
 
-            # get Tab-Hostapd conf and configure hostapd
-            self.CoreSettings()
-            ignore = ('interface=','ssid=','channel=')
-            with open('settings/hostapd.conf','w') as apconf:
-                for i in self.SettingsAP['hostapd']:apconf.write(i)
-                for config in str(self.FSettings.ListHostapd.toPlainText()).split('\n'):
-                    if not config.startswith('#') and len(config) > 0:
-                        if not config.startswith(ignore):
-                            apconf.write(config+'\n')
-                apconf.close()
+        # get Tab-Hostapd conf and configure hostapd
+        self.CoreSettings()
+        ignore = ('interface=','ssid=','channel=')
+        with open('settings/hostapd.conf','w') as apconf:
+            for i in self.SettingsAP['hostapd']:apconf.write(i)
+            for config in str(self.FSettings.ListHostapd.toPlainText()).split('\n'):
+                if not config.startswith('#') and len(config) > 0:
+                    if not config.startswith(ignore):
+                        apconf.write(config+'\n')
+            apconf.close()
 
-            # create thread for hostapd and connect GetHostapdStatus function
-            self.Thread_hostapd = ProcessHostapd({'hostapd':['settings/hostapd.conf']},self.currentSessionID)
-            self.Thread_hostapd.setObjectName('hostapd')
-            self.Thread_hostapd.statusAP_connected.connect(self.GetHostapdStatus)
-            self.Apthreads['RougeAP'].append(self.Thread_hostapd)
+        # create thread for hostapd and connect GetHostapdStatus function
+        self.Thread_hostapd = ProcessHostapd({self.hostapd_path:[getcwd()+'/settings/hostapd.conf']}, self.currentSessionID)
+        self.Thread_hostapd.setObjectName('hostapd')
+        self.Thread_hostapd.statusAP_connected.connect(self.GetHostapdStatus)
+        self.Apthreads['RougeAP'].append(self.Thread_hostapd)
 
         # disable options when started AP
         self.btn_start_attack.setDisabled(True)
