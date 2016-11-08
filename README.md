@@ -52,7 +52,7 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
  ``` python
 import logging
 from Plugin import PluginProxy
-from core.Utils import setup_logger
+from core.utils import setup_logger
 
 class blurpage(PluginProxy):
     ''' this module proxy set blur into body page html response'''

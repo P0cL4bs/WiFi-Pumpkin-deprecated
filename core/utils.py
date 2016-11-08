@@ -1,15 +1,11 @@
-from sys import exit,stdout
 from struct import pack
-from time import sleep,asctime,strftime
+from time import sleep,asctime
 from random import randint
 from base64 import b64encode
-from os import popen,path,walk,system,getpid,stat
-from subprocess import call,check_output,Popen,PIPE,STDOUT
+from os import popen,path,walk,stat
+from subprocess import check_output,Popen,PIPE,STDOUT
 from re import search,compile,VERBOSE,IGNORECASE
-import threading
 import netifaces
-from threading import Thread
-import Queue
 from scapy.all import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -22,7 +18,7 @@ Description:
     for modules.
 
 Copyright:
-    Copyright (C) 2015 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -38,6 +34,7 @@ Copyright:
 """
 
 class set_monitor_mode(QDialog):
+    ''' enable/disable interface for monitor mode '''
     def __init__(self,interface,parent = None):
         super(set_monitor_mode, self).__init__(parent)
         self.interface = interface
@@ -59,6 +56,7 @@ class set_monitor_mode(QDialog):
 
 
 class ThreadPhishingServer(QThread):
+    ''' thread for get ouput the Phishing file .log requests '''
     send = pyqtSignal(str)
     def __init__(self,cmd,):
         QThread.__init__(self)
@@ -123,6 +121,7 @@ class Refactor:
 
     @staticmethod
     def get_content_by_session(filelines,sessionID=str):
+        ''' find lines in session by ID '''
         filterSession = []
         sessiongrap = 'SessionID[{}]'.format(sessionID)
         for line in filelines:
@@ -132,6 +131,7 @@ class Refactor:
 
     @staticmethod
     def exportHtml(unchecked={},sessionID='',dataLogger=[],APname=''):
+        ''' funtion for get and check report files '''
         readFile = {
          'dhcp': {'logs/AccessPoint/dhcp.log':[]},
          'urls': {'logs/AccessPoint/urls.log':[]},
@@ -210,6 +210,7 @@ class Refactor:
 
     @staticmethod
     def set_ip_forward(value):
+        '''set forward to redirect packets '''
         with open('/proc/sys/net/ipv4/ip_forward', 'w') as file:
             file.write(str(value))
             file.close()
@@ -218,30 +219,44 @@ class Refactor:
     '''
     @staticmethod
     def getHwAddr(ifname):
+        ''' another functions for get mac adreess '''
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         info = ioctl(s.fileno(), 0x8927,  pack('256s', ifname[:15]))
         return ':'.join(['%02x' % ord(char) for char in info[18:24]])
 
     @staticmethod
     def get_interfaces():
-        interfaces = {'activated':None,'all':[],'gateway':None,'IPaddress':None}
+        ''' get interfaces and check status connection '''
+        interfaces = {'activated':[None,None],'all':[],'gateway':None,'IPaddress':None}
         interfaces['all'] = netifaces.interfaces()
         try:
             interfaces['gateway'] = netifaces.gateways()['default'][netifaces.AF_INET][0]
-            interfaces['activated'] = netifaces.gateways()['default'][netifaces.AF_INET][1]
-            interfaces['IPaddress'] = Refactor.get_Ipaddr(interfaces['activated'])
+            interfaces['activated'][0] = netifaces.gateways()['default'][netifaces.AF_INET][1]
+            interfaces['IPaddress'] = Refactor.get_Ipaddr(interfaces['activated'][0])
+            # check type interfaces connected with internet
+            itype = None
+            iface = interfaces['activated'][0]
+            if iface[:-1] in ['ppp']:
+                itype = 'ppp'
+            elif iface[:2] in ['wl', 'wi', 'ra', 'at']:
+                itype = 'wireless'
+            elif iface[:2] in ['en','et']:
+                itype = 'ethernet'
+            interfaces['activated'][1] = itype
         except KeyError:
             print('Error: find network interface information ')
         return interfaces
 
     @staticmethod
     def get_Ipaddr(card):
+        ''' get ipadress from send arg None or interface name '''
         if card == None:
-            return get_if_addr(Refactor.get_interfaces()['activated'])
+            return get_if_addr(Refactor.get_interfaces()['activated'][0])
         return get_if_addr(card)
 
     @staticmethod
     def get_mac(host):
+        ''' return mac by ipadress local network '''
         fields = popen('grep "%s " /proc/net/arp' % host).read().split()
         if len(fields) == 6 and fields[3] != "00:00:00:00:00:00":
             return fields[3]
@@ -250,6 +265,7 @@ class Refactor:
 
     @staticmethod
     def get_interface_mac(device):
+        ''' get mac from interface local system '''
         result = check_output(["ifconfig", device], stderr=STDOUT, universal_newlines=True)
         m = search("(?<=HWaddr\\s)(.*)", result)
         n = search("(?<=ether\\s)(.*)", result)
@@ -259,6 +275,7 @@ class Refactor:
 
     @staticmethod
     def randomMacAddress(prefix):
+        '''generate random mac for prefix '''
         for _ in xrange(6-len(prefix)):
             prefix.append(randint(0x00, 0x7f))
         return ':'.join('%02x' % x for x in prefix)
@@ -266,6 +283,7 @@ class Refactor:
 
     @staticmethod
     def check_is_mac(value):
+        '''check if mac is mac type '''
         checked = compile(r"""(
          ^([0-9A-F]{2}[-]){5}([0-9A-F]{2})$
         |^([0-9A-F]{2}[:]){5}([0-9A-F]{2})$
@@ -273,29 +291,26 @@ class Refactor:
         if checked.match(value) is None:return False
         else:
             return True
-    @staticmethod
-    def threadRoot(sudo_password):
-        call(['sudo','-k'])
-        p = Popen(['sudo', '-S','./wifi-pumpkin.py'], stdin=PIPE, stderr=PIPE,
-        universal_newlines=True)
-        waiter().start()
-        p.communicate(str(sudo_password) + '\n')[1]
 
     @staticmethod
     def find(name, paths):
+        ''' find all files in directory '''
         for root, dirs, files in walk(paths):
             if name in files:
                 return path.join(root, name)
     @staticmethod
     def getSize(filename):
+        ''' return files size by pathnme '''
         st = stat(filename)
         return st.st_size
 
     @staticmethod
     def generateSessionID():
+        ''' generate session encoded base64 '''
         return str(b64encode(str(random.randint(0,100000))))
 
 class waiterSleepThread(QThread):
+    ''' Simples Thread for wait 10 segunds for check update app'''
     quit = pyqtSignal(object)
     def __int__(self,parent=None):
         super(waiterSleepThread, self).__init__(self,parent)

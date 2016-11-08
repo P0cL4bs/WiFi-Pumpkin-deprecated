@@ -18,11 +18,10 @@ from collections import OrderedDict
 
 from os import (
     system,path,getcwd,
-    popen,listdir,mkdir,chown,remove
+    popen,listdir,mkdir,chown
 )
 from subprocess import (
-    Popen,PIPE,STDOUT,call,check_output,
-    CalledProcessError
+    Popen,PIPE,call,check_output,
 )
 
 from core.utils import (
@@ -47,11 +46,10 @@ from proxy import *
 import modules as GUIModules
 from core.helpers.about import frmAbout
 from core.helpers.update import frm_githubUpdate
-from isc_dhcp_leases.iscdhcpleases import IscDhcpLeases
-from core.widgets.docks.dockmonitor import dockAreaAPI
 from core.utility.settings import frm_Settings
 from core.helpers.update import ProgressBarWid
 from core.helpers.report import frm_ReportLogger
+from isc_dhcp_leases.iscdhcpleases import IscDhcpLeases
 from netfilterqueue import NetfilterQueue
 
 """
@@ -1040,13 +1038,13 @@ class WifiPumpkin(QWidget):
 
         # check connection with internet
         self.interfacesLink = Refactor.get_interfaces()
-        if len(self.EditGateway.text()) == 0 or self.interfacesLink['activated'] == None:
+        if len(self.EditGateway.text()) == 0 or self.interfacesLink['activated'][0] == None:
             return QMessageBox.warning(self,'Internet Connection','No internet connection not found, '
             'sorry WiFi-Pumpkin tool requires an internet connection to mount MITM attack. '
             'check your connection and try again')
 
         # check if Wireless interface is being used
-        if str(self.selectCard.currentText()) == self.interfacesLink['activated']:
+        if str(self.selectCard.currentText()) == self.interfacesLink['activated'][0]:
             iwconfig = Popen(['iwconfig'], stdout=PIPE,shell=False,stderr=PIPE)
             for line in iwconfig.stdout.readlines():
                 if str(self.selectCard.currentText()) in line:
@@ -1057,7 +1055,7 @@ class WifiPumpkin(QWidget):
                     str(self.selectCard.currentText()),line))
 
         # check if kali linux is using wireless interface for share internet
-        if str(self.interfacesLink['activated']).startswith('wl') and dist()[0] == 'Kali':
+        if  self.interfacesLink['activated'][1] == 'wireless' and dist()[0] == 'Kali':
             return QMessageBox.information(self,'Network Information',
             "The Kali Linux don't have support to use with 2 wireless"
             "(1 for connected internet/2 for WiFi-Pumpkin AP)."
@@ -1084,8 +1082,7 @@ class WifiPumpkin(QWidget):
         # check if using ethernet or wireless connection
         print('[*] Configuring hostapd...')
         self.ConfigTwin['AP_iface'] = str(self.selectCard.currentText())
-        if str(self.interfacesLink['activated']).startswith('eth') or \
-           str(self.interfacesLink['activated']).startswith('enp'):
+        if self.interfacesLink['activated'][1] == 'ethernet' or self.interfacesLink['activated'][1] == 'ppp':
             # change Wi-Fi state card
             try:
                 check_output(['nmcli','radio','wifi',"off"]) # old version
@@ -1097,7 +1094,7 @@ class WifiPumpkin(QWidget):
                     return QMessageBox.warning(self,'Error nmcli',str(e))
             finally:
                 call(['rfkill', 'unblock' ,'wifi'])
-        elif str(self.interfacesLink['activated']).startswith('wl'):
+        elif self.interfacesLink['activated'][1] == 'wireless':
             # exclude USB wireless adapter in file NetworkManager
             if not Refactor.settingsNetworkManager(self.ConfigTwin['AP_iface'],Remove=False):
                 return QMessageBox.warning(self,'Network Manager',
@@ -1210,7 +1207,7 @@ class WifiPumpkin(QWidget):
            iptables.append(str(self.FSettings.ListRules.item(index).text()))
         for rulesetfilter in iptables:
             if '$inet' in rulesetfilter:
-                rulesetfilter = rulesetfilter.replace('$inet',str(Refactor.get_interfaces()['activated']))
+                rulesetfilter = rulesetfilter.replace('$inet',str(Refactor.get_interfaces()['activated'][0]))
             if '$wlan' in rulesetfilter:
                 rulesetfilter = rulesetfilter.replace('$wlan',self.ConfigTwin['AP_iface'])
             popen(rulesetfilter)
