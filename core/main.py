@@ -25,7 +25,8 @@ from subprocess import (
 )
 
 from core.utils import (
-    Refactor,set_monitor_mode,waiterSleepThread
+    Refactor,set_monitor_mode,waiterSleepThread,
+    setup_logger
 )
 from core.widgets.tabmodels import (
     PumpkinProxy,PumpkinMonitor,
@@ -184,13 +185,13 @@ class WifiPumpkin(QWidget):
         self.TabListWidget_Menu.addItem(self.item_home)
 
         self.item_settings = QListWidgetItem()
-        self.item_settings.setText('settings')
+        self.item_settings.setText('Settings')
         self.item_settings.setSizeHint(QSize(30,30))
         self.item_settings.setIcon(QIcon('icons/settings-AP.png'))
         self.TabListWidget_Menu.addItem(self.item_settings)
 
         self.item_plugins = QListWidgetItem()
-        self.item_plugins.setText('plugins')
+        self.item_plugins.setText('Plugins')
         self.item_plugins.setSizeHint(QSize(30,30))
         self.item_plugins.setIcon(QIcon('icons/plugins-new.png'))
         self.TabListWidget_Menu.addItem(self.item_plugins)
@@ -202,7 +203,7 @@ class WifiPumpkin(QWidget):
         self.TabListWidget_Menu.addItem(self.item_injector)
 
         self.item_dock = QListWidgetItem()
-        self.item_dock.setText('Monitor-Area')
+        self.item_dock.setText('Activity-Monitor')
         self.item_dock.setSizeHint(QSize(30,30))
         self.item_dock.setIcon(QIcon('icons/activity-monitor.png'))
         self.TabListWidget_Menu.addItem(self.item_dock)
@@ -252,13 +253,17 @@ class WifiPumpkin(QWidget):
                 'dock_credencials',format=bool),
                 'splitcode': ':[creds]',
             },
-            '::bdfproxy::': { # plugins bdfproxy ouput
+            'BDFProxy': { # plugins bdfproxy ouput
                 'active' : self.FSettings.Settings.get_setting('dockarea',
                 'dock_bdfproxy',format=bool),
             },
-            '::dns2proxy::': { # plugins dns2proxy output
+            'Dns2Proxy': { # plugins dns2proxy output
                 'active' : self.FSettings.Settings.get_setting('dockarea',
                 'dock_dns2proxy',format=bool),
+            },
+            'Responder': { # plugins responder output
+                'active' : self.FSettings.Settings.get_setting('dockarea',
+                'dock_Responder',format=bool),
             }
         }
         self.ConfigTwin     = {
@@ -688,6 +693,8 @@ class WifiPumpkin(QWidget):
         ''' check plugin options saved in file ctg '''
         if self.FSettings.Settings.get_setting('plugins','netcreds_plugin',format=bool):
             self.PopUpPlugins.check_netcreds.setChecked(True)
+        if self.FSettings.Settings.get_setting('plugins','responder_plugin',format=bool):
+            self.PopUpPlugins.check_responder.setChecked(True)
 
         if self.FSettings.Settings.get_setting('plugins','dns2proxy_plugin',format=bool):
             self.PopUpPlugins.check_dns2proy.setChecked(True)
@@ -698,6 +705,7 @@ class WifiPumpkin(QWidget):
         elif self.FSettings.Settings.get_setting('plugins','noproxy',format=bool):
             self.PopUpPlugins.check_noproxy.setChecked(True)
             self.PopUpPlugins.GroupPluginsProxy.setChecked(False)
+            self.PopUpPlugins.tableplugincheckbox.setEnabled(True)
         self.PopUpPlugins.checkGeneralOptions()
 
     def Started(self,bool):
@@ -1172,6 +1180,16 @@ class WifiPumpkin(QWidget):
             self.Thread_netcreds.setObjectName('Net-Creds')
             self.Apthreads['RougeAP'].append(self.Thread_netcreds)
 
+        if self.PopUpPlugins.check_responder.isChecked():
+            # create thread for plugin responder
+            setup_logger('responder', 'logs/AccessPoint/responder.log',self.currentSessionID)
+            self.responderlog = getLogger('responder')
+            self.Thread_responder = ProcessThread({'python':['plugins/Responder/Responder.py','-I',
+            str(self.selectCard.currentText()),'-wrFbv','-k',self.currentSessionID]})
+            self.Thread_responder._ProcssOutput.connect(self.get_responder_output)
+            self.Thread_responder.setObjectName('Responder')
+            self.Apthreads['RougeAP'].append(self.Thread_responder)
+
         if self.PopUpPlugins.check_dns2proy.isChecked():
             # create thread for plugin DNS2proxy
             self.Thread_dns2proxy = ProcessThread({'python':['plugins/dns2proxy/dns2proxy.py','-i',
@@ -1245,16 +1263,25 @@ class WifiPumpkin(QWidget):
         ''' get std_ouput the thread dns2proxy and add in DockArea '''
         if self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
             if hasattr(self,'dockAreaList'):
-                if self.PumpSettingsTAB.dockInfo['::dns2proxy::']['active']:
-                    self.dockAreaList['::dns2proxy::'].writeModeData(data)
+                if self.PumpSettingsTAB.dockInfo['Dns2Proxy']['active']:
+                    self.dockAreaList['Dns2Proxy'].writeModeData(data)
+
+    def get_responder_output(self,data):
+        ''' get std_ouput the thread responder and add in DockArea '''
+        if self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
+            if hasattr(self,'dockAreaList'):
+                if self.PumpSettingsTAB.dockInfo['Responder']['active']:
+                    for line in data.split('\n'):
+                        self.dockAreaList['Responder'].writeModeData(line)
+                        self.responderlog.info(line)
 
     def get_bdfproxy_output(self,data):
         ''' get std_ouput the thread bdfproxy and add in DockArea '''
         if self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
             if hasattr(self,'dockAreaList'):
-                if self.PumpSettingsTAB.dockInfo['::bdfproxy::']['active']:
+                if self.PumpSettingsTAB.dockInfo['BDFProxy']['active']:
                     try:
-                        self.dockAreaList['::bdfproxy::'].writeModeData(str(data).split(' : ')[1])
+                        self.dockAreaList['BDFProxy'].writeModeData(str(data).split(' : ')[1])
                     except IndexError:
                         return None
 

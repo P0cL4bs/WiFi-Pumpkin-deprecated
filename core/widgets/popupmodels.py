@@ -3,7 +3,7 @@ import modules as GUIs
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from core.utils import Refactor
-from core.widgets.pluginssettings import BDFProxy_ConfigObject
+from core.widgets.pluginssettings import BDFProxySettings,ResponderSettings
 """
 Description:
     This program is a core for wifi-pumpkin.py. file which includes functionality
@@ -45,18 +45,22 @@ class PopUpPlugins(QVBoxLayout):
         self.GroupPlugins.setLayout(self.layoutform)
 
         self.check_netcreds     = QCheckBox('net-creds ')
+        self.check_responder    = QCheckBox('Responder')
         self.check_dns2proy     = QRadioButton('SSLstrip+|Dns2proxy')
         self.check_sergioProxy  = QRadioButton('SSLstrip|Sergio-proxy')
         self.check_bdfproxy     = QRadioButton('BDFProxy-ng')
         self.check_noproxy      = QRadioButton('No Proxy')
 
-        self.btnBDFSettings    = QPushButton('Config')
+        self.btnBDFSettings    = QPushButton('Change')
+        self.btnResponderSettings = QPushButton('Change')
         self.btnBDFSettings.setIcon(QIcon('icons/config.png'))
+        self.btnResponderSettings.setIcon(QIcon('icons/config.png'))
         self.btnBDFSettings.clicked.connect(self.ConfigOBJBDFproxy)
+        self.btnResponderSettings.clicked.connect(self.ConfigOBJBResponder)
 
         self.tableplugins = QTableWidget()
         self.tableplugins.setColumnCount(3)
-        self.tableplugins.setRowCount(4)
+        self.tableplugins.setRowCount(3)
         self.tableplugins.resizeRowsToContents()
         self.tableplugins.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.tableplugins.horizontalHeader().setStretchLastSection(True)
@@ -71,10 +75,28 @@ class PopUpPlugins(QVBoxLayout):
         self.tableplugins.horizontalHeader().resizeSection(1,80)
         self.tableplugins.resizeRowsToContents()
 
+        self.tableplugincheckbox = QTableWidget()
+        self.tableplugincheckbox.setColumnCount(3)
+        self.tableplugincheckbox.setRowCount(2)
+        self.tableplugincheckbox.resizeRowsToContents()
+        self.tableplugincheckbox.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.tableplugincheckbox.horizontalHeader().setStretchLastSection(True)
+        self.tableplugincheckbox.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tableplugincheckbox.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tableplugincheckbox.verticalHeader().setVisible(False)
+        self.tableplugincheckbox.verticalHeader().setDefaultSectionSize(23)
+        self.tableplugincheckbox.setSortingEnabled(True)
+        self.Headers = ('plugins','settings','Description')
+        self.tableplugincheckbox.setHorizontalHeaderLabels(self.Headers)
+        self.tableplugincheckbox.horizontalHeader().resizeSection(0,158)
+        self.tableplugincheckbox.horizontalHeader().resizeSection(1,80)
+        self.tableplugincheckbox.resizeRowsToContents()
+
         desc_dns2proxy = QTableWidgetItem()
         desc_sergioproxy = QTableWidgetItem()
         desc_bdfproxy  = QTableWidgetItem()
         desc_netcreds  = QTableWidgetItem()
+        desc_responder  = QTableWidgetItem()
 
         # set text description plugins
         desc_dns2proxy.setText('This tools offer a different features '
@@ -84,20 +106,26 @@ class PopUpPlugins(QVBoxLayout):
         desc_bdfproxy.setText('Patch Binaries via MITM: BackdoorFactory + mitmProxy, '
         'bdfproxy-ng is a fork and review of the original BDFProxy. coded by: secretsquirrel.')
         desc_netcreds.setText('Sniff passwords and hashes from an interface or pcap file. coded by: Dan McInerney')
+        desc_responder.setText('Responder an LLMNR, NBT-NS and MDNS poisoner. '
+        'By default, the tool will only answer to File Server Service request, which is for SMB.')
 
         self.tableplugins.setItem(0, 2, desc_dns2proxy)
         self.tableplugins.setItem(1, 2, desc_sergioproxy)
         self.tableplugins.setItem(2, 2, desc_bdfproxy)
-        self.tableplugins.setItem(3, 2, desc_netcreds)
         self.tableplugins.setCellWidget(0,0,self.check_dns2proy)
         self.tableplugins.setCellWidget(1,0,self.check_sergioProxy)
         self.tableplugins.setCellWidget(2,0,self.check_bdfproxy)
-        self.tableplugins.setCellWidget(3,0,self.check_netcreds)
-
-        self.tableplugins.setCellWidget(0,1,QPushButton('None'))
         self.tableplugins.setCellWidget(1,1,QPushButton('None'))
         self.tableplugins.setCellWidget(2,1,self.btnBDFSettings)
-        self.tableplugins.setCellWidget(3,1,QPushButton('None'))
+        self.tableplugins.setCellWidget(0,1,QPushButton('None'))
+
+        # table 2 for add plugins with checkbox
+        self.tableplugincheckbox.setItem(0, 2, desc_netcreds)
+        self.tableplugincheckbox.setItem(1, 2, desc_responder)
+        self.tableplugincheckbox.setCellWidget(0,0,self.check_netcreds)
+        self.tableplugincheckbox.setCellWidget(1,0,self.check_responder)
+        self.tableplugincheckbox.setCellWidget(0,1,QPushButton('None'))
+        self.tableplugincheckbox.setCellWidget(1,1,self.btnResponderSettings)
 
         self.proxyGroup = QButtonGroup()
         self.proxyGroup.addButton(self.check_dns2proy)
@@ -110,17 +138,17 @@ class PopUpPlugins(QVBoxLayout):
         self.check_sergioProxy.clicked.connect(self.checkGeneralOptions)
         self.check_bdfproxy.clicked.connect(self.checkGeneralOptions)
         self.check_noproxy.clicked.connect(self.checkGeneralOptions)
+        self.check_responder.clicked.connect(self.checkBoxResponder)
 
         self.layoutproxy.addWidget(self.tableplugins)
+        self.layoutproxy.addWidget(self.tableplugincheckbox)
         self.layout.addWidget(self.GroupPluginsProxy)
         self.addLayout(self.layout)
 
     def get_disable_proxyserver(self):
         ''' set disable or activate plugin proxy '''
-        if self.GroupPluginsProxy.isChecked():
-            self.check_noproxy.setChecked(True)
-        else:
-            self.check_noproxy.setChecked(True)
+        self.check_noproxy.setChecked(True)
+        self.tableplugincheckbox.setEnabled(True)
         self.sendSingal_disable.emit(self.check_noproxy.isChecked())
         self.checkBoxNecreds()
 
@@ -166,14 +194,25 @@ class PopUpPlugins(QVBoxLayout):
 
     def ConfigOBJBDFproxy(self):
         ''' show BDFproxy settings page '''
-        self.SettingsBDFProxy  = BDFProxy_ConfigObject()
+        self.SettingsBDFProxy  = BDFProxySettings()
         self.SettingsBDFProxy.show()
+
+    def ConfigOBJBResponder(self):
+        ''' show REsponder settings page '''
+        self.SettingsResponder  = ResponderSettings()
+        self.SettingsResponder.show()
 
     def checkBoxNecreds(self):
         if self.check_netcreds.isChecked():
             self.FSettings.Settings.set_setting('plugins','netcreds_plugin',True)
         else:
             self.FSettings.Settings.set_setting('plugins','netcreds_plugin',False)
+
+    def checkBoxResponder(self):
+        if self.check_responder.isChecked():
+            self.FSettings.Settings.set_setting('plugins','responder_plugin',True)
+        else:
+            self.FSettings.Settings.set_setting('plugins','responder_plugin',False)
 
     def optionsRules(self,type):
         ''' add rules iptable by type plugins'''

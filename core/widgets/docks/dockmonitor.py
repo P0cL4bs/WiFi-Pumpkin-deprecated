@@ -1,6 +1,5 @@
-from os import path
-from PyQt4.QtGui import QListWidget,QMessageBox
-from PyQt4.QtCore import SIGNAL,QTimer,QThread,QProcess,pyqtSlot,QObject,SLOT
+from PyQt4.QtGui import QListWidget
+from PyQt4.QtCore import SIGNAL,QProcess,pyqtSlot,QObject,SLOT
 
 class ThreadLogger(QObject):
     def __init__(self,logger_path=str):

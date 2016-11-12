@@ -1,14 +1,11 @@
 from proxy import *
-from os import path,listdir,system
+from os import path
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from datetime import datetime
 from core.utils import Refactor
 from core.utility.threads import ThreadPopen
-from core.utility.settings import frm_Settings
 from core.widgets.docks.dockmonitor import dockAreaAPI
-from core.widgets.docks.dockmonitor import ThreadLogger
-from plugins.sergio_proxy.sslstrip.ProxyPlugins import ProxyPlugins
 """
 Description:
     This program is a core for wifi-pumpkin.py. file which includes functionality
@@ -326,11 +323,13 @@ class PumpkinSettings(QVBoxLayout):
         self.CB_monitorURL = QCheckBox('HTTP-Requests')
         self.CB_bdfproxy   = QCheckBox('BDFProxy-ng')
         self.CB_dns2proxy  = QCheckBox('Dns2Proxy')
+        self.CB_responder  = QCheckBox('Responder')
         self.CB_ActiveMode.setChecked(self.FSettings.Settings.get_setting('dockarea','advanced',format=bool))
         self.CB_Cread.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_credencials',format=bool))
         self.CB_monitorURL.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_urlmonitor',format=bool))
         self.CB_bdfproxy.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_bdfproxy',format=bool))
         self.CB_dns2proxy.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_dns2proxy',format=bool))
+        self.CB_responder.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_responder',format=bool))
 
         #connect
         self.doCheckAdvanced()
@@ -339,14 +338,17 @@ class PumpkinSettings(QVBoxLayout):
         self.CB_Cread.clicked.connect(self.doCheckAdvanced)
         self.CB_bdfproxy.clicked.connect(self.doCheckAdvanced)
         self.CB_dns2proxy.clicked.connect(self.doCheckAdvanced)
+        self.CB_responder.clicked.connect(self.doCheckAdvanced)
         # group
         self.layoutArea.addRow(self.CB_ActiveMode)
         self.gridArea.addWidget(self.CB_monitorURL,0,0,)
         self.gridArea.addWidget(self.CB_Cread,0,1)
         self.gridArea.addWidget(self.CB_bdfproxy,1,0)
+        self.gridArea.addWidget(self.CB_bdfproxy,1,0)
         self.gridArea.addWidget(self.CB_dns2proxy,1,1)
+        self.gridArea.addWidget(self.CB_responder,1,2)
         self.layoutArea.addRow(self.gridArea)
-        self.GroupArea.setTitle('MonitorArea-settings')
+        self.GroupArea.setTitle('Activity Monitor settings')
         self.GroupArea.setLayout(self.layoutArea)
 
         # connects
@@ -405,20 +407,24 @@ class PumpkinSettings(QVBoxLayout):
             self.CB_Cread.setEnabled(True)
             self.CB_bdfproxy.setEnabled(True)
             self.CB_dns2proxy.setEnabled(True)
+            self.CB_responder.setEnabled(True)
         else:
             self.CB_monitorURL.setEnabled(False)
             self.CB_Cread.setEnabled(False)
             self.CB_bdfproxy.setEnabled(False)
             self.CB_dns2proxy.setEnabled(False)
+            self.CB_responder.setEnabled(False)
         self.FSettings.Settings.set_setting('dockarea','dock_credencials',self.CB_Cread.isChecked())
         self.FSettings.Settings.set_setting('dockarea','dock_urlmonitor',self.CB_monitorURL.isChecked())
         self.FSettings.Settings.set_setting('dockarea','dock_bdfproxy',self.CB_bdfproxy.isChecked())
         self.FSettings.Settings.set_setting('dockarea','dock_dns2proxy',self.CB_dns2proxy.isChecked())
+        self.FSettings.Settings.set_setting('dockarea','dock_responder',self.CB_responder.isChecked())
         self.FSettings.Settings.set_setting('dockarea','advanced',self.CB_ActiveMode.isChecked())
         self.dockInfo['HTTP-Requests']['active'] = self.CB_monitorURL.isChecked()
         self.dockInfo['HTTP-Authentication']['active'] = self.CB_Cread.isChecked()
-        self.dockInfo['::bdfproxy::']['active'] = self.CB_bdfproxy.isChecked()
-        self.dockInfo['::dns2proxy::']['active'] = self.CB_dns2proxy.isChecked()
+        self.dockInfo['BDFProxy']['active'] = self.CB_bdfproxy.isChecked()
+        self.dockInfo['Dns2Proxy']['active'] = self.CB_dns2proxy.isChecked()
+        self.dockInfo['Responder']['active'] = self.CB_responder.isChecked()
         if self.CB_ActiveMode.isChecked():
             self.AreaWidgetLoader(self.dockInfo)
             self.checkDockArea.emit(self.AllDockArea)

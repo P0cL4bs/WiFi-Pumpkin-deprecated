@@ -189,7 +189,7 @@ class frm_Settings(QDialog):
         super(frm_Settings, self).__init__(parent)
         self.setWindowTitle('settings WiFi-Pompkin')
         self.Settings = SettingsINI('core/config/app/config.ini')
-        self.bdfproxyConf  = SettingsINI(self.Settings.get_setting('plugins','bdfproxy_patch_config'))
+        self.bdfproxyConf  = SettingsINI(self.Settings.get_setting('plugins','bdfproxy_config'))
         self.loadtheme(self.XmlThemeSelected())
         self.setGeometry(0, 0, 420, 440)
         self.center()

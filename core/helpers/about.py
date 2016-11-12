@@ -42,6 +42,8 @@ class SettingsTranks(QVBoxLayout):
         self.formMode.addRow(QLabel('Plugin <a href="https://github.com/LeonardoNve/dns2proxy">Dns2proxy</a> Offensive DNS server <br>'))
         self.formMode.addRow(QLabel('<a href="https://github.com/davinerd"><strong>@davinerd</strong></a>'))
         self.formMode.addRow(QLabel('Plugin <a href="https://github.com/davinerd/BDFProxy-ng"> BDFProxy-ng</a> version fork <br>'))
+        self.formMode.addRow(QLabel('<a href="https://github.com/lgandx"><strong> Laurent Gaffie @lgandx</strong></a>'))
+        self.formMode.addRow(QLabel('Plugin <a href="https://github.com/lgandx/Responder"> Responder</a><br>'))
         self.formMode.addRow(QLabel('<a href="https://github.com/supernothing"><strong>Ben Schmidt @supernothing</strong></a>'))
         self.formMode.addRow(QLabel('Plugin <a href="https://github.com/supernothing/sergio-proxy">SergioProxy</a> - bypass HSTS<br>'))
         self.formMode.addRow(QLabel('<a href="https://github.com/DanMcInerney"><strong>Dan McInerney @danhmcinerney</strong></a>'))

@@ -141,6 +141,7 @@ class Refactor:
          'dns2proxy': {'logs/AccessPoint/dns2proxy.log':[]},
          'injectionPage': {'logs/AccessPoint/injectionPage.log':[]},
          'dnsspoofAP': {'logs/AccessPoint/DnsSpoofModuleReq.log':[]},
+         'responder': {'logs/AccessPoint/responder.log':[]},
          'phishing': {'logs/Phishing/requests.log':[]},}
         if unchecked != {}:
             for key in unchecked.keys(): readFile.pop(key)

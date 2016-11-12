@@ -13,6 +13,7 @@ Version 0.8.3
 - added error messages more explained
 - added option to set Hostapd binary path (support hostapd-mana)
 - fixed improvements fuctions get_interfaces #109
+- added new plugin Responder (LLMNR, NBT-NS and MDNS poisoners)
 
 Version 0.8.1
 -------------
