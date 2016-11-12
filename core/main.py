@@ -1097,9 +1097,8 @@ class WifiPumpkin(QWidget):
             except Exception:
                 try:
                     check_output(['nmcli','nm','wifi',"off"]) # new version
-                except Exception,e:
-                    print '[!] ' + e
-                    return QMessageBox.warning(self,'Error nmcli',str(e))
+                except Exception as error:
+                    return QMessageBox.warning(self,'Error nmcli',str(error))
             finally:
                 call(['rfkill', 'unblock' ,'wifi'])
         elif self.interfacesLink['activated'][1] == 'wireless':
