@@ -35,6 +35,8 @@ class SettingsTranks(QVBoxLayout):
         self.scroll.setWidget(self.scrollwidget)
 
         self.formMode = QFormLayout()
+        self.formMode.addRow(QLabel('<a href="https://github.com/psychomario"><strong>@psychomario</strong></a>'))
+        self.formMode.addRow(QLabel('<a href="https://github.com/psychomario/PyPXE">PyPXE</a> class implements a DHCP Server<br>'))
         self.formMode.addRow(QLabel('<a href="https://github.com/xtr4nge"><strong>@xtr4nge</strong></a>'))
         self.formMode.addRow(QLabel('PLugin <a href="https://github.com/xtr4nge/sslstrip">Sslstrip</a> fork inject code<br>'))
         self.formMode.addRow(QLabel('<a href="https://github.com/LeonardoNve"><strong>@LeonardoNve</strong></a>'))

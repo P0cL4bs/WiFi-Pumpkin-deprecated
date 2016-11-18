@@ -54,59 +54,14 @@ func_install(){
 	apt-get install -y python-qt4 python-scapy hostapd rfkill
 	apt-get install -y python-dev git
 	apt-get install -y libpcap-dev
-    	pip install -r requirements.txt
-    	File="/etc/apt/sources.list"
-    	if  grep -q '#Wifi Pumpkin' $File;then
-	    cp /etc/apt/sources.list.backup /etc/apt/sources.list
-	    rm /etc/apt/sources.list.backup
-    	fi
+	pip install -r requirements.txt
 	echo "----------------------------------------"
 	echo "[=]$bldblu checking dependencies $txtrst "
 	func_check_install "hostapd"
-	func_check_install "dhcpd"
 	echo "----------------------------------------"
 	dist=$(tr -s ' \011' '\012' < /etc/issue | head -n 1)
 	check_arch=$(uname -m)
 	echo "[$green+$txtrst] Distribution Name: $dist"
-	if which dhcpd >/dev/null; then
-		echo ""
-	else
-		echo "[$green+$txtrst] dhcpd installer Distribution"
-		if [ "$dist" = "Ubuntu" ]; then
-			check_dhcp=$(program_is_installed dhcpd)
-			if [ $check_dhcp = 0 ]; then
-			    apt-get install libjpeg8-dev -y
-			    pip install mitmproxy==0.16
-                	    apt-get install isc-dhcp-server -y
-                            func_check_install "dhcpd"
-			fi
-		elif [ "$dist" = "Kali" ]; then
-			check_dhcp=$(program_is_installed dhcpd)
-			if [ $check_dhcp = 0 ]; then
-                cp /etc/apt/sources.list /etc/apt/sources.list.backup
-				File="/etc/apt/sources.list"
-                if ! grep -q 'deb http://ftp.de.debian.org/debian wheezy main' $File;then
-                    echo "deb http://ftp.de.debian.org/debian wheezy main" >> /etc/apt/sources.list
-                    apt-get update
-                    apt-get install isc-dhcp-server -y
-                    cp /etc/apt/sources.list.backup /etc/apt/sources.list
-                    rm /etc/apt/sources.list.backup
-                fi
-                check_dhcp=$(program_is_installed dhcpd)
-                if [ $check_dhcp = 0 ]; then
-                    if [ "$check_arch" = "i686" ]; then
-                        wget http://http.kali.org/kali/pool/main/i/isc-dhcp/isc-dhcp-server_4.3.1-6_i386.deb
-                        dpkg -i isc-dhcp-server_4.3.1-6_i386.deb
-                    elif [ "$check_arch" = "x86_64" ]; then
-                        wget http://http.kali.org/kali/pool/main/i/isc-dhcp/isc-dhcp-server_4.3.1-6_amd64.deb
-                        dpkg -i isc-dhcp-server_4.3.1-6_amd64.deb
-                    fi
-                    rm *.deb
-                fi
-                func_check_install "dhcpd"
-			fi
-		fi
-	fi
 	echo "----------------------------------------"
 	echo "[=] $bldblu Install WiFi-Pumpkin $txtrst"
 	if [ ! -d "$DIRECTORY" ]; then
@@ -147,7 +102,7 @@ uninstall(){
 			echo "[$red_color-$txtrst] Deleted Binary:$bldwht/usr/bin/wifi-pumpkin $txtrst"
 		fi
 	else
-		echo "[$red_color✘$txtrst] wifi-pumpkin not Installed"
+		echo "[$red_color✘$txtrst] wifi-pumpkin is not Installed"
 	fi
 }
 func_Banner

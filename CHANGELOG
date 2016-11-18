@@ -14,6 +14,10 @@ Version 0.8.3
 - added option to set Hostapd binary path (support hostapd-mana)
 - fixed improvements fuctions get_interfaces #109
 - added new plugin Responder (LLMNR, NBT-NS and MDNS poisoners)
+- fixed Redirect traffic from all domains in dnsspoof module
+- removed isc-dhcp-server(dhcpd) from dedependencies (optinal)
+- added check if interface wireless support AP/Mode
+- added python implements a DHCP Server by psychomario
 
 Version 0.8.1
 -------------

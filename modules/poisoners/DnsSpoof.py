@@ -113,9 +113,12 @@ class frm_DnsSpoof(PumpkinModule):
         self.myDNsoutput.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.GroupHosts  = QGroupBox(self)
+        self.checkAllhost = QCheckBox('Redirect traffic from all domains ')
+        self.checkAllhost.clicked.connect(self.set_redirect_all_domains)
         self.GroupHosts.setTitle('DNS::spoof')
         self.GroupHosts.setLayout(self.layoutHost)
         self.layoutHost.addRow(self.myListDns,self.myDNsoutput)
+        self.layoutHost.addRow(self.checkAllhost)
 
         self.GroupOuput  = QGroupBox(self)
         self.GroupOuput.setTitle('DNS::Requests')
@@ -198,6 +201,12 @@ class frm_DnsSpoof(PumpkinModule):
         self.Main.addWidget(self.statusBar)
         self.setLayout(self.Main)
 
+    def set_redirect_all_domains(self):
+        if self.checkAllhost.isChecked():
+            self.myListDns.setEnabled(False)
+            return self.myListDns.clear()
+        self.myListDns.setEnabled(True)
+
     def SettingsGUI(self):
         ifaces = self.interfaces
         for i,j in enumerate(ifaces['all']):
@@ -230,7 +239,7 @@ class frm_DnsSpoof(PumpkinModule):
                 self.myListDns.takeItem(self.myListDns.currentRow())
         elif action == additem:
             text, resp = QInputDialog.getText(self, 'Add DNS',
-            'Enter the DNS and IP for spoof hosts: ex: example2.com')
+            'Enter the DNS for spoof hosts: ex: example2.com')
             if resp:
                 try:
                     itemsexits = []
@@ -367,42 +376,20 @@ class frm_DnsSpoof(PumpkinModule):
         self.thr.start()
 
     def Start_scan(self):
-        self.StatusMonitor(True,'stas_scan')
-        self.btn_start_scanner.setEnabled(False)
-        self.btn_stop_scanner.setEnabled(True)
-        threadscan_check = self.configure.Settings.get_setting('settings','Function_scan')
+        Headers = []
         self.tables.clear()
         self.data = {'IPaddress':[], 'Hostname':[], 'MacAddress':[]}
-        if threadscan_check == 'Nmap':
-            try:
-                from nmap import PortScanner
-            except ImportError:
-                QMessageBox.information(self,'Error Nmap','The modules python-nmap not installed')
-                return
-            if self.txt_gateway.text() != '':
-                self.tables.setVisible(False)
-                gateway = str(self.txt_gateway.text())
-                self.ThreadScanner = ThreadScan(gateway[:len(gateway)-len(gateway.split('.').pop())] + '0/24')
-                self.connect(self.ThreadScanner,SIGNAL('Activated ( QString ) '), self.thread_scan_reveice)
-                self.StatusMonitor(True,'stas_scan')
-                self.ThreadScanner.start()
-            else:
-                QMessageBox.information(self,'Error in gateway','gateway not found.')
-
-        elif threadscan_check == 'Ping':
-            if self.txt_gateway.text() != '':
-                self.thread_ScanIP = ThreadFastScanIP(str(self.txt_gateway.text()),self.ip_range.text())
-                self.thread_ScanIP.sendDictResultscan.connect(self.get_result_scanner_ip)
-                self.StatusMonitor(True,'stas_scan')
-                self.thread_ScanIP.start()
-                Headers = []
-                for key in reversed(self.data.keys()):
-                    Headers.append(key)
-                self.tables.setHorizontalHeaderLabels(Headers)
-            else:
-                QMessageBox.information(self,'Error in gateway','gateway not found.')
-        else:
-            QMessageBox.information(self,'Error on select thread Scan','thread scan not selected.')
+        if self.txt_gateway.text() != '':
+            self.btn_start_scanner.setEnabled(False)
+            self.btn_stop_scanner.setEnabled(True)
+            self.thread_ScanIP = ThreadFastScanIP(str(self.txt_gateway.text()),self.ip_range.text())
+            self.thread_ScanIP.sendDictResultscan.connect(self.get_result_scanner_ip)
+            self.StatusMonitor(True,'stas_scan')
+            self.thread_ScanIP.start()
+            for key in reversed(self.data.keys()):
+                Headers.append(key)
+            return self.tables.setHorizontalHeaderLabels(Headers)
+        return QMessageBox.information(self,'Error in gateway','gateway not found.')
 
     def get_outputDNSspoof(self,data):
         self.myDNsoutput.addItem(data)

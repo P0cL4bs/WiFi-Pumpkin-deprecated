@@ -10,15 +10,10 @@ def notinstall(app):
     print '[%s✘%s] %s is not %sinstalled%s.'%(RED,ENDC,app,YELLOW,ENDC)
 
 def check_dep_pumpkin():
+    # check hostapd
     hostapd = popen('which hostapd').read().split('\n')
-    dhcpd = popen('which dhcpd').read().split('\n')
-    deps = []
-    lista = [dhcpd[0],hostapd[0]]
-    for i in lista: deps.append(path.isfile(i))
-    for k,g in enumerate(deps):
-        if deps[k] == False:
-            if k == 0:notinstall('isc-dhcp-server')
-            if k == 1:notinstall('hostapd')
+    if not path.isfile(hostapd[0]): notinstall('hostapd')
+    # checck source.tar.gz tamplate module
     if not path.isfile('templates/Update/Windows_Update/Settins_WinUpdate.html'):
         copy('settings/source.tar.gz','templates/')
         system('cd templates/ && tar -xf source.tar.gz')

@@ -115,6 +115,7 @@ class frm_Arp_Poison(PumpkinModule):
         self.btn_start_scanner.setFixedHeight(22)
         self.btn_stop_scanner.setFixedHeight(22)
         self.btn_windows_update.setFixedHeight(22)
+        self.btn_stop_scanner.setEnabled(False)
 
         self.btn_start_scanner.clicked.connect(self.Start_scan)
         self.btn_stop_scanner.clicked.connect(self.Stop_scan)
@@ -294,41 +295,20 @@ class frm_Arp_Poison(PumpkinModule):
                 QMessageBox.information(self,'Error Redirect IP','Redirect IP not found')
 
     def Start_scan(self):
-        self.StatusMonitor(True,'stas_scan')
-        threadscan_check = self.configure.Settings.get_setting('settings','Function_scan')
+        Headers = []
         self.tables.clear()
         self.data = {'IPaddress':[], 'Hostname':[], 'MacAddress':[]}
-        if threadscan_check == 'Nmap':
-            try:
-                from nmap import PortScanner
-            except ImportError:
-                QMessageBox.information(self,'Error Nmap','The modules python-nmap not installed')
-                return
-            if  self.txt_gateway.text() != '':
-                self.movie_screen.setDisabled(True)
-                self.tables.setVisible(False)
-                gateway = str(self.txt_gateway.text())
-                self.ThreadScanner = ThreadScan(gateway[:len(gateway)-len(gateway.split('.').pop())] + '0/24')
-                self.connect(self.ThreadScanner,SIGNAL('Activated ( QString ) '), self.thread_scan_reveice)
-                self.StatusMonitor(True,'stas_scan')
-                self.ThreadScanner.start()
-            else:
-                QMessageBox.information(self,'Error in gateway','gateway not found.')
-
-        elif threadscan_check == 'Ping':
-            if self.txt_gateway.text() != '':
-                self.thread_ScanIP = ThreadFastScanIP(str(self.txt_gateway.text()),self.ip_range.text())
-                self.thread_ScanIP.sendDictResultscan.connect(self.get_result_scanner_ip)
-                self.StatusMonitor(True,'stas_scan')
-                self.thread_ScanIP.start()
-                Headers = []
-                for key in reversed(self.data.keys()):
-                    Headers.append(key)
-                self.tables.setHorizontalHeaderLabels(Headers)
-            else:
-                QMessageBox.information(self,'Error in gateway','gateway not found.')
-        else:
-            QMessageBox.information(self,'Error on select thread Scan','thread scan not selected.')
+        if self.txt_gateway.text() != '':
+            self.btn_start_scanner.setEnabled(False)
+            self.btn_stop_scanner.setEnabled(True)
+            self.thread_ScanIP = ThreadFastScanIP(str(self.txt_gateway.text()),self.ip_range.text())
+            self.thread_ScanIP.sendDictResultscan.connect(self.get_result_scanner_ip)
+            self.StatusMonitor(True,'stas_scan')
+            self.thread_ScanIP.start()
+            for key in reversed(self.data.keys()):
+                Headers.append(key)
+            return self.tables.setHorizontalHeaderLabels(Headers)
+        return QMessageBox.information(self,'Error in gateway','gateway not found.')
 
     def get_result_scanner_ip(self,data):
         Headers = []
@@ -350,6 +330,8 @@ class frm_Arp_Poison(PumpkinModule):
         self.StatusMonitor(False,'stas_scan')
         self.Stop_scan()
         self.thread_ScanIP.manager.shutdown()
+        self.btn_start_scanner.setEnabled(True)
+        self.btn_stop_scanner.setEnabled(False)
 
     def Stop_scan(self):
         self.thread_ScanIP.stop()

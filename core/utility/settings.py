@@ -63,9 +63,9 @@ class SettingsTabGeneral(QVBoxLayout):
         self.groupThemes.setLayout(self.formGroupThemes)
 
         self.groupAP.setTitle('Access Point:')
-        self.groupDhcp.setTitle('DHCP:')
-        self.groupDeauth.setTitle('Deauth:')
-        self.groupScan.setTitle('Scan devices:')
+        self.groupDhcp.setTitle('DHCP Server:')
+        self.groupDeauth.setTitle('Deauth Attack:')
+        self.groupScan.setTitle('Scan Network:')
         self.groupThemes.setTitle('Pumpkin Themes:')
 
         #page general
@@ -88,9 +88,8 @@ class SettingsTabGeneral(QVBoxLayout):
         self.d_mdk = QRadioButton('mdk3 Deauth')
         self.scan_scapy = QRadioButton('Scan from scapy')
         self.scan_airodump = QRadioButton('Scan from airodump-ng')
-        self.dhcp1 = QRadioButton('iscdhcpserver')
-        self.dhcp2 = QRadioButton('dnsmasq')
-        self.dhcp2.setDisabled(True)
+        self.dhcpdserver = QRadioButton('Isc DHCP Server (dhcpd)')
+        self.pydhcpserver = QRadioButton('python DHCPServer')
         self.theme1 = QRadioButton('theme Default')
         self.theme2 = QRadioButton('theme Blue Dark ')
         self.theme3 = QRadioButton('theme Orange Dark')
@@ -102,8 +101,8 @@ class SettingsTabGeneral(QVBoxLayout):
         self.GruPag0.addButton(self.AP_1)
         self.GruPag1.addButton(self.d_scapy)
         self.GruPag1.addButton(self.d_mdk)
-        self.GruPag2.addButton(self.dhcp1)
-        self.GruPag2.addButton(self.dhcp2)
+        self.GruPag2.addButton(self.pydhcpserver)
+        self.GruPag2.addButton(self.dhcpdserver)
         self.GruPag3.addButton(self.scan_scapy)
         self.GruPag3.addButton(self.scan_airodump)
         self.GruPag4.addButton(self.theme1)
@@ -112,11 +111,14 @@ class SettingsTabGeneral(QVBoxLayout):
 
         #page 1 config widgets
         self.GruPag0.buttonClicked.connect(self.get_options_hostapd)
-        self.Apname.setText(self.Settings.get_setting('accesspoint','APname'))
+        self.Apname.setText(self.Settings.get_setting('accesspoint','ssid'))
         self.channel.setValue(int(self.Settings.get_setting('accesspoint','channel')))
-        self.deauth_check = self.Settings.get_setting('settings','deauth')
-        self.scan_AP_check = self.Settings.get_setting('settings','scanner_AP')
-        self.dhcp_check = self.Settings.get_setting('accesspoint', 'dhcp_server')
+        self.d_scapy.setChecked(self.Settings.get_setting('settings','scapy_deauth',format=bool))
+        self.d_mdk.setChecked(self.Settings.get_setting('settings','mdk3_deauth',format=bool))
+        self.scan_scapy.setChecked(self.Settings.get_setting('settings','scan_scapy',format=bool))
+        self.scan_airodump.setChecked(self.Settings.get_setting('settings','scan_airodump',format=bool))
+        self.pydhcpserver.setChecked(self.Settings.get_setting('accesspoint', 'pydhcp_server',format=bool))
+        self.dhcpdserver.setChecked(self.Settings.get_setting('accesspoint', 'dhcpd_server',format=bool))
         self.theme_selected = self.Settings.get_setting('settings','themes')
 
         check_path_hostapd = self.Settings.get_setting('accesspoint','hostapd_path')
@@ -129,25 +131,13 @@ class SettingsTabGeneral(QVBoxLayout):
             self.AP_0.setChecked(True)
 
         # setting page 1
-        if self.deauth_check == 'packets_mdk3':
-            self.d_mdk.setChecked(True)
-        else:
-            self.d_scapy.setChecked(True)
-        if self.dhcp_check == 'iscdhcpserver':
-            self.dhcp1.setChecked(True)
-        else:
-            self.dhcp2.setChecked(True)
-        if self.scan_AP_check == 'scan_scapy':
-            self.scan_scapy.setChecked(True)
-        else:
-            self.scan_airodump.setChecked(True)
         if self.theme_selected in self.theme1.objectName():
             self.theme1.setChecked(True)
         elif self.theme_selected in self.theme2.objectName():
             self.theme2.setChecked(True)
         elif self.theme_selected in self.theme3.objectName():
             self.theme3.setChecked(True)
-        self.formGroupAP.addRow('AP Name:',self.Apname)
+        self.formGroupAP.addRow('SSID:',self.Apname)
         self.formGroupAP.addRow('Channel:',self.channel)
         self.formGroupAP.addRow(self.AP_0)
         self.formGroupAP.addRow(self.AP_1)
@@ -157,8 +147,8 @@ class SettingsTabGeneral(QVBoxLayout):
         self.formGroupDeauth.addRow(self.d_mdk)
         self.formGroupScan.addRow(self.scan_scapy)
         self.formGroupScan.addRow(self.scan_airodump)
-        self.formGroupDHCP.addRow(self.dhcp1)
-        self.formGroupDHCP.addRow(self.dhcp2)
+        self.formGroupDHCP.addRow(self.pydhcpserver)
+        self.formGroupDHCP.addRow(self.dhcpdserver)
         self.formGroupThemes.addRow(self.theme1)
         self.formGroupThemes.addRow(self.theme2)
         self.formGroupThemes.addRow(self.theme3)
@@ -213,26 +203,18 @@ class frm_Settings(QDialog):
         self.move(frameGm.topLeft())
 
     def save_settings(self):
-        if self.pageTab1.d_scapy.isChecked():
-            self.Settings.set_setting('settings','deauth','packets_scapy')
-        elif self.pageTab1.d_mdk.isChecked():
-            self.Settings.set_setting('settings','deauth','packets_mdk3')
-        if self.pageTab1.scan_scapy.isChecked():
-            self.Settings.set_setting('settings','scanner_AP','scan_scapy')
-        elif self.pageTab1.scan_airodump.isChecked():
-            self.Settings.set_setting('settings','scanner_AP','scan_airodump')
-        if self.pageTab1.dhcp1.isChecked():
-            self.Settings.set_setting('accesspoint','dhcp_server','iscdhcpserver')
+        self.Settings.set_setting('settings','scapy_deauth',self.pageTab1.d_scapy.isChecked())
+        self.Settings.set_setting('settings','mdk3_deauth',self.pageTab1.d_mdk.isChecked())
+        self.Settings.set_setting('settings','scan_scapy',self.pageTab1.scan_scapy.isChecked())
+        self.Settings.set_setting('settings','scan_airodump',self.pageTab1.scan_airodump.isChecked())
+        self.Settings.set_setting('accesspoint','dhcpd_server',self.pageTab1.dhcpdserver.isChecked())
+        self.Settings.set_setting('accesspoint','pydhcp_server',self.pageTab1.pydhcpserver.isChecked())
         if self.pageTab1.theme1.isChecked():
             self.Settings.set_setting('settings','themes',str(self.pageTab1.theme1.objectName()))
         elif self.pageTab1.theme2.isChecked():
             self.Settings.set_setting('settings','themes',str(self.pageTab1.theme2.objectName()))
         elif self.pageTab1.theme3.isChecked():
             self.Settings.set_setting('settings','themes',str(self.pageTab1.theme3.objectName()))
-        if self.scan1.isChecked():
-            self.Settings.set_setting('settings','Function_scan','Ping')
-        elif self.scan2.isChecked():
-            self.Settings.set_setting('settings','Function_scan','Nmap')
         if self.pageTab1.AP_0.isChecked():
             self.Settings.set_setting('accesspoint','hostapd_custom',False)
         elif self.pageTab1.AP_1.isChecked():
@@ -240,9 +222,10 @@ class frm_Settings(QDialog):
 
         self.Settings.set_setting('settings','mdk3',str(self.txt_arguments.text()))
         self.Settings.set_setting('settings','scanner_rangeIP',str(self.txt_ranger.text()))
-        self.Settings.set_setting('accesspoint','APname', str(self.pageTab1.Apname.text()))
+        self.Settings.set_setting('accesspoint','ssid', str(self.pageTab1.Apname.text()))
         self.Settings.set_setting('accesspoint','channel', str(self.pageTab1.channel.value()))
         self.Settings.set_setting('accesspoint','persistNetwokManager',self.pageTab1.network_manager.isChecked())
+        self.Settings.set_setting('accesspoint','check_support_ap_mode',self.check_interface_mode_AP.isChecked())
         self.Settings.set_setting('settings','redirect_port', str(self.redirectport.text()))
         if not path.isfile(self.pageTab1.edit_hostapd_path.text()):
             return QMessageBox.warning(self,'Path Hostapd Error','hostapd binary path is not found')
@@ -275,15 +258,13 @@ class frm_Settings(QDialog):
                         itemsexits.append(str(self.ListRules.item(index).text()))
                     for i in itemsexits:
                         if search(str(text),i):
-                            QMessageBox.information(self,'Rules exist','this rules already exist!')
-                            return
+                            return QMessageBox.information(self,'Rules exist','this rules already exist!')
                     item = QListWidgetItem()
                     item.setText(text)
                     item.setSizeHint(QSize(30,30))
                     self.ListRules.addItem(item)
                 except Exception as e:
-                    QMessageBox.information(self,'error',str(e))
-                    return
+                    return QMessageBox.information(self,'error',str(e))
         elif action == editem:
             text, resp = QInputDialog.getText(self, 'Add rules iptables',
             'Enter the rules iptables:',text=self.ListRules.item(self.ListRules.currentRow()).text())
@@ -294,15 +275,13 @@ class frm_Settings(QDialog):
                         itemsexits.append(str(self.ListRules.item(index).text()))
                     for i in itemsexits:
                         if search(str(text),i):
-                            QMessageBox.information(self,'Rules exist','this rules already exist!')
-                            return
+                            return QMessageBox.information(self,'Rules exist','this rules already exist!')
                     item = QListWidgetItem()
                     item.setText(text)
                     item.setSizeHint(QSize(30,30))
                     self.ListRules.insertItem(self.ListRules.currentRow(),item)
                 except Exception as e:
-                    QMessageBox.information(self,'error',str(e))
-                    return
+                    return QMessageBox.information(self,'error',str(e))
         elif action == clearitem:
             self.ListRules.clear()
 
@@ -349,6 +328,10 @@ class frm_Settings(QDialog):
         self.scan1 = QRadioButton('Ping Scan:: Very fast scan IP')
         self.scan2 = QRadioButton('Python-Nmap:: Get hostname from IP')
         self.redirectport = QLineEdit(self)
+        self.check_interface_mode_AP = QCheckBox('Check if interface has been support AP/Mode')
+        self.check_interface_mode_AP.setChecked(self.Settings.get_setting('accesspoint','check_support_ap_mode',format=bool))
+        self.check_interface_mode_AP.setToolTip('if you disable this options in next time, the interface is not should '
+        'checked if has support AP mode.')
 
         # page Iptables
         self.ListRules = QListWidget(self)
@@ -377,11 +360,10 @@ class frm_Settings(QDialog):
 
         self.txt_ranger.setText(self.Settings.get_setting('settings','scanner_rangeIP'))
         self.txt_arguments.setText(self.Settings.get_setting('settings','mdk3'))
-        self.scanIP_selected  = self.Settings.get_setting('settings','Function_scan')
         self.bdfProxy_port.setValue(int(self.bdfproxyConf.get_setting('Overall','proxyPort')))
         self.bdfProxy_port.setEnabled(False)
-        if self.scanIP_selected == 'Ping': self.scan1.setChecked(True)
         self.scan2.setEnabled(False)
+        self.scan1.setChecked(True)
         #settings tab Advanced
         self.redirectport.setText(self.Settings.get_setting('settings','redirect_port'))
 
@@ -389,6 +371,7 @@ class frm_Settings(QDialog):
         self.formGroupAd.addRow(QLabel('Thread Scan IP-Address:'))
         self.formGroupAd.addRow(self.scan1)
         self.formGroupAd.addRow(self.scan2)
+        self.formGroupAd.addRow(self.check_interface_mode_AP)
         self.formGroupAd.addRow('Port BDFProxy-ng',self.bdfProxy_port)
         self.formGroupAd.addRow('Port sslstrip:',self.redirectport)
         self.formGroupAd.addRow(QLabel('mdk3 Args:'),self.txt_arguments)

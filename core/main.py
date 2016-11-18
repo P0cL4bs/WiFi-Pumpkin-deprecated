@@ -50,6 +50,7 @@ from core.helpers.update import frm_githubUpdate
 from core.utility.settings import frm_Settings
 from core.helpers.update import ProgressBarWid
 from core.helpers.report import frm_ReportLogger
+from core.packets.dhcpserver import DHCPServer,DNSServer
 from isc_dhcp_leases.iscdhcpleases import IscDhcpLeases
 from netfilterqueue import NetfilterQueue
 
@@ -129,6 +130,8 @@ class Initialize(QMainWindow):
                 if self.reply == QMessageBox.Yes:
                     set_monitor_mode(i.split()[0]).setDisable()
                     return event.accept()
+                return event.ignore()
+
         # check is Rouge AP is running
         if self.form_widget.Apthreads['RougeAP'] != []:
             self.reply = QMessageBox.question(self,
@@ -138,8 +141,8 @@ class Initialize(QMainWindow):
                 print('killing all threads...')
                 self.form_widget.Stop_PumpAP()
                 return event.accept()
-        if hasattr(self,'reply'):
-            event.ignore()
+            return event.ignore()
+        return event.accept()
 
 class WifiPumpkin(QWidget):
     ''' load main window class'''
@@ -418,7 +421,7 @@ class WifiPumpkin(QWidget):
         self.GroupAP = QGroupBox()
         self.GroupAP.setTitle('Access Point::')
         self.FormGroup3.addRow('Gateway:', self.EditGateway)
-        self.FormGroup3.addRow('AP Name:', self.EditApName)
+        self.FormGroup3.addRow('SSID:', self.EditApName)
         self.FormGroup3.addRow('Channel:', self.EditChannel)
         self.GroupAP.setLayout(self.FormGroup3)
         self.GroupAP.setFixedWidth(200)
@@ -476,14 +479,10 @@ class WifiPumpkin(QWidget):
         Menu_file = self.myQMenuBar.addMenu('&File')
         exportAction = QAction('Report Logger...', self)
         deleteAction = QAction('Clear Logger', self)
-        exitAction = QAction('Exit', self)
-        exitAction.setIcon(QIcon('icons/close-pressed.png'))
         deleteAction.setIcon(QIcon('icons/delete.png'))
         exportAction.setIcon(QIcon('icons/export.png'))
         Menu_file.addAction(exportAction)
         Menu_file.addAction(deleteAction)
-        Menu_file.addAction(exitAction)
-        exitAction.triggered.connect(exit)
         deleteAction.triggered.connect(self.delete_logger)
         exportAction.triggered.connect(self.exportlogger)
 
@@ -661,6 +660,12 @@ class WifiPumpkin(QWidget):
 
     def show_dns_spoof(self):
         ''' call GUI DnsSpoof module '''
+        if  self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
+            if self.PopUpPlugins.GroupPluginsProxy.isChecked():
+                return QMessageBox.information(self,'DnsSpoof with AP','if you want to use the module'
+                ' Dns Spoof Attack with AP started, you need to disable Proxy Server. You can change this in plugins tab'
+                ' and only it necessary that the option "Enable Proxy Server"  be unmarked and '
+                'restart the AP(Access Point).')
         self.Fdns = GUIModules.frm_DnsSpoof(self.FormPopup.Ftemplates)
         self.Fdns.setGeometry(QRect(100, 100, 450, 500))
         self.Fdns.show()
@@ -777,9 +782,11 @@ class WifiPumpkin(QWidget):
                     self.APclients[data[4]] = {'IP': data[2],'device': hostname,
                     'in_tables': False,}
                     self.StatusDHCPRequests(data[4],self.APclients[data[4]])
+        self.Add_data_into_QTableWidget(self.APclients)
 
+    def Add_data_into_QTableWidget(self,APclients):
         Headers = []
-        for mac in self.APclients.keys():
+        for mac in APclients.keys():
             if self.APclients[mac]['in_tables'] == False:
                 self.APclients[mac]['in_tables'] = True
                 try:
@@ -788,8 +795,8 @@ class WifiPumpkin(QWidget):
                 except:
                     d_vendor = 'unknown device'
                 self.THeaders['Mac Address'].append(mac)
-                self.THeaders['IP Address'].append(self.APclients[mac]['IP'])
-                self.THeaders['Devices'].append(self.APclients[mac]['device'])
+                self.THeaders['IP Address'].append(APclients[mac]['IP'])
+                self.THeaders['Devices'].append(APclients[mac]['device'])
                 self.THeaders['Vendors'].append(d_vendor)
                 for n, key in enumerate(self.THeaders.keys()):
                     Headers.append(key)
@@ -798,8 +805,15 @@ class WifiPumpkin(QWidget):
                         item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
                         self.TabInfoAP.setItem(m, n, item)
                 self.TabInfoAP.setHorizontalHeaderLabels(self.THeaders.keys())
-        self.connectedCount.setText(str(len(self.APclients.keys())))
+        self.connectedCount.setText(str(len(APclients.keys())))
 
+
+    def GetDHCPDiscoverInfo(self,message):
+        self.APclients[message['mac_addr']] = \
+        {'IP': message['ip_addr'],
+        'device': message['host_name'],'in_tables': False}
+        self.StatusDHCPRequests(message['mac_addr'],self.APclients[message['mac_addr']])
+        self.Add_data_into_QTableWidget(self.APclients)
 
     def GetHostapdStatus(self,data):
         ''' get inactivity client from hostapd response'''
@@ -823,7 +837,7 @@ class WifiPumpkin(QWidget):
             self.EditGateway.setText( # get gateway interface connected with internet
             [self.get_interfaces[x] for x in self.get_interfaces.keys() if x == 'gateway'][0])
         except Exception :pass
-        self.EditApName.setText(self.FSettings.Settings.get_setting('accesspoint','APname'))
+        self.EditApName.setText(self.FSettings.Settings.get_setting('accesspoint','ssid'))
         self.EditChannel.setValue(self.FSettings.Settings.get_setting('accesspoint','channel',format=int))
         self.ConfigTwin['PortRedirect'] = self.FSettings.redirectport.text()
         # get all Wireless Adapter available and add in comboBox
@@ -1032,10 +1046,9 @@ class WifiPumpkin(QWidget):
         self.hostapd_path = self.FSettings.Settings.get_setting('accesspoint','hostapd_path')
         if not path.isfile(self.hostapd_path):
             return QMessageBox.information(self,'Error Hostapd','hostapd is not installed')
-        dhcp_select = self.FSettings.Settings.get_setting('accesspoint','dhcp_server')
-        if dhcp_select == 'iscdhcpserver':
+        if self.FSettings.Settings.get_setting('accesspoint','dhcpd_server',format=bool):
             if not self.ConfigTwin['ProgCheck'][3]:
-                return QMessageBox.warning(self,'Error dhcp','isc-dhcp-server is not installed')
+                return QMessageBox.warning(self,'Error dhcpd','isc-dhcp-server (dhcpd) is not installed')
         return True
 
     def Start_PumpAP(self):
@@ -1043,6 +1056,15 @@ class WifiPumpkin(QWidget):
         if len(self.selectCard.currentText()) == 0:
             return QMessageBox.warning(self,'Error interface ','Network interface is not found')
         if not type(self.SoftDependencies()) is bool: return
+
+        # check if interface has been support AP mode (necessary for hostapd)
+        if self.FSettings.Settings.get_setting('accesspoint','check_support_ap_mode',format=bool):
+            if not 'AP' in Refactor.get_supported_interface(self.selectCard.currentText())['Supported']:
+                return QMessageBox.warning(self,'No Network Supported failed',
+                "<strong>failed AP mode: warning interface </strong>, the feature "
+                "Access Point Mode is Not Supported By This Device -><strong>({})</strong>.<br><br>"
+                "Your adapter does not support for create Access Point Network."
+                " ".format(self.selectCard.currentText()))
 
         # check connection with internet
         self.interfacesLink = Refactor.get_interfaces()
@@ -1090,6 +1112,7 @@ class WifiPumpkin(QWidget):
         # check if using ethernet or wireless connection
         print('[*] Configuring hostapd...')
         self.ConfigTwin['AP_iface'] = str(self.selectCard.currentText())
+        set_monitor_mode(self.ConfigTwin['AP_iface']).setDisable()
         if self.interfacesLink['activated'][1] == 'ethernet' or self.interfacesLink['activated'][1] == 'ppp':
             # change Wi-Fi state card
             try:
@@ -1147,14 +1170,23 @@ class WifiPumpkin(QWidget):
 
         # create thread dhcpd and connect fuction GetDHCPRequests
         print('[*] Configuring dhcpd...')
-        popen('ifconfig {} up'.format(str(self.selectCard.currentText())))
-        selected_dhcp = self.FSettings.Settings.get_setting('accesspoint','dhcp_server')
-        if selected_dhcp == 'iscdhcpserver':
+        if  self.FSettings.Settings.get_setting('accesspoint','dhcpd_server',format=bool):
             self.Thread_dhcp = ThRunDhcp(['dhcpd','-d','-f','-lf','/var/lib/dhcp/dhcpd.leases','-cf',
             '/etc/dhcp/dhcpd.conf',self.ConfigTwin['AP_iface']],self.currentSessionID)
             self.Thread_dhcp.sendRequest.connect(self.GetDHCPRequests)
             self.Thread_dhcp.setObjectName('DHCP')
             self.Apthreads['RougeAP'].append(self.Thread_dhcp)
+
+        elif self.FSettings.Settings.get_setting('accesspoint','pydhcp_server',format=bool):
+            self.ThreadDNSServer = DNSServer(self.ConfigTwin['AP_iface'],self.DHCP['router'])
+            self.ThreadDNSServer.setObjectName('DNSServer')
+            if not self.PopUpPlugins.check_dns2proy.isChecked():
+                self.Apthreads['RougeAP'].append(self.ThreadDNSServer)
+
+            self.ThreadDHCPserver = DHCPServer(self.ConfigTwin['AP_iface'],self.DHCP)
+            self.ThreadDHCPserver.sendConnetedClient.connect(self.GetDHCPDiscoverInfo)
+            self.ThreadDHCPserver.setObjectName('DHCPServer')
+            self.Apthreads['RougeAP'].append(self.ThreadDHCPserver)
 
         self.Started(True)
         self.ProxyPluginsTAB.GroupSettings.setEnabled(False)
@@ -1247,7 +1279,8 @@ class WifiPumpkin(QWidget):
         print('AP::[{}] Running...'.format(self.EditApName.text()))
         print('AP::BSSID::[{}] CH {}'.format(Refactor.get_interface_mac(
         self.selectCard.currentText()),self.EditChannel.value()))
-        self.FSettings.Settings.set_setting('accesspoint','APname',str(self.EditApName.text()))
+        self.FSettings.Settings.set_setting('accesspoint','ssid',str(self.EditApName.text()))
+        self.FSettings.Settings.set_setting('accesspoint','channel',str(self.EditChannel.value()))
 
     def get_netcreds_output(self,data):
         ''' get std_ouput the thread Netcreds and add in DockArea '''

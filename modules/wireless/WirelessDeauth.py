@@ -124,7 +124,6 @@ class frm_deauth(PumpkinModule):
         self.btn_stop.setIcon(QIcon("icons/Stop.png"))
 
         self.get_placa = QComboBox(self)
-        self.options_scan = self.configure.Settings.get_setting('settings','scanner_AP')
         # get all wireless card avaliable
         all = Refactor.get_interfaces()['all']
         for count,card in enumerate(all):
@@ -238,18 +237,18 @@ class frm_deauth(PumpkinModule):
             self.btn_scan_stop.setEnabled(True)
             self.btn_scan_start.setEnabled(False)
             if self.interface != None:
-                if self.options_scan == "scan_scapy":
+                if self.configure.Settings.get_setting('settings','scan_scapy',format=bool):
                     self.threadScanAP = ThreadScannerAP(self.interface)
                     self.connect(self.threadScanAP,SIGNAL('Activated ( QString ) '), self.monitorThreadScan)
                     self.threadScanAP.setObjectName('Thread Scanner AP::scapy')
                     self.threadScanAP.start()
-                else:
+                elif self.configure.Settings.get_setting('settings','scan_airodump',format=bool):
                     if path.isfile(popen('which airodump-ng').read().split("\n")[0]):
                         self.thread_airodump = threading.Thread(target=self.scan_diveces_airodump)
                         self.thread_airodump.daemon = True
                         self.thread_airodump.start()
                     else:
-                        QMessageBox.information(self,'Error airodump','airodump-ng not installed')
+                        QMessageBox.information(self,'Error airodump','airodump-ng is not installed')
                         set_monitor_mode(self.get_placa.currentText()).setDisable()
 
 
@@ -267,19 +266,17 @@ class frm_deauth(PumpkinModule):
         self.btn_stop.setEnabled(True)
         self.btn_enviar.setEnabled(False)
         self.bssid = str(self.linetarget.text())
-        self.deauth_check = self.configure.Settings.get_setting('settings','deauth')
         self.args = str(self.configure.Settings.get_setting('settings','mdk3'))
 
         # set card mode monitor
         self.interface = str(set_monitor_mode(self.get_placa.currentText()).setEnable())
-        if self.deauth_check == 'packets_scapy':
+        if self.configure.Settings.get_setting('settings','scapy_deauth',format=bool):
             self.AttackStatus(True)
             self.threadDeauth = ThreadDeauth(self.bssid,str(self.input_client.text()),self.interface)
             threadloading['deauth'].append(self.threadDeauth)
             self.threadDeauth.setObjectName('Deauth scapy')
             return self.threadDeauth.start()
-
-        if self.deauth_check == 'packets_mdk3':
+        elif self.configure.Settings.get_setting('settings','mdk3_deauth',format=bool):
             if  path.isfile(popen('which mdk3').read().split("\n")[0]):
                 self.AttackStatus(True)
                 self.mdk3_arguments = {'mdk3':[self.interface]}

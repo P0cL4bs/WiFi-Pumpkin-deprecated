@@ -3,7 +3,7 @@ from time import sleep,asctime
 from random import randint
 from base64 import b64encode
 from os import popen,path,walk,stat
-from subprocess import check_output,Popen,PIPE,STDOUT
+from subprocess import check_output,Popen,PIPE,STDOUT,CalledProcessError
 from re import search,compile,VERBOSE,IGNORECASE
 import netifaces
 from scapy.all import *
@@ -140,7 +140,7 @@ class Refactor:
          'credentials': {'logs/AccessPoint/credentials.log':[]},
          'dns2proxy': {'logs/AccessPoint/dns2proxy.log':[]},
          'injectionPage': {'logs/AccessPoint/injectionPage.log':[]},
-         'dnsspoofAP': {'logs/AccessPoint/DnsSpoofModuleReq.log':[]},
+         'dnsspoofAP': {'logs/AccessPoint/dnsspoof.log':[]},
          'responder': {'logs/AccessPoint/responder.log':[]},
          'phishing': {'logs/Phishing/requests.log':[]},}
         if unchecked != {}:
@@ -247,6 +247,22 @@ class Refactor:
         except KeyError:
             print('Error: find network interface information ')
         return interfaces
+
+    @staticmethod
+    def get_supported_interface(dev):
+        ''' get all support mode from interface wireless  '''
+        _iface = {'info':{},'Supported': []}
+        try:
+            output = check_output(['iw',dev,'info'],stderr=STDOUT, universal_newlines=True)
+            for line in output.split('\n\t'):
+                _iface['info'][line.split()[0]] = line.split()[1]
+            rulesfilter = '| grep "Supported interface modes" -A 10 | grep "*"'
+            supportMode = popen('iw phy{} info {}'.format(_iface['info']['wiphy'],rulesfilter)).read()
+            for mode in supportMode.split('\n\t\t'):
+                _iface['Supported'].append(mode.split('* ')[1])
+        except CalledProcessError:
+            return _iface
+        return _iface
 
     @staticmethod
     def get_Ipaddr(card):

