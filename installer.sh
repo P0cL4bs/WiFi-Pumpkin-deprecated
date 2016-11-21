@@ -63,6 +63,10 @@ func_install(){
 	check_arch=$(uname -m)
 	echo "[$green+$txtrst] Distribution Name: $dist"
 	echo "----------------------------------------"
+    if [ "$dist" = "Ubuntu" ]; then
+        apt-get install libjpeg8-dev -y
+        pip install mitmproxy==0.16
+    fi
 	echo "[=] $bldblu Install WiFi-Pumpkin $txtrst"
 	if [ ! -d "$DIRECTORY" ]; then
 		mkdir $DIRECTORY

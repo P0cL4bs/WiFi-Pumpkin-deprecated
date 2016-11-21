@@ -9,7 +9,6 @@ Framework for Rogue Wi-Fi Access Point Attack
 WiFi-Pumpkin is an open source security tool that provides the Rogue access point to Man-In-The-Middle and network attacks.
 ### Installation
 
-Kali 2.0/WifiSlax 4.11.1/Parrot 3.0.1/2.0.5
 - Python 2.7
 ```sh
  git clone https://github.com/P0cL4bs/WiFi-Pumpkin.git
