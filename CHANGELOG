@@ -21,6 +21,7 @@ Version 0.8.3
 - fixed installer:install mitmproxy in ubuntu
 - added function: get possible errors from hostapd service
 - fixed get_file_cfg_Update: get update from github
+- fixed DNSServer: closes itself with this error #116
 
 Version 0.8.1
 -------------

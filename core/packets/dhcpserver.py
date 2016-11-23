@@ -2,9 +2,8 @@ import IN
 import time
 import socket
 import struct
-from subprocess import Popen,PIPE
 from collections import defaultdict
-from PyQt4.QtCore import QThread,pyqtSignal
+from PyQt4.QtCore import QThread,pyqtSignal,QObject
 
 
 class OutOfLeasesError(Exception):
@@ -45,23 +44,26 @@ class DNSServer(QThread):
         self.address = address
 
     def run(self):
-        dns_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        dns_sock.settimeout(3)  # Set timeout on socket-operations.
-        Popen(['fuser','-k','-n','udp','53'], stdout=PIPE,shell=False,stderr=PIPE)
+        self.dns_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.dns_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.dns_sock.settimeout(0.3)  # Set timeout on socket-operations.
         time.sleep(0.5)
-        dns_sock.bind(('', 53))
+        self.dns_sock.bind(('', 53))
         while self.DnsLoop:
             try:
-                data, addr = dns_sock.recvfrom(1024)
+                data, addr = self.dns_sock.recvfrom(1024)
             except:
                 continue
             packet = DNSQuery(data)
             # Return own IP adress.
-            dns_sock.sendto(packet.respuesta(self.address), addr)
-        dns_sock.close()
+            self.dns_sock.sendto(packet.respuesta(self.address), addr)
+        self.dns_sock.close()
 
     def stop(self):
         self.DnsLoop = False
+        self.dns_sock.close()
+        self.terminate()
+
 
 
 

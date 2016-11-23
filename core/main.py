@@ -794,9 +794,10 @@ class WifiPumpkin(QWidget):
         self.Add_data_into_QTableWidget(self.APclients)
 
     def Add_data_into_QTableWidget(self,APclients):
+        ''' add clients infors in  tablewidget  '''
         Headers = []
         for mac in APclients.keys():
-            if self.APclients[mac]['in_tables'] == False:
+            if not self.APclients[mac]['in_tables']:
                 self.APclients[mac]['in_tables'] = True
                 try:
                     d_vendor = EUI(mac)
@@ -818,11 +819,13 @@ class WifiPumpkin(QWidget):
 
 
     def GetDHCPDiscoverInfo(self,message):
-        self.APclients[message['mac_addr']] = \
-        {'IP': message['ip_addr'],
-        'device': message['host_name'],'in_tables': False}
-        self.StatusDHCPRequests(message['mac_addr'],self.APclients[message['mac_addr']])
-        self.Add_data_into_QTableWidget(self.APclients)
+        '''get infor client connected with AP '''
+        if message['mac_addr'] not in self.APclients.keys():
+            self.APclients[message['mac_addr']] = \
+            {'IP': message['ip_addr'],
+            'device': message['host_name'],'in_tables': False}
+            self.StatusDHCPRequests(message['mac_addr'],self.APclients[message['mac_addr']])
+            self.Add_data_into_QTableWidget(self.APclients)
 
     def GetHostapdStatus(self,data):
         ''' get inactivity client from hostapd response'''
@@ -928,6 +931,8 @@ class WifiPumpkin(QWidget):
         # disable IP Forwarding in Linux
         Refactor.set_ip_forward(0)
         self.TabInfoAP.clearContents()
+        self.THeaders  = OrderedDict([ ('Devices',[]), # restore headers table widet
+        ('Mac Address',[]),('IP Address',[]),('Vendors',[])])
         if hasattr(self.FormPopup,'Ftemplates'):
             self.FormPopup.Ftemplates.killThread()
             self.FormPopup.StatusServer(False)
