@@ -180,10 +180,15 @@ class ProcessThread(QObject):
 
 class ProcessHostapd(QObject):
     statusAP_connected = pyqtSignal(object)
+    statusAPError = pyqtSignal(object)
     def __init__(self,cmd,session):
         QObject.__init__(self)
-        self.cmd = cmd
-        self.session = session
+        self.cmd         = cmd
+        self.session     = session
+        self.errorAPDriver = ('AP-DISABLED',
+        'Failed to initialize interface',
+        'nl80211 driver initialization failed.',
+        'errors found in configuration file')
 
     def getNameThread(self):
         return '[New Thread {} ({})]'.format(self.procHostapd.pid(),self.objectName())
@@ -194,6 +199,10 @@ class ProcessHostapd(QObject):
         if 'AP-STA-DISCONNECTED' in self.data.rstrip() or 'inactivity (timer DEAUTH/REMOVE)' in self.data.rstrip():
             self.statusAP_connected.emit(self.data.split()[2])
         self.log_hostapd.info(self.data)
+        for error in self.errorAPDriver:
+            if self.data.find(error) != -1:
+                return self.statusAPError.emit(self.data)
+
     def start(self):
         self.makeLogger()
         self.procHostapd = QProcess(self)
@@ -209,6 +218,8 @@ class ProcessHostapd(QObject):
     def stop(self):
         print 'Thread::[{}] successfully stopped.'.format(self.objectName())
         if hasattr(self,'procHostapd'):
+            QObject.disconnect(self.procHostapd,
+            SIGNAL('readyReadStandardOutput()'), self, SLOT('read_OutputCommand()'))
             self.procHostapd.terminate()
             self.procHostapd.waitForFinished()
             self.procHostapd.kill()

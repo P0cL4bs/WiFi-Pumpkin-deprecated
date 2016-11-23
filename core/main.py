@@ -349,12 +349,15 @@ class WifiPumpkin(QWidget):
         self.connectedCount = QLabel('')
         self.StatusDhcp = QLabel('')
         self.StatusApname = QLabel('')
+        self.StatusApchannel = QLabel('')
         self.proxy_lstatus = QLabel('[OFF]')
         self.StatusApname.setMaximumWidth(130)
 
         # add widgets in status bar
         self.StatusBar.addWidget(QLabel('SSID:'))
         self.StatusBar.addWidget(self.StatusApname)
+        self.StatusBar.addWidget(QLabel('Channel:'))
+        self.StatusBar.addWidget(self.StatusApchannel)
         self.StatusBar.addWidget(QLabel("Access-Point:"))
         self.StatusBar.addWidget(self.StatusDhcp)
         self.StatusBar.addWidget(QLabel('Injector-Proxy:'))
@@ -383,6 +386,7 @@ class WifiPumpkin(QWidget):
         self.EditGateway.setFixedWidth(120)
         self.selectCard = QComboBox(self)
         self.EditApName.textChanged.connect(self.setAP_name_changer)
+        self.EditChannel.valueChanged.connect(self.setAP_channel_changer)
 
         # table information AP connected
         self.TabInfoAP = QTableWidget(5,4)
@@ -726,6 +730,11 @@ class WifiPumpkin(QWidget):
         self.StatusApname.setText(string)
         self.StatusApname.setStyleSheet("QLabel {border-radius: 2px; background-color: grey; color : #000; }")
 
+    def setAP_channel_changer(self,value):
+        ''' send text editAPname change to statusbar'''
+        self.StatusApchannel.setText(str(value))
+        self.StatusApchannel.setStyleSheet("QLabel {border-radius: 2px; background-color: grey; color : #000; }")
+
     def set_proxy_statusbar(self,name,disabled=False):
         if not disabled:
             self.status_plugin_proxy_name.setText('[ {} ]'.format(name))
@@ -829,6 +838,13 @@ class WifiPumpkin(QWidget):
         for mac_tables in self.APclients.keys():self.APclients[mac_tables]['in_tables'] = False
         self.THeaders  = OrderedDict([ ('Devices',[]),('Mac Address',[]),('IP Address',[]),('Vendors',[])])
         self.connectedCount.setText(str(len(self.APclients.keys())))
+
+    def GetErrorhostapdServices(self,data):
+        '''check error hostapd on mount AP '''
+        self.Stop_PumpAP()
+        return QMessageBox.warning(self,'[ERROR] Hostpad',
+        'Failed to initiate Access Point, '
+        'check output process hostapd.\n\nOutput::\n{}'.format(data))
 
     def mConfigure(self):
         ''' settings edits default and check tools '''
@@ -1156,6 +1172,7 @@ class WifiPumpkin(QWidget):
         self.Thread_hostapd = ProcessHostapd({self.hostapd_path:[getcwd()+'/settings/hostapd.conf']}, self.currentSessionID)
         self.Thread_hostapd.setObjectName('hostapd')
         self.Thread_hostapd.statusAP_connected.connect(self.GetHostapdStatus)
+        self.Thread_hostapd.statusAPError.connect(self.GetErrorhostapdServices)
         self.Apthreads['RougeAP'].append(self.Thread_hostapd)
 
         # disable options when started AP
@@ -1266,13 +1283,12 @@ class WifiPumpkin(QWidget):
         self.progress.change_color('#FFA500')
         for thread in self.Apthreads['RougeAP']:
             self.progress.update_bar_simple(20)
-            QThread.sleep(3)
+            QThread.sleep(1)
             thread.start()
         self.progress.setValue(100)
         self.progress.change_color('#FFA500')
         # check if Advanced mode is enable
         if self.FSettings.Settings.get_setting('dockarea','advanced',format=bool):
-            QThread.sleep(3)
             self.PumpSettingsTAB.doCheckAdvanced()
 
         print('-------------------------------')

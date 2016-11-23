@@ -19,6 +19,7 @@ Version 0.8.3
 - added check if interface wireless support AP/Mode
 - added python implements a DHCP Server by psychomario
 - fixed installer:install mitmproxy in ubuntu
+- added function: get possible errors from hostapd service
 
 Version 0.8.1
 -------------
