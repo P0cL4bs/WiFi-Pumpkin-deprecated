@@ -20,6 +20,7 @@ Version 0.8.3
 - added python implements a DHCP Server by psychomario
 - fixed installer:install mitmproxy in ubuntu
 - added function: get possible errors from hostapd service
+- fixed get_file_cfg_Update: get update from github
 
 Version 0.8.1
 -------------

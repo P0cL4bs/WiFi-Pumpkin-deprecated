@@ -103,7 +103,9 @@ class frm_githubUpdate(PumpkinModule):
         for root, dirnames, filenames in walk(base_path):
             for filename in fnmatch.filter(filenames, '*.cfg'):
                 matches.append(path.join(root, filename))
-        return matches[0]
+        for filename in matches:
+            if str(filename).endswith('Lcommits.cfg'):
+                return filename
 
     def checkUpdate(self):
         try:
