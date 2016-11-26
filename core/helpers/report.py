@@ -1,5 +1,9 @@
 from core.loaders.models.PackagesUI import *
-from PyQt4.QtWebKit import QWebView
+QWebView_checker = True
+try:
+    from PyQt4.QtWebKit import QWebView
+except Exception:
+    QWebView_checker = False
 
 """
 Description:
@@ -122,7 +126,8 @@ class frm_ReportLogger(PumpkinModule):
         self.widget = QWidget()
         self.layout = QVBoxLayout(self.widget)
 
-        self.ExportPDF = QWebView()
+        if QWebView_checker:
+            self.ExportPDF = QWebView()
 
         # check all files logger empty or round
         self.viewlogger.setModel(self.model)
@@ -135,6 +140,7 @@ class frm_ReportLogger(PumpkinModule):
         self.GroupBoxFile.setTitle('Options:')
         self.checkHTML   = QRadioButton('HTML')
         self.checkPDF    = QRadioButton('PDF')
+        self.checkPDF.setEnabled(QWebView_checker)
         self.layoutGroupFile.addWidget(self.checkHTML)
         self.layoutGroupFile.addWidget(self.checkPDF)
 
