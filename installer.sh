@@ -68,20 +68,14 @@ func_install(){
         pip install mitmproxy==0.16
     fi
 	echo "[=] $bldblu Install WiFi-Pumpkin $txtrst"
-	if [ ! -d "$DIRECTORY" ]; then
-		mkdir $DIRECTORY
-		cp -r $path_install /usr/share/WiFi-Pumpkin/
-		bin_install
-		echo "[$green✔$txtrst] wifi-pumpkin installed with success"
-		echo "[$green✔$txtrst] execute $bldred sudo wifi-pumpkin$txtrst in terminal"
-	else
+	if [ -d "$DIRECTORY" ]; then
 		rm -r $DIRECTORY
-		mkdir $DIRECTORY
-		cp -r $path_install /usr/share/WiFi-Pumpkin/
-		bin_install
-		echo "[$green✔$txtrst] wifi-pumpkin installed with success"
-		echo "[$green✔$txtrst] execute $bldred sudo wifi-pumpkin$txtrst in terminal"
 	fi
+	mkdir $DIRECTORY
+	cp -r $path_install /usr/share/WiFi-Pumpkin/
+	bin_install
+	echo "[$green✔$txtrst] wifi-pumpkin installed with success"
+	echo "[$green✔$txtrst] execute $bldred sudo wifi-pumpkin$txtrst in terminal"
 	echo "[$green+$txtrst]$color_y P0cL4bs Team CopyRight 2015-2016$txtrst"
 	echo "[$green+$txtrst] Enjoy"
 	exit 0
