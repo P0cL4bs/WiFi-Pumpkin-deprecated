@@ -83,8 +83,12 @@ func_install(){
 
 bin_install(){
     echo "[$green✔$txtrst] binary::/usr/bin/"
-    ln -sfT /usr/share/WiFi-Pumpkin/wifi-pumpkin /usr/bin/wifi-pumpkin
-    chmod +x /usr/bin/wifi-pumpkin
+    if which update-alternatives >/dev/null; then
+        update-alternatives --install /usr/bin/wifi-pumpkin wifi-pumpkin /usr/share/WiFi-Pumpkin/wifi-pumpkin 1 > /dev/null
+    else
+        ln -sfT /usr/share/WiFi-Pumpkin/wifi-pumpkin /usr/bin/wifi-pumpkin
+    fi
+    chmod +x /usr/share/WiFi-Pumpkin/wifi-pumpkin
 }
 
 uninstall(){
@@ -93,14 +97,16 @@ uninstall(){
 		exit 1
 	fi
 	if [  -d "$DIRECTORY" ]; then
-		echo "[$red_color-$txtrst] Delete Path:$bldwht $DIRECTORY $txtrst"
-		rm -r $path_uninstall
-		if [ -f "/usr/bin/wifi-pumpkin" ]; then
-			rm /usr/bin/wifi-pumpkin
-			echo "[$red_color-$txtrst] Deleted Binary:$bldwht/usr/bin/wifi-pumpkin $txtrst"
-		fi
+            if which update-alternatives >/dev/null; then
+                update-alternatives --remove wifi-pumpkin /usr/share/WiFi-Pumpkin/wifi-pumpkin > /dev/null
+            else
+                rm /usr/bin/wifi-pumpkin
+            fi
+	    echo "[$red_color-$txtrst] Deleted Binary:$bldwht/usr/bin/wifi-pumpkin $txtrst"
+            echo "[$red_color-$txtrst] Delete Path:$bldwht $DIRECTORY $txtrst"
+	    rm -r $path_uninstall
 	else
-		echo "[$red_color✘$txtrst] wifi-pumpkin is not Installed"
+	    echo "[$red_color✘$txtrst] wifi-pumpkin is not Installed"
 	fi
 }
 func_Banner
