@@ -4,10 +4,13 @@ VERSION=$(date +%Y%m%d)
 DEB_ROOT="deb_tmp/wifi-pumpkin_$VERSION"
 INSTALL_PATH=/usr/share/WiFi-Pumpkin
 mkdir -p $DEB_ROOT$INSTALL_PATH
+mkdir -p $DEB_ROOT/usr/share/applications
 
 tar cf - --exclude=deb_tmp --exclude=./.git . | (cd $DEB_ROOT$INSTALL_PATH && tar xvf - > /dev/null)
-mkdir -p $DEB_ROOT/DEBIAN
 
+cp wifi-pumpkin.desktop $DEB_ROOT/usr/share/applications/wifi-pumpkin.desktop
+
+mkdir -p $DEB_ROOT/DEBIAN
 SIZE=$(du -sb $DEB_ROOT$INSTALL_PATH | cut -f1 | awk '{print $1/1024}')
 
 ###### Start of the DEBIAN/control file ######
