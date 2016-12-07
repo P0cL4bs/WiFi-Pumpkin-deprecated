@@ -8,11 +8,14 @@ mkdir -p $DEB_ROOT$INSTALL_PATH
 tar cf - --exclude=deb_tmp --exclude=./.git . | (cd $DEB_ROOT$INSTALL_PATH && tar xvf - > /dev/null)
 mkdir -p $DEB_ROOT/DEBIAN
 
+SIZE=$(du -sb $DEB_ROOT$INSTALL_PATH | cut -f1 | awk '{print $1/1024}')
+
 ###### Start of the DEBIAN/control file ######
 cat > $DEB_ROOT/DEBIAN/control << EOF
 Package: wifi-pumpkin
 Version: $VERSION
 Priority: optional
+Installed-Size: $SIZE
 Architecture: i386
 Maintainer: Marcos Nesster <mh4root@gmail.com>
 #Depends: python-pip, libffi-dev, libssl-dev, libxml2-dev, libxslt1-dev, zlib1g-dev, libarchive-dev, build-essential, libnetfilter-queue-dev, python-qt4, python-scapy, hostapd, rfkill, python-dev, git, libpcap-dev
