@@ -1,7 +1,5 @@
 #!/bin/bash
-
-for ARCHITECTURE in i386 amd64; do
-
+ARCHITECTURE="all"
 VERSION=$(date +%Y%m%d)
 DEB_ROOT="deb_tmp/wifi-pumpkin_${VERSION}_$ARCHITECTURE"
 INSTALL_PATH=/usr/share/WiFi-Pumpkin
@@ -51,4 +49,3 @@ cd deb_tmp
 dpkg-deb --build wifi-pumpkin_${VERSION}_${ARCHITECTURE}
 cd ..
 
-done
