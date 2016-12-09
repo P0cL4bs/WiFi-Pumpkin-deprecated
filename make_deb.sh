@@ -1,17 +1,22 @@
 #!/bin/bash
 
+for ARCHITECTURE in i386 amd64; do
+
 VERSION=$(date +%Y%m%d)
-DEB_ROOT="deb_tmp/wifi-pumpkin_$VERSION"
+DEB_ROOT="deb_tmp/wifi-pumpkin_${VERSION}_$ARCHITECTURE"
 INSTALL_PATH=/usr/share/WiFi-Pumpkin
-mkdir -p $DEB_ROOT$INSTALL_PATH
-mkdir -p $DEB_ROOT/usr/share/applications
+if [ ! -d "deb_tmp" ]; then
+  mkdir -p deb_tmp
+fi
+mkdir -p ${DEB_ROOT}${INSTALL_PATH}
+mkdir -p ${DEB_ROOT}/usr/share/applications
 
-tar cf - --exclude=deb_tmp --exclude=./.git . | (cd $DEB_ROOT$INSTALL_PATH && tar xvf - > /dev/null)
+tar cf - --exclude=deb_tmp --exclude=./.git . | (cd ${DEB_ROOT}${INSTALL_PATH} && tar xvf - > /dev/null)
 
-cp wifi-pumpkin.desktop $DEB_ROOT/usr/share/applications/wifi-pumpkin.desktop
+cp wifi-pumpkin.desktop ${DEB_ROOT}/usr/share/applications/wifi-pumpkin.desktop
 
-mkdir -p $DEB_ROOT/DEBIAN
-SIZE=$(du -sb $DEB_ROOT$INSTALL_PATH | cut -f1 | awk '{print $1/1024}')
+mkdir -p ${DEB_ROOT}/DEBIAN
+SIZE=$(du -sb ${DEB_ROOT}${INSTALL_PATH} | cut -f1 | awk '{print $1/1024}')
 
 ###### Start of the DEBIAN/control file ######
 cat > $DEB_ROOT/DEBIAN/control << EOF
@@ -19,16 +24,16 @@ Package: wifi-pumpkin
 Version: $VERSION
 Priority: optional
 Installed-Size: $SIZE
-Architecture: i386
+Architecture: $ARCHITECTURE
 Maintainer: Marcos Nesster <mh4root@gmail.com>
-#Depends: python-pip, libffi-dev, libssl-dev, libxml2-dev, libxslt1-dev, zlib1g-dev, libarchive-dev, build-essential, libnetfilter-queue-dev, python-qt4, python-scapy, hostapd, rfkill, python-dev, git, libpcap-dev
+Depends: python-pip, libffi-dev, libssl-dev, libxml2-dev, libxslt1-dev, zlib1g-dev, libarchive-dev, build-essential, libnetfilter-queue-dev, python-qt4, python-scapy, hostapd, rfkill, python-dev, git, libpcap-dev
 Description: WiFi-Pumpkin
  A tool for creating a WiFi-Hotspot and executing MitM-Attacks
 EOF
 ###### END of the DEBIAN/control file ######
 
 ###### Start of the DEBIAN/postinst file ######
-cat > $DEB_ROOT/DEBIAN/postinst << EOF
+cat > ${DEB_ROOT}/DEBIAN/postinst << EOF
 #!/bin/bash
 pip install -r $INSTALL_PATH/requirements.txt
 if which update-alternatives >/dev/null; then
@@ -40,7 +45,10 @@ if which update-alternatives >/dev/null; then
 EOF
 ###### END of the DEBIAN/postinst file ######
 
-chmod 0755 $DEB_ROOT/DEBIAN/postinst
+chmod 0755 ${DEB_ROOT}/DEBIAN/postinst
 
 cd deb_tmp
-dpkg-deb --build wifi-pumpkin_$VERSION
+dpkg-deb --build wifi-pumpkin_${VERSION}_${ARCHITECTURE}
+cd ..
+
+done
