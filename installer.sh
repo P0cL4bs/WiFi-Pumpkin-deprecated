@@ -88,6 +88,7 @@ bin_install(){
     else
         ln -sfT /usr/share/WiFi-Pumpkin/wifi-pumpkin /usr/bin/wifi-pumpkin
     fi
+    cp wifi-pumpkin.desktop /usr/share/applications/wifi-pumpkin.desktop
     chmod +x /usr/share/WiFi-Pumpkin/wifi-pumpkin
 }
 
@@ -102,6 +103,7 @@ uninstall(){
             else
                 rm /usr/bin/wifi-pumpkin
             fi
+            rm /usr/share/applications/wifi-pumpkin.desktop
 	    echo "[$red_color-$txtrst] Deleted Binary:$bldwht/usr/bin/wifi-pumpkin $txtrst"
             echo "[$red_color-$txtrst] Delete Path:$bldwht $DIRECTORY $txtrst"
 	    rm -r $path_uninstall
