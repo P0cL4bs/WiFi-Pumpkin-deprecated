@@ -1,8 +1,40 @@
 #!/bin/bash
 ARCHITECTURE="all"
 VERSION=$(date +%Y%m%d)
+
+
+usage() {
+    echo "Usage:    ./make_deb.sh [--architecture Architecture] [--version Version]"
+}
+
+# Check Arguments
+if [ -n "$1" -a -z "$2" ]; then
+    usage
+    exit 1
+fi
+
+if [ -n "$3" -a -z "$4" ]; then
+    usage
+    exit 1
+fi
+
+# Extract Settings from Arguments
+if [ "$1" == "--architecture" ]; then
+    ARCHITECTURE=$2
+fi
+if [ "$3" == "--architecture" ]; then
+    ARCHITECTURE=$4
+fi
+if [ "$1" == "--version" ]; then
+    VERSION=$2
+fi
+if [ "$3" == "--version" ]; then
+    VERSION=$4
+fi
+
 DEB_ROOT="deb_tmp/wifi-pumpkin_${VERSION}_$ARCHITECTURE"
 INSTALL_PATH=/usr/share/WiFi-Pumpkin
+
 if [ ! -d "deb_tmp" ]; then
   mkdir -p deb_tmp
 fi
