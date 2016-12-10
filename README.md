@@ -1,4 +1,4 @@
-![logo](https://dl.dropboxusercontent.com/u/97321327/evil/logo.png)
+![logo](https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/icons/logo.png)
 
 WiFi-Pumpkin
 ---
@@ -15,6 +15,12 @@ WiFi-Pumpkin is an open source security tool that provides the Rogue access poin
  cd WiFi-Pumpkin
  ./installer.sh --install
 ```
+or download .deb file to install
+``` sh
+sudo dpkg -i wifi-pumpkin-0.8.3-amd64.deb #for arch 64.
+
+```
+
 refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Installation)
 
 ### Features
@@ -46,7 +52,7 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 [Responder](https://github.com/lgandx/Responder) | Responder an LLMNR, NBT-NS and MDNS poisoner. Author: Laurent Gaffie
 
 ### Transparent Proxy
- Transparent proxies that you can use to intercept and manipulate HTTP/HTTPS traffic modifying requests and responses, that allow to inject javascripts into the targets visited.  You can easily implement a module to inject data into pages creating a python file in directory "proxy" automatically will be listed on Injector-Proxy tab.
+ Transparent proxies that you can use to intercept and manipulate HTTP traffic modifying requests and responses, that allow to inject javascripts into the targets visited.  You can easily implement a module to inject data into pages creating a python file in directory "proxy" automatically will be listed on Injector-Proxy tab.
 ### Plugins Example
  The following is a sample module that injects some contents into the <head> tag to set blur filter into body html page:
  ``` python
