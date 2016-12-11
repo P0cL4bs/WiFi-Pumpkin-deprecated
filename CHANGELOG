@@ -23,6 +23,7 @@ Version 0.8.3
 - fixed get_file_cfg_Update: get update from github
 - fixed DNSServer: closes itself with this error #116
 - fixed report.py: check if module QtWebKit is installed #120
+- fixed removed Tool->Ettercap
 
 Version 0.8.1
 -------------

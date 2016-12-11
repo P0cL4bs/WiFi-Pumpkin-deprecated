@@ -508,17 +508,12 @@ class WifiPumpkin(QWidget):
 
         #tools Menu
         Menu_tools = self.myQMenuBar.addMenu('&Tools')
-        ettercap = QAction('Active Ettercap', self)
         btn_drift = QAction('Active DriftNet', self)
         btn_drift.setShortcut('Ctrl+Y')
-        ettercap.setShortcut('Ctrl+E')
-        ettercap.triggered.connect(self.start_etter)
         btn_drift.triggered.connect(self.start_dift)
 
         # icons tools
-        ettercap.setIcon(QIcon('icons/ettercap.png'))
         btn_drift.setIcon(QIcon('icons/capture.png'))
-        Menu_tools.addAction(ettercap)
         Menu_tools.addAction(btn_drift)
 
         #menu module
@@ -865,11 +860,10 @@ class WifiPumpkin(QWidget):
                 self.selectCard.addItem(self.get_interfaces['all'][i])
         # check if a program is installed
         driftnet = popen('which driftnet').read().split('\n')
-        ettercap = popen('which ettercap').read().split('\n')
         dhcpd = popen('which dhcpd').read().split("\n")
         hostapd = popen('which hostapd').read().split("\n")
         xterm = popen('which xterm').read().split("\n")
-        lista = [ '', ettercap[0],driftnet[0],dhcpd[0],'',hostapd[0],xterm[0]]
+        lista = [ '', '',driftnet[0],dhcpd[0],'',hostapd[0],xterm[0]]
         for i in lista:self.ConfigTwin['ProgCheck'].append(path.isfile(i))
 
 
@@ -959,22 +953,6 @@ class WifiPumpkin(QWidget):
                 self.FSettings.Settings.set_setting('accesspoint','sessions',dumps({}))
                 QMessageBox.information(self,'Logger','All Looger::Output has been Removed...')
 
-    def start_etter(self):
-        ''' start tool ettercap in Thread '''
-        if self.ConfigTwin['ProgCheck'][1]:
-            if self.ConfigTwin['ProgCheck'][6]:
-                if self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
-                    Thread_Ettercap = ThreadPopen(['sudo', 'xterm', '-geometry', '73x25-1+50',
-                    '-T', 'ettercap', '-s', '-sb', '-si', '+sk', '-sl',
-                    '5000', '-e', 'ettercap', '-p', '-u', '-T', '-q', '-w',
-                    'logs/Tools/ettercap.log', '-i', self.ConfigTwin['AP_iface']])
-                    Thread_Ettercap.setObjectName('Tool::Ettercap')
-                    self.Apthreads['RougeAP'].append(Thread_Ettercap)
-                    return Thread_Ettercap.start()
-                return QMessageBox.information(self,'Accesspoint is not running',
-                'The access point is not configured, this option require AP is running...')
-            return QMessageBox.information(self,'xterm','xterm is not installed.')
-        return QMessageBox.information(self,'ettercap','ettercap is not found.')
 
     def start_dift(self):
         ''' start tool driftnet in Thread '''
