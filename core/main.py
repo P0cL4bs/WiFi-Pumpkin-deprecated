@@ -1114,6 +1114,7 @@ class WifiPumpkin(QWidget):
         set_monitor_mode(self.ConfigTwin['AP_iface']).setDisable()
         if self.interfacesLink['activated'][1] == 'ethernet' or self.interfacesLink['activated'][1] == 'ppp':
             # change Wi-Fi state card
+            Refactor.kill_procInterfaceBusy() # killing network process
             try:
                 check_output(['nmcli','radio','wifi',"off"]) # old version
             except Exception:

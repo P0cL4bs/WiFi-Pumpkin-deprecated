@@ -2,7 +2,7 @@ from struct import pack
 from time import sleep,asctime
 from random import randint
 from base64 import b64encode
-from os import popen,path,walk,stat
+from os import popen,path,walk,stat,kill
 from subprocess import check_output,Popen,PIPE,STDOUT,CalledProcessError
 from re import search,compile,VERBOSE,IGNORECASE
 import netifaces
@@ -10,6 +10,7 @@ from scapy.all import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import logging
+import signal
 import configparser
 
 """
@@ -224,6 +225,21 @@ class Refactor:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         info = ioctl(s.fileno(), 0x8927,  pack('256s', ifname[:15]))
         return ':'.join(['%02x' % ord(char) for char in info[18:24]])
+
+    @staticmethod
+    def kill_procInterfaceBusy():
+        ''' kill network processes are keeping the interface busy '''
+        willkill = ('wpa_supplicant','dhclient') # for ethernet conntion
+        proc = Popen(['ps', '-A'], stdout=PIPE)
+        out, err = proc.communicate()
+        try:
+            for line in out.splitlines():
+                for name in willkill:
+                    if name in line:
+                        pid = int(line.split()[0])
+                        kill(pid, signal.SIGKILL)
+        except Exception as e:
+            print('[!] Error: find process network: {}'.format(str(e)))
 
     @staticmethod
     def get_interfaces():
