@@ -60,20 +60,44 @@ Depends: python-pip, libffi-dev, libssl-dev, libxml2-dev, libxslt1-dev, zlib1g-d
 Description: WiFi-Pumpkin
  A tool for creating a WiFi-Hotspot and executing MitM-Attacks
 EOF
-###### END of the DEBIAN/control file ######
+###### End of the DEBIAN/control file ######
+
+###### Start of the DEBIAN/prerm file ######
+cat > ${DEB_ROOT}/DEBIAN/prerm << EOF
+#!/bin/bash
+if which update-alternatives >/dev/null; then
+    update-alternatives --remove wifi-pumpkin $INSTALL_PATH/wifi-pumpkin
+else
+    rm -rf /usr/bin/wifi-pumpkin
+fi
+
+if [ -d "$INSTALL_PATH" ]; then
+    # Delete every *.pyc file
+    find $INSTALL_PATH -name "*.pyc" |
+    while read p; do
+        rm -rf \$p
+    done
+
+    rm -rf $INSTALL_PATH/templates/Update
+fi
+EOF
+###### End of the DEBIAN/prerm file ######
+
+chmod 0755 ${DEB_ROOT}/DEBIAN/prerm
 
 ###### Start of the DEBIAN/postinst file ######
 cat > ${DEB_ROOT}/DEBIAN/postinst << EOF
 #!/bin/bash
 pip install -r $INSTALL_PATH/requirements.txt
 if which update-alternatives >/dev/null; then
-        update-alternatives --install /usr/bin/wifi-pumpkin wifi-pumpkin $INSTALL_PATH/wifi-pumpkin 1 > /dev/null
-    else
-        ln -sfT $INSTALL_PATH/wifi-pumpkin /usr/bin/wifi-pumpkin
-    fi
-    chmod +x $INSTALL_PATH/wifi-pumpkin
+    update-alternatives --install /usr/bin/wifi-pumpkin wifi-pumpkin $INSTALL_PATH/wifi-pumpkin 1
+else
+    ln -sfT $INSTALL_PATH/wifi-pumpkin /usr/bin/wifi-pumpkin
+fi
+chmod +x $INSTALL_PATH/wifi-pumpkin
+chown root:root /usr/share/applications/wifi-pumpkin.desktop
 EOF
-###### END of the DEBIAN/postinst file ######
+###### End of the DEBIAN/postinst file ######
 
 chmod 0755 ${DEB_ROOT}/DEBIAN/postinst
 
