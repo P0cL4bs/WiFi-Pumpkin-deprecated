@@ -58,3 +58,7 @@ target/
 
 # DEB
 deb_tmp/
+
+# IDE
+# PyCharm
+.idea/
