@@ -49,7 +49,7 @@ class set_monitor_mode(QDialog):
             return self.interface
         except Exception ,e:
             QMessageBox.information(self,'Monitor Mode',
-            'mode on device %s.your card not supports monitor mode'%(self.interface))
+            'mode on device %s.your card does not support Monitor Mode'%(self.interface))
     def setDisable(self):
         Popen(['ifconfig', self.interface, 'down'])
         Popen(['iwconfig', self.interface, 'mode','managed'])
@@ -143,6 +143,7 @@ class Refactor:
          'injectionPage': {'logs/AccessPoint/injectionPage.log':[]},
          'dnsspoofAP': {'logs/AccessPoint/dnsspoof.log':[]},
          'responder': {'logs/AccessPoint/responder.log':[]},
+         'pumpkinproxy': {'logs/AccessPoint/pumpkin-proxy.log':[]},
          'phishing': {'logs/Phishing/requests.log':[]},}
         if unchecked != {}:
             for key in unchecked.keys(): readFile.pop(key)

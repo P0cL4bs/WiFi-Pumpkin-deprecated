@@ -1,5 +1,6 @@
 from configobj import ConfigObj,Section
 from collections import OrderedDict
+import modules as GUI
 from core.loaders.models.PackagesUI import *
 
 class BDFProxySettings(PumpkinModule):
@@ -193,6 +194,74 @@ class ResponderSettings(PumpkinModule):
         self.TabSettings.verticalHeader().setVisible(False)
         self.TabSettings.setHorizontalHeaderLabels(self.THeaders.keys())
         self.TabSettings.verticalHeader().setDefaultSectionSize(23)
+
+        self.layout = QVBoxLayout(self.widget)
+        self.layoutGroup.addWidget(self.TabSettings)
+        self.layout.addWidget(self.GroupBox)
+        self.layout.addWidget(self.btnSave)
+        self.main.addWidget(self.widget)
+        self.setLayout(self.main)
+
+class PumpkinProxySettings(PumpkinModule):
+    def __init__(self,plugin,items,parent=None):
+        super(PumpkinProxySettings, self).__init__(parent)
+        self.setWindowTitle('Settings: {} '.format(plugin[4:]))
+        self.THeaders   = {'Config':[],'Value':[] }
+        self.config     = SettingsINI('core/config/app/proxy.ini')
+        self.loadtheme(self.configure.XmlThemeSelected())
+        self.main       = QVBoxLayout()
+        self.plugin_items = items
+        self.plugin_key = plugin
+        self.setGeometry(0,0,400, 250)
+        self.center()
+        self.GUI()
+
+    def addRowTableWidget(self, _key, _value):
+        ''' add items into TableWidget '''
+        Headers = []
+        self.THeaders['Config'].append(_key)
+        self.THeaders['Value'].append(_value)
+        for n, key in enumerate(self.THeaders.keys()):
+            Headers.append(key)
+            for m, item in enumerate(self.THeaders[key]):
+                item = QTableWidgetItem(item)
+                item.setFlags(item.flags() | Qt.ItemIsEditable)
+                self.TabSettings.setItem(m, n, item)
+        self.TabSettings.resizeColumnToContents(0)
+
+    def saveConfigObject(self):
+        ''' get all key and value and save '''
+        data = []
+        model = self.TabSettings.model()
+        for row in range(model.rowCount()):
+            data.append([])
+            for column in range(model.columnCount()):
+                index = model.index(row, column)
+                data[row].append(str(model.data(index).toString()))
+        for key,item in data:
+            self.config.set_setting(self.plugin_key,key,item)
+        self.close()
+
+    def GUI(self):
+        self.TabSettings = QTableWidget(len(self.plugin_items),2)
+        self.btnSave     = QPushButton('Save settings')
+        self.GroupBox    = QGroupBox(self)
+        self.widget      = QWidget()
+        self.layoutGroup = QVBoxLayout(self.widget)
+        self.GroupBox.setLayout(self.layoutGroup)
+        self.GroupBox.setTitle('Options')
+        self.btnSave.clicked.connect(self.saveConfigObject)
+        self.TabSettings.resizeRowsToContents()
+        self.TabSettings.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.TabSettings.horizontalHeader().setStretchLastSection(True)
+        self.TabSettings.setSelectionBehavior(QAbstractItemView.SelectRows)
+        #self.TabSettings.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.TabSettings.verticalHeader().setVisible(False)
+        self.TabSettings.setHorizontalHeaderLabels(self.THeaders.keys())
+        self.TabSettings.verticalHeader().setDefaultSectionSize(23)
+
+        for item in self.plugin_items:
+            self.addRowTableWidget(item,self.config.get_setting(self.plugin_key,item))
 
         self.layout = QVBoxLayout(self.widget)
         self.layoutGroup.addWidget(self.TabSettings)

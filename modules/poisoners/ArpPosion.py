@@ -31,7 +31,7 @@ class frm_Arp_Poison(PumpkinModule):
 
     def __init__(self,PhishingManager ,parent=None):
         super(frm_Arp_Poison, self).__init__(parent)
-        self.setWindowTitle('Arp Poison Attack ')
+        self.setWindowTitle('ARP Poisoner ')
         self.Main           = QVBoxLayout()
         self.owd            = getcwd()
         self.Ftemplates     = PhishingManager
@@ -43,7 +43,7 @@ class frm_Arp_Poison(PumpkinModule):
 
     def closeEvent(self, event):
         reply = QMessageBox.question(self, 'About Exit',
-        'Are you sure to close ArpPosion?', QMessageBox.Yes |
+        'Are you sure that you want to close ARP Posion?', QMessageBox.Yes |
             QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             event.accept()
@@ -60,19 +60,6 @@ class frm_Arp_Poison(PumpkinModule):
 
     def GUI(self):
         self.form =QFormLayout()
-        self.movie = QMovie('icons/loading2.gif', QByteArray(), self)
-        size = self.movie.scaledSize()
-        self.setGeometry(200, 200, size.width(), size.height())
-        self.movie_screen = QLabel()
-        self.movie_screen.setFixedHeight(200)
-        self.movie_screen.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.movie_screen.setAlignment(Qt.AlignCenter)
-        self.movie.setCacheMode(QMovie.CacheAll)
-        self.movie.setSpeed(100)
-        self.movie_screen.setMovie(self.movie)
-        self.movie_screen.setDisabled(False)
-
-        self.movie.start()
         self.tables = QTableWidget(5,3)
         self.tables.setRowCount(100)
         self.tables.setFixedHeight(200)
@@ -158,7 +145,6 @@ class frm_Arp_Poison(PumpkinModule):
         self.ConfigureEdits()
 
         self.form0  = QGridLayout()
-        self.form0.addWidget(self.movie_screen,0,0)
         self.form0.addWidget(self.tables,0,0)
 
         self.form.addRow(self.form0)
@@ -167,7 +153,7 @@ class frm_Arp_Poison(PumpkinModule):
         self.form.addRow('Gateway:', self.txt_gateway)
         self.form.addRow('MAC address:', self.txt_mac)
         self.form.addRow('Redirect IP:', self.txt_redirect)
-        self.form.addRow('IP ranger Scan:',self.ip_range)
+        self.form.addRow('IP Scan Range:',self.ip_range)
         self.form.addRow('Network Adapter:',self.ComboIface)
         self.form.addRow(self.grid0)
         self.form.addRow(self.grid2)
@@ -292,7 +278,7 @@ class frm_Arp_Poison(PumpkinModule):
                     self.ThreadDirc['Arp_posion'].append(redirectPackets)
                     redirectPackets.start()
                     return
-                QMessageBox.information(self,'Error Redirect IP','Redirect IP not found')
+                QMessageBox.information(self,'Error Redirect IP','Redirect IP is not found')
 
     def Start_scan(self):
         Headers = []
@@ -308,7 +294,7 @@ class frm_Arp_Poison(PumpkinModule):
             for key in reversed(self.data.keys()):
                 Headers.append(key)
             return self.tables.setHorizontalHeaderLabels(Headers)
-        return QMessageBox.information(self,'Error in gateway','gateway not found.')
+        return QMessageBox.information(self,'Error in gateway','gateway is not found.')
 
     def get_result_scanner_ip(self,data):
         Headers = []

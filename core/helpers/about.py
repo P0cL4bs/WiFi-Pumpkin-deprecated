@@ -35,6 +35,8 @@ class SettingsTranks(QVBoxLayout):
         self.scroll.setWidget(self.scrollwidget)
 
         self.formMode = QFormLayout()
+        self.formMode.addRow(QLabel('<a href="https://github.com/mitmproxy/mitmproxy"><strong>@mitmproxy</strong></a>'))
+        self.formMode.addRow(QLabel('ProxyServer tranparent HTTP proxy <br>'))
         self.formMode.addRow(QLabel('<a href="https://github.com/TimSchumi"><strong>@TimSchumi</strong></a>'))
         self.formMode.addRow(QLabel('Debian package build for WiFi-Pumpkin <br>'))
         self.formMode.addRow(QLabel('<a href="https://github.com/psychomario"><strong>@psychomario</strong></a>'))
@@ -95,8 +97,9 @@ class frmAbout(PumpkinModule):
         self.tabwid = QTabWidget(self)
         self.TabAbout = QWidget(self)
         self.TabVersion = QWidget(self)
-        self.TabTranks  = QWidget()
+        self.TabTranks  = QWidget(self)
         self.TabChangelog = QWidget(self)
+        self.TabDonate   = QWidget(self)
         self.btn_exit = QPushButton("Close")
         self.btn_exit.setFixedWidth(90)
         self.btn_exit.setIcon(QIcon('icons/cancel.png'))
@@ -106,6 +109,7 @@ class frmAbout(PumpkinModule):
         self.formVersion = QFormLayout()
         self.formTranks = QFormLayout()
         self.formChange = QFormLayout()
+        self.formDonate = QFormLayout()
 
         # About section
         self.formAbout.addRow(self.desc)
@@ -120,6 +124,20 @@ class frmAbout(PumpkinModule):
         self.formAbout.addRow(self.gnu)
         self.formAbout.addRow(QLabel('<center>{}</center>'.format(self.author[-14:])))
         self.TabAbout.setLayout(self.formAbout)
+
+        #Donate section
+        self.formDonate.addRow(QLabel('Open source project require developer time.<br>'
+        ' You need dev time to fix bugs, you need dev time<br> to add features,'
+        " thank you for your contribution! "))
+        self.imagePay =  QLabel()
+        self.imagePay.setPixmap(QPixmap('icons/donatepay.gif'))
+        self.formDonate.addRow(QLabel(''))
+        self.formDonate.addRow(QLabel('Support Donations:'))
+        self.formDonate.addRow(self.imagePay)
+        self.formDonate.addRow(QLabel('Paypal:'),QLabel('<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick'
+        '&hosted_button_id=PUPJEGHLJPFQL">WiFi-Pumpkin project - Paypal Donataion </a>'))
+        self.formDonate.addRow(QLabel('BTC:'),QLabel('<a href="1HBXz6XX3LcHqUnaca5HRqq6rPUmA3pf6f">1HBXz6XX3LcHqUnaca5HRqq6rPUmA3pf6f</a>'))
+        self.TabDonate.setLayout(self.formDonate)
 
         # Version Section
         self.formVersion.addRow(QLabel('<strong>Version: {}</strong><br>'.format(self.version)))
@@ -147,6 +165,7 @@ class frmAbout(PumpkinModule):
         self.tabwid.addTab(self.TabVersion,'Version')
         self.tabwid.addTab(self.TabChangelog,'ChangeLog')
         self.tabwid.addTab(self.TabTranks,'TranksTo')
+        self.tabwid.addTab(self.TabDonate, 'Donate')
         self.form.addRow(self.tabwid)
         self.form2.addSpacing(240)
         self.form2.addWidget(self.btn_exit)

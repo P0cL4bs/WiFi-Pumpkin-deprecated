@@ -13,6 +13,9 @@ class frm_NetCredsLogger(PumpkinModule):
         self.center()
         self.Qui()
 
+    def closeEvent(self, event):
+        self.exit_function()
+
     def Start_Get_creds(self):
         self.listURL.clear()
         self.list_creds.clear()

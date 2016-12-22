@@ -72,7 +72,6 @@ QWidget
 QWidget:item:hover
 {
     background-color: #3A3939;
-    color: black;
 }
 
 QWidget:item:selected
@@ -985,6 +984,16 @@ QTableView::item:pressed, QListView::item:pressed, QTreeView::item:pressed  {
 QTableView::item:selected:active, QTreeView::item:selected:active, QListView::item:selected:active  {
     background: #3A3939;
     color: #FFFFFF;
+}
+
+QTableView::item:hover {
+	background: #3A3939;
+	color: #FFFFFF;
+}
+
+QTableView::item:selected {
+	background: #3A3939;
+	color: #FFFFFF;
 }
 
 

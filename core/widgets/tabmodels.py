@@ -1,11 +1,16 @@
-from proxy import *
 from os import path
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from datetime import datetime
 from core.utils import Refactor
+from collections import OrderedDict
 from core.utility.threads import ThreadPopen
 from core.widgets.docks.dockmonitor import dockAreaAPI
+from core.widgets.pluginssettings import PumpkinProxySettings
+from core.utility.collection import SettingsINI
+from plugins.external.scripts import *
+from plugins.extension import *
+from functools import partial
 """
 Description:
     This program is a core for wifi-pumpkin.py. file which includes functionality
@@ -27,12 +32,102 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-class PumpkinProxy(QVBoxLayout):
+class PumpkinMitmproxy(QVBoxLayout):
+    ''' settings  Transparent Proxy '''
+    sendError = pyqtSignal(str)
+    def __init__(self,main_method,parent = None):
+        super(PumpkinMitmproxy, self).__init__(parent)
+        self.mainLayout     = QVBoxLayout()
+        self.config         = SettingsINI('core/config/app/proxy.ini')
+        self.plugins        = []
+        self.main_method    = main_method
+        self.bt_SettingsDict    = {}
+        self.check_PluginDict   = {}
+        self.search_all_ProxyPlugins()
+        #scroll area
+        self.scrollwidget = QWidget()
+        self.scrollwidget.setLayout(self.mainLayout)
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(self.scrollwidget)
+
+        self.TabPlugins = QTableWidget()
+        self.TabPlugins.setColumnCount(3)
+        self.TabPlugins.setRowCount(len(self.plugins))
+        self.TabPlugins.resizeRowsToContents()
+        self.TabPlugins.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.TabPlugins.horizontalHeader().setStretchLastSection(True)
+        self.TabPlugins.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.TabPlugins.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.TabPlugins.verticalHeader().setVisible(False)
+        self.TabPlugins.verticalHeader().setDefaultSectionSize(27)
+        self.TabPlugins.setSortingEnabled(True)
+        self.THeaders  = OrderedDict([ ('Plugins',[]),('Settings',[]),('Description',[])])
+        self.TabPlugins.setHorizontalHeaderLabels(self.THeaders.keys())
+        self.TabPlugins.horizontalHeader().resizeSection(0,158)
+        self.TabPlugins.horizontalHeader().resizeSection(1,80)
+
+        # get all plugins and add into TabWidget
+        Headers = []
+        for plugin in self.plugins:
+            if plugin.ConfigParser:
+                self.bt_SettingsDict[plugin.Name] = QPushButton('Settings')
+                self.bt_SettingsDict[plugin.Name].clicked.connect(partial(self.setSettingsPlgins,plugin.Name))
+            else:
+                self.bt_SettingsDict[plugin.Name] = QPushButton('None')
+            self.check_PluginDict[plugin.Name] = QCheckBox(plugin.Name)
+            self.check_PluginDict[plugin.Name].setObjectName(plugin.Name)
+            self.check_PluginDict[plugin.Name].clicked.connect(partial(self.setPluginOption,plugin.Name))
+            self.THeaders['Plugins'].append(self.check_PluginDict[plugin.Name])
+            self.THeaders['Settings'].append({'name': plugin.Name})
+            self.THeaders['Description'].append(plugin.Description)
+        for n, key in enumerate(self.THeaders.keys()):
+            Headers.append(key)
+            for m, item in enumerate(self.THeaders[key]):
+                if type(item) == type(QCheckBox()):
+                    self.TabPlugins.setCellWidget(m,n,item)
+                elif type(item) == type(dict()):
+                    self.TabPlugins.setCellWidget(m,n,self.bt_SettingsDict[item['name']])
+                else:
+                    item = QTableWidgetItem(item)
+                    self.TabPlugins.setItem(m, n, item)
+        self.TabPlugins.setHorizontalHeaderLabels(self.THeaders.keys())
+
+        # check status all checkbox plugins
+        for box in self.check_PluginDict.keys():
+            self.check_PluginDict[box].setChecked(self.config.get_setting('plugins',box,format=bool))
+
+        self.mainLayout.addWidget(self.TabPlugins)
+        self.layout = QHBoxLayout()
+        self.layout.addWidget(self.scroll)
+        self.addLayout(self.layout)
+
+    def setPluginOption(self, name,status):
+        ''' get each plugins status'''
+        # enable realtime disable and enable plugin
+        if self.main_method.PopUpPlugins.check_pumpkinProxy.isChecked() and \
+            self.main_method.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
+                self.main_method.Thread_PumpkinProxy.m.disablePlugin(name, status)
+        self.config.set_setting('plugins',name,status)
+
+    def setSettingsPlgins(self,plugin):
+        ''' open settings options for each plugins'''
+        key = 'set_{}'.format(plugin)
+        self.widget = PumpkinProxySettings(key,self.config.get_all_childname(key))
+        self.widget.show()
+
+    def search_all_ProxyPlugins(self):
+        ''' load all plugins function '''
+        plugin_classes = plugin.PluginTemplate.__subclasses__()
+        for p in plugin_classes:
+            self.plugins.append(p())
+
+class ProxySSLstrip(QVBoxLayout):
     ''' settings  Transparent Proxy '''
     sendError = pyqtSignal(str)
     _PluginsToLoader = {'plugins': None,'Content':''}
     def __init__(self,popup,main_method,FsettingsUI=None,parent = None):
-        super(PumpkinProxy, self).__init__(parent)
+        super(ProxySSLstrip, self).__init__(parent)
         self.main_method = main_method
         self.popup      = popup
         self.urlinjected= []
@@ -120,6 +215,7 @@ class PumpkinProxy(QVBoxLayout):
         self.addLayout(self.layout)
 
     def get_filenameToInjection(self):
+        ''' open file for injection plugin '''
         filename = QFileDialog.getOpenFileName(None,
         'load File','','HTML (*.html);;js (*.js);;css (*.css)')
         if len(filename) > 0:
@@ -127,6 +223,7 @@ class PumpkinProxy(QVBoxLayout):
             QMessageBox.information(None, 'Scripts Loaders', 'file has been loaded with success.')
 
     def setPluginsActivated(self):
+        ''' check arguments for plugins '''
         item = str(self.comboxBox.currentText())
         if self.popup.check_dns2proy.isChecked() or self.popup.check_sergioProxy.isChecked():
             if self.plugins[str(item)]._requiresArgs:
@@ -145,6 +242,7 @@ class PumpkinProxy(QVBoxLayout):
         '\nchoice the plugin options with sslstrip enabled.'.format(self.argsLabel.text()))
 
     def ProcessReadLogger(self):
+        '''function for read log injection proxy '''
         if path.exists('logs/AccessPoint/injectionPage.log'):
             with open('logs/AccessPoint/injectionPage.log','w') as bufferlog:
                 bufferlog.write(''), bufferlog.close()
@@ -155,6 +253,7 @@ class PumpkinProxy(QVBoxLayout):
         QMessageBox.warning(self,'error proxy logger','Pump-Proxy::capture is not found')
 
     def GetloggerInjection(self,data):
+        ''' read load file and add in Qlistwidget '''
         if Refactor.getSize('logs/AccessPoint/injectionPage.log') > 255790:
             with open('logs/AccessPoint/injectionPage.log','w') as bufferlog:
                 bufferlog.write(''), bufferlog.close()
@@ -164,6 +263,7 @@ class PumpkinProxy(QVBoxLayout):
         self.log_inject.scrollToBottom()
 
     def readDocScripts(self,item):
+        ''' check type args for all plugins '''
         try:
             self.docScripts.setText(self.plugins[str(item)].__doc__)
             if self.plugins[str(item)]._requiresArgs:
@@ -181,6 +281,7 @@ class PumpkinProxy(QVBoxLayout):
             pass
 
     def unsetPluginsConf(self):
+        ''' reset config for all plugins '''
         if hasattr(self,'injectionThread'): self.injectionThread.stop()
         self._PluginsToLoader = {'plugins': None,'args':''}
         self.btnEnable.setEnabled(True)
@@ -190,6 +291,7 @@ class PumpkinProxy(QVBoxLayout):
         self.urlinjected = []
 
     def SearchProxyPlugins(self):
+        ''' search all plugins in directory plugins/external/proxy'''
         self.comboxBox.clear()
         self.plugin_classes = Plugin.PluginProxy.__subclasses__()
         self.plugins = {}
@@ -280,7 +382,7 @@ class PumpkinSettings(QVBoxLayout):
         self.layoutDHCP    = QFormLayout()
         self.layoutArea    = QFormLayout()
         self.layoutbuttons = QHBoxLayout()
-        self.btnDefault    = QPushButton('default')
+        self.btnDefault    = QPushButton('Default')
         self.btnSave       = QPushButton('save settings')
         self.btnSave.setIcon(QIcon('icons/export.png'))
         self.btnDefault.setIcon(QIcon('icons/settings.png'))
@@ -300,7 +402,7 @@ class PumpkinSettings(QVBoxLayout):
         self.subnet        = QLineEdit(self.FSettings.Settings.get_setting('dhcp','subnet'))
         self.broadcast     = QLineEdit(self.FSettings.Settings.get_setting('dhcp','broadcast'))
         self.dhcpClassIP.currentIndexChanged.connect(self.dhcpClassIPClicked)
-        self.GroupDHCP.setTitle('DHCP-settings')
+        self.GroupDHCP.setTitle('DHCP-Settings')
         self.GroupDHCP.setLayout(self.layoutDHCP)
         self.layoutDHCP.addRow('Class Ranges',self.dhcpClassIP)
         self.layoutDHCP.addRow('default-lease-time',self.leaseTime_def)
@@ -324,12 +426,14 @@ class PumpkinSettings(QVBoxLayout):
         self.CB_bdfproxy   = QCheckBox('BDFProxy-ng')
         self.CB_dns2proxy  = QCheckBox('Dns2Proxy')
         self.CB_responder  = QCheckBox('Responder')
+        self.CB_pumpkinPro = QCheckBox('Pumpkin-Proxy')
         self.CB_ActiveMode.setChecked(self.FSettings.Settings.get_setting('dockarea','advanced',format=bool))
         self.CB_Cread.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_credencials',format=bool))
         self.CB_monitorURL.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_urlmonitor',format=bool))
         self.CB_bdfproxy.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_bdfproxy',format=bool))
         self.CB_dns2proxy.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_dns2proxy',format=bool))
         self.CB_responder.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_responder',format=bool))
+        self.CB_pumpkinPro.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_PumpkinProxy',format=bool))
 
         #connect
         self.doCheckAdvanced()
@@ -339,6 +443,7 @@ class PumpkinSettings(QVBoxLayout):
         self.CB_bdfproxy.clicked.connect(self.doCheckAdvanced)
         self.CB_dns2proxy.clicked.connect(self.doCheckAdvanced)
         self.CB_responder.clicked.connect(self.doCheckAdvanced)
+        self.CB_pumpkinPro.clicked.connect(self.doCheckAdvanced)
         # group
         self.layoutArea.addRow(self.CB_ActiveMode)
         self.gridArea.addWidget(self.CB_monitorURL,0,0,)
@@ -347,6 +452,7 @@ class PumpkinSettings(QVBoxLayout):
         self.gridArea.addWidget(self.CB_bdfproxy,1,0)
         self.gridArea.addWidget(self.CB_dns2proxy,1,1)
         self.gridArea.addWidget(self.CB_responder,1,2)
+        self.gridArea.addWidget(self.CB_pumpkinPro,0,2)
         self.layoutArea.addRow(self.gridArea)
         self.GroupArea.setTitle('Activity Monitor settings')
         self.GroupArea.setLayout(self.layoutArea)
@@ -408,23 +514,27 @@ class PumpkinSettings(QVBoxLayout):
             self.CB_bdfproxy.setEnabled(True)
             self.CB_dns2proxy.setEnabled(True)
             self.CB_responder.setEnabled(True)
+            self.CB_pumpkinPro.setEnabled(True)
         else:
             self.CB_monitorURL.setEnabled(False)
             self.CB_Cread.setEnabled(False)
             self.CB_bdfproxy.setEnabled(False)
             self.CB_dns2proxy.setEnabled(False)
             self.CB_responder.setEnabled(False)
+            self.CB_pumpkinPro.setEnabled(False)
         self.FSettings.Settings.set_setting('dockarea','dock_credencials',self.CB_Cread.isChecked())
         self.FSettings.Settings.set_setting('dockarea','dock_urlmonitor',self.CB_monitorURL.isChecked())
         self.FSettings.Settings.set_setting('dockarea','dock_bdfproxy',self.CB_bdfproxy.isChecked())
         self.FSettings.Settings.set_setting('dockarea','dock_dns2proxy',self.CB_dns2proxy.isChecked())
         self.FSettings.Settings.set_setting('dockarea','dock_responder',self.CB_responder.isChecked())
+        self.FSettings.Settings.set_setting('dockarea','dock_PumpkinProxy',self.CB_pumpkinPro.isChecked())
         self.FSettings.Settings.set_setting('dockarea','advanced',self.CB_ActiveMode.isChecked())
         self.dockInfo['HTTP-Requests']['active'] = self.CB_monitorURL.isChecked()
         self.dockInfo['HTTP-Authentication']['active'] = self.CB_Cread.isChecked()
         self.dockInfo['BDFProxy']['active'] = self.CB_bdfproxy.isChecked()
         self.dockInfo['Dns2Proxy']['active'] = self.CB_dns2proxy.isChecked()
         self.dockInfo['Responder']['active'] = self.CB_responder.isChecked()
+        self.dockInfo['PumpkinProxy']['active'] = self.CB_pumpkinPro.isChecked()
         if self.CB_ActiveMode.isChecked():
             self.AreaWidgetLoader(self.dockInfo)
             self.checkDockArea.emit(self.AllDockArea)

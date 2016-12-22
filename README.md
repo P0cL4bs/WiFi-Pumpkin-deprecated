@@ -15,9 +15,9 @@ WiFi-Pumpkin is an open source security tool that provides the Rogue access poin
  cd WiFi-Pumpkin
  ./installer.sh --install
 ```
-or download .deb file to install
+or download [.deb](https://github.com/P0cL4bs/WiFi-Pumpkin/releases) file to install
 ``` sh
-sudo dpkg -i wifi-pumpkin-0.8.3-amd64.deb #for arch 64.
+sudo dpkg -i wifi-pumpkin-0.8.4-all.deb
 
 ```
 
@@ -40,6 +40,7 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 * Patch Binaries via MITM
 * Karma Attacks (support hostapd-mana)
 * LLMNR, NBT-NS and MDNS poisoner (Responder)
+* Pumpkin-Proxy (ProxyServer (mitmproxy API))
 
 ### Plugins
 | Plugin | Description | 
@@ -52,49 +53,68 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 [Responder](https://github.com/lgandx/Responder) | Responder an LLMNR, NBT-NS and MDNS poisoner. Author: Laurent Gaffie
 
 ### Transparent Proxy
- Transparent proxies that you can use to intercept and manipulate HTTP traffic modifying requests and responses, that allow to inject javascripts into the targets visited.  You can easily implement a module to inject data into pages creating a python file in directory "proxy" automatically will be listed on Injector-Proxy tab.
-### Plugins Example
- The following is a sample module that injects some contents into the <head> tag to set blur filter into body html page:
+![proxy](https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/docs/proxyscenario.png)
+
+ Transparent proxies(mitmproxy) that you can use to intercept and manipulate HTTP traffic modifying requests and responses, that allow to inject javascripts into the targets visited.  You can easily implement a module to inject data into pages creating a python file in directory "plugins/extension/" automatically will be listed on Pumpkin-Proxy tab.
+#### Plugins Example Dev
+
  ``` python
-import logging
-from Plugin import PluginProxy
-from core.utils import setup_logger
+from mitmproxy.models import decoded # for decode content html
+from plugins.extension.plugin import PluginTemplate
 
-class blurpage(PluginProxy):
-    ''' this module proxy set blur into body page html response'''
-    _name          = 'blur_page'
-    _activated     = False
-    _instance      = None
-    _requiresArgs  = False
-
-    @staticmethod
-    def getInstance():
-        if blurpage._instance is None:
-            blurpage._instance = blurpage()
-        return blurpage._instance
-
+class Nameplugin(PluginTemplate):
+    meta = {
+        'Name'      : 'Nameplugin',
+        'Version'   : '1.0',
+        'Description' : 'Brief description of the new plugin',
+        'Author'    : 'by dev'
+    }
     def __init__(self):
-        self.injection_code = []
+        for key,value in self.meta.items():
+            self.__dict__[key] = value
+        # if you want set arguments check refer wiki more info. 
+        self.ConfigParser = False # No require arguments 
 
-    def LoggerInjector(self,session):
-        setup_logger('injectionPage', './logs/AccessPoint/injectionPage.log',session)
-        self.logging = logging.getLogger('injectionPage')
+    def request(self, flow):
+        print flow.__dict__
+        print flow.request.__dict__ 
+        print flow.request.headers.__dict__ # request headers
+        host = flow.request.pretty_host # get domain on the fly requests 
+        versionH = flow.request.http_version # get http version 
+        
+        # get redirect domains example
+        # pretty_host takes the "Host" header of the request into account,
+        if flow.request.pretty_host == "example.org":
+            flow.request.host = "mitmproxy.org"
+            
+        # get all request Header example 
+        self.send_output.emit("\n[{}][HTTP REQUEST HEADERS]".format(self.Name))
+        for name, valur in flow.request.headers.iteritems():
+            self.send_output.emit('{}: {}'.format(name,valur))
+            
+        print flow.request.method # show method request 
+        # the model printer data
+        self.send_output.emit('[NamePlugin]:: this is model for save data logging')
 
-    def setInjectionCode(self, code,session):
-        self.injection_code.append(code)
-        self.LoggerInjector(session)
-
-    def inject(self, data, url):
-        injection_code = '''<head> <style type="text/css">
-        body{
-		filter: blur(2px);
-		-webkit-filter: blur(2px);}
-		</style>'''
-        self.logging.info("Injected: %s" % (url))
-        return data.replace('<head>',injection_code )
-
+    def response(self, flow):
+        print flow.__dict__
+        print flow.response.__dict__
+        print flow.response.headers.__dict__ #convert headers for python dict
+        print flow.response.headers['Content-Type'] # get content type
+         
+        #every HTTP response before it is returned to the client
+        with decoded(flow.response):
+            print flow.response.content # content html
+            flow.response.content.replace('</body>','<h1>injected</h1></body>') # replace content tag 
+       
+        del flow.response.headers["X-XSS-Protection"] # remove protection Header
+        
+        flow.response.headers["newheader"] = "foo" # adds a new header
+        #and the new header will be added to all responses passing through the proxy
 ```
- 
+#### About plugins
+[plugins](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Plugins) on the wiki 
+
 ### Screenshots
 [Screenshot](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Screenshots) on the wiki 
 

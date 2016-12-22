@@ -1,6 +1,6 @@
-import argparse
 import logging
 import signal
+import argparse
 import threading
 from re import search
 from sys import stdout
@@ -14,12 +14,33 @@ from core.utils import setup_logger,Refactor
 from subprocess import (Popen,PIPE,STDOUT)
 from PyQt4.QtCore import QThread,pyqtSignal,SIGNAL,pyqtSlot,QProcess,QObject,SLOT
 from PyQt4.QtGui import QMessageBox
-from plugins.sergio_proxy.plugins import *
+from plugins.external.sergio_proxy.plugins import *
 from multiprocessing import Process,Manager
-try:
-    from nmap import PortScanner
-except ImportError:
-    pass
+from core.servers.proxy.controller.handler import MasterHandler
+from mitmproxy import controller, proxy
+from mitmproxy.proxy.server import ProxyServer
+
+"""
+Description:
+    This program is a core for wifi-pumpkin.py. file which includes functionality
+    for threads core program.
+
+Copyright:
+    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>
+"""
+
 
 class ProcessThreadScanner(threading.Thread):
     ''' thread for run airodump-ng backgroung and get data'''
@@ -233,6 +254,26 @@ class ThreadReactor(QThread):
     def stop(self):
         reactor.callFromThread(reactor.stop)
 
+class ThreadPumpkinProxy(QObject):
+    '''Thread: run Pumpkin-Proxy mitmproxy on brackground'''
+    send = pyqtSignal(object)
+    def __init__(self,session=None):
+        QObject.__init__(self)
+        self.session = session
+
+    def start(self):
+        config = proxy.ProxyConfig(port=8080,mode='transparent')
+        print "[*] Pumpkin-Proxy running on port:8080 \n"
+        server = ProxyServer(config)
+        server.allow_reuse_address = True
+        self.m = MasterHandler(server,self.session)
+        self.m.run(self.send)
+
+    def stop(self):
+        self.m.shutdown()
+        print 'Thread::[{}] successfully stopped.'.format(self.objectName())
+
+
 class Thread_sslstrip(QThread):
     '''Thread: run sslstrip on brackground'''
     def __init__(self,port,plugins={},data= {},session=None):
@@ -250,9 +291,9 @@ class Thread_sslstrip(QThread):
         killSessions = True
         spoofFavicon = False
         listenPort   = self.port
-        from plugins.sslstrip.StrippingProxy import StrippingProxy
-        from plugins.sslstrip.URLMonitor import URLMonitor
-        from plugins.sslstrip.CookieCleaner import CookieCleaner
+        from plugins.external.sslstrip.StrippingProxy import StrippingProxy
+        from plugins.external.sslstrip.URLMonitor import URLMonitor
+        from plugins.external.sslstrip.CookieCleaner import CookieCleaner
         if self.loaderPlugins['plugins'] != None:
             self.plugins[self.loaderPlugins['plugins']].getInstance()._activated = True
             self.plugins[self.loaderPlugins['plugins']].getInstance().setInjectionCode(
@@ -376,12 +417,12 @@ class Thread_sergioProxy(QThread):
 
         #this whole msf loading process sucks. need to improve
         if args.msf_rc != "/tmp/tmp.rc" or stat("/tmp/tmp.rc").st_size != 0:
-            from plugins.sergio_proxy.plugins.StartMSF import launch_msf
+            from plugins.external.sergio_proxy import launch_msf
             launch_msf(args.msf_path,args.msf_rc,args.msf_user)
 
-        from plugins.sergio_proxy.sslstrip.StrippingProxy import StrippingProxy
-        from plugins.sergio_proxy.sslstrip.URLMonitor import URLMonitor
-        from plugins.sergio_proxy.sslstrip.CookieCleaner import CookieCleaner
+        from plugins.external.sergio_proxy.sslstrip.StrippingProxy import StrippingProxy
+        from plugins.external.sergio_proxy.sslstrip.URLMonitor import URLMonitor
+        from plugins.external.sergio_proxy.sslstrip.CookieCleaner import CookieCleaner
 
         URLMonitor.getInstance().setFaviconSpoofing(spoofFavicon)
         CookieCleaner.getInstance().setEnabled(killSessions)

@@ -60,7 +60,7 @@ class frm_ReportLogger(PumpkinModule):
     def convertIt(self,printer):
         # generate file pdf
         self.ExportPDF.print_(printer)
-        QMessageBox.information(self, 'WiFi Pumpkin Report PDF', 'file PDF has been generated with success.')
+        QMessageBox.information(self, 'WiFi Pumpkin Report PDF', 'file PDF has been generated successfully.')
 
     def exportFilesSystem(self):
         # export HTML or pdf file
@@ -89,7 +89,7 @@ class frm_ReportLogger(PumpkinModule):
             if len(filename[0]) != 0:
                 with open(str(filename[0]),'w') as filehtml:
                     filehtml.write(contents['HTML']),filehtml.close()
-                QMessageBox.information(self, 'WiFi Pumpkin Report HTML', 'file has been saved with success.')
+                QMessageBox.information(self, 'WiFi Pumpkin Report HTML', 'file logs has been saved successfully.')
 
         elif self.checkPDF.isChecked():
             filename = QFileDialog.getSaveFileNameAndFilter(self,

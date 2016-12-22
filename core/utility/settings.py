@@ -177,9 +177,8 @@ class SettingsTabGeneral(QVBoxLayout):
 class frm_Settings(QDialog):
     def __init__(self, parent = None):
         super(frm_Settings, self).__init__(parent)
-        self.setWindowTitle('settings WiFi-Pompkin')
+        self.setWindowTitle('WiFi-Pompkin - Settings')
         self.Settings = SettingsINI('core/config/app/config.ini')
-        self.bdfproxyConf  = SettingsINI(self.Settings.get_setting('plugins','bdfproxy_config'))
         self.loadtheme(self.XmlThemeSelected())
         self.setGeometry(0, 0, 420, 440)
         self.center()
@@ -266,7 +265,7 @@ class frm_Settings(QDialog):
                 except Exception as e:
                     return QMessageBox.information(self,'error',str(e))
         elif action == editem:
-            text, resp = QInputDialog.getText(self, 'Add rules iptables',
+            text, resp = QInputDialog.getText(self, 'Add rules for iptables',
             'Enter the rules iptables:',text=self.ListRules.item(self.ListRules.currentRow()).text())
             if resp:
                 try:
@@ -305,13 +304,13 @@ class frm_Settings(QDialog):
         self.tabcontrol.addTab(self.tab1, 'General')
         self.tabcontrol.addTab(self.tab2, 'Advanced')
         self.tabcontrol.addTab(self.tab3,'Iptables')
-        self.tabcontrol.addTab(self.tab4,'hostpad')
+        self.tabcontrol.addTab(self.tab4,'Hostpad')
 
         self.pageTab1 = SettingsTabGeneral(self.Settings)
         self.page_1.addLayout(self.pageTab1)
 
         self.groupAdvanced = QGroupBox()
-        self.groupAdvanced.setTitle('Advanced settings:')
+        self.groupAdvanced.setTitle('Advanced Settings:')
         self.groupAdvanced.setLayout(self.formGroupAd)
 
         self.btn_save = QPushButton('Save')
@@ -321,14 +320,12 @@ class frm_Settings(QDialog):
 
 
         #page Adavanced
-        self.bdfProxy_port = QSpinBox()
-        self.bdfProxy_port.setMaximum(10000)
         self.txt_ranger = QLineEdit(self)
         self.txt_arguments = QLineEdit(self)
-        self.scan1 = QRadioButton('Ping Scan:: Very fast scan IP')
+        self.scan1 = QRadioButton('Ping Scan:: Very fast IP scan')
         self.scan2 = QRadioButton('Python-Nmap:: Get hostname from IP')
         self.redirectport = QLineEdit(self)
-        self.check_interface_mode_AP = QCheckBox('Check if interface has been support AP/Mode')
+        self.check_interface_mode_AP = QCheckBox('Check if interface supports AP/Mode')
         self.check_interface_mode_AP.setChecked(self.Settings.get_setting('accesspoint','check_support_ap_mode',format=bool))
         self.check_interface_mode_AP.setToolTip('if you disable this options in next time, the interface is not should '
         'checked if has support AP mode.')
@@ -360,8 +357,6 @@ class frm_Settings(QDialog):
 
         self.txt_ranger.setText(self.Settings.get_setting('settings','scanner_rangeIP'))
         self.txt_arguments.setText(self.Settings.get_setting('settings','mdk3'))
-        self.bdfProxy_port.setValue(int(self.bdfproxyConf.get_setting('Overall','proxyPort')))
-        self.bdfProxy_port.setEnabled(False)
         self.scan2.setEnabled(False)
         self.scan1.setChecked(True)
         #settings tab Advanced
@@ -372,7 +367,6 @@ class frm_Settings(QDialog):
         self.formGroupAd.addRow(self.scan1)
         self.formGroupAd.addRow(self.scan2)
         self.formGroupAd.addRow(self.check_interface_mode_AP)
-        self.formGroupAd.addRow('Port BDFProxy-ng',self.bdfProxy_port)
         self.formGroupAd.addRow('Port sslstrip:',self.redirectport)
         self.formGroupAd.addRow(QLabel('mdk3 Args:'),self.txt_arguments)
         self.formGroupAd.addRow(QLabel('Range Scanner:'),self.txt_ranger)

@@ -138,7 +138,7 @@ class frm_githubUpdate(PumpkinModule):
             item.setSizeHint(QSize(20,20))
             self.LCommits.addItem(item)
             return self.btnCheck.setEnabled(True)
-        elif 'new Version available WiFi-Pumpkin v' in commits:
+        elif 'New version available WiFi-Pumpkin v' in commits:
             reply = QMessageBox.question(self, 'Update Information',
                 '{}, would you like to update??'.format(commits), QMessageBox.Yes |
                 QMessageBox.No, QMessageBox.No)
@@ -159,7 +159,7 @@ class frm_githubUpdate(PumpkinModule):
         elif '::updated' in commits:
             self.pb.update_bar(100)
             QMessageBox.information(self,'Update Information',
-            "Already up-to-date. You're required to restart the tool to apply this update.")
+            "Already up-to-date. Please restart WiFi-Pumpkin to apply this update.")
             self.btnUpdate.setDisabled(True)
         else:
             self.LOutput.addItem(commits)

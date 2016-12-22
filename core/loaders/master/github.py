@@ -83,7 +83,7 @@ class GithubUpdate(QThread):
 
     def checkUpdate(self,Version):
         if self.commit_update['Version'] != Version:
-            return self.emit(SIGNAL('Activated ( QString )'),'new Version available WiFi-Pumpkin v'
+            return self.emit(SIGNAL('Activated ( QString )'),'New version available WiFi-Pumpkin v'
             +self.commit_update['Version'])
         if self.commit_update['size'] > self.commit_local['size']:
             for commit in self.commit_update['lines'][self.commit_local['size']:]:

@@ -65,7 +65,7 @@ class frm_dhcp_Attack(PumpkinModule):
             self.threadstar.setObjectName("DHCP Starvation")
             self.threadstar.start()
             return
-        QMessageBox.information(self, 'Interface Not found', 'None detected network interface try again.')
+        QMessageBox.information(self, 'Interface No found', 'No Network Adapters were detected.')
 
     def attack_OFF(self):
         self.check.setStyleSheet("QLabel {  color : red; }")

@@ -13,6 +13,9 @@ class frm_dns2proxy(PumpkinModule):
         self.center()
         self.Qui()
 
+    def closeEvent(self, event):
+        self.exit_function()
+
     def Start_Get_creds(self):
         self.listDns.clear()
         self.btn_getdata.setEnabled(False)
