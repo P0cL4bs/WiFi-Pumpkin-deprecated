@@ -65,7 +65,7 @@ func_install(){
 	echo "----------------------------------------"
     if [ "$dist" = "Ubuntu" ]; then
         apt-get install libjpeg8-dev -y
-        pip install mitmproxy==0.16
+        pip install mitmproxy==0.17
     fi
 	echo "[=] $bldblu Install WiFi-Pumpkin $txtrst"
 	if [ -d "$DIRECTORY" ]; then
