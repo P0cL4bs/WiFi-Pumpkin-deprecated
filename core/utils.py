@@ -185,30 +185,35 @@ class Refactor:
     def settingsNetworkManager(interface=str,Remove=False):
         ''' mac address of interface to exclude '''
         networkmanager = '/etc/NetworkManager/NetworkManager.conf'
-        config = configparser.RawConfigParser()
-        config.read(networkmanager)
-        MAC = Refactor.get_interface_mac(interface)
-        if MAC != None and not Remove:
+        config  = configparser.RawConfigParser()
+        MAC     = Refactor.get_interface_mac(interface)
+        exclude = {'MAC': 'mac:{}'.format(MAC),'interface': 'interface-name:{}'.format(interface)}
+        if  not Remove:
             if path.exists(networkmanager):
+                config.read(networkmanager)
                 try:
                     config.add_section('keyfile')
                 except configparser.DuplicateSectionError, e:
-                    config.set('keyfile','unmanaged-devices','mac:{}'.format(MAC))
+                    config.set('keyfile','unmanaged-devices','{}'.format(
+                        exclude['MAC'] if MAC != None else exclude['interface']))
                 else:
-                    config.set('keyfile','unmanaged-devices','mac:{}'.format(MAC))
+                    config.set('keyfile','unmanaged-devices','{}'.format(
+                        exclude['MAC'] if MAC != None else exclude['interface']))
                 finally:
                     with open(networkmanager, 'wb') as configfile:
                         config.write(configfile)
                 return True
-        elif MAC != None and Remove:
-            try:
-                config.remove_option('keyfile','unmanaged-devices')
-                with open(networkmanager, 'wb') as configfile:
-                    config.write(configfile)
+            return False
+        elif Remove:
+            if path.exists(networkmanager):
+                config.read(networkmanager)
+                try:
+                    config.remove_option('keyfile','unmanaged-devices')
+                    with open(networkmanager, 'wb') as configfile:
+                        config.write(configfile)
+                        return True
+                except configparser.NoSectionError:
                     return True
-            except configparser.NoSectionError:
-                pass
-        if not path.exists(networkmanager):
             return False
 
     @staticmethod

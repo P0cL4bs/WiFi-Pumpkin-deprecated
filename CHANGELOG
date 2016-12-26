@@ -4,6 +4,7 @@ Version 0.8.4
 - added new notifications for donations
 - fixed theme default QtableView Color hover
 - fixed logging name from jskeylogger plugin
+- fixed exclude from Network-manager by interface #149
 
 Version 0.8.3
 -------------
