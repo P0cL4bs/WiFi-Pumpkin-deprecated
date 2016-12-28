@@ -1324,7 +1324,7 @@ class WifiPumpkin(QWidget):
                 if self.PumpSettingsTAB.dockInfo['HTTP-Requests']['active'] and self.splitcodeURL in data:
                     self.dockAreaList['HTTP-Requests'].writeModeData(str(data).split(self.splitcodeURL)[1])
                 if self.PumpSettingsTAB.dockInfo['HTTP-Authentication']['active'] and self.splitcodeCRED in data:
-                    self.dockAreaList['HTTP-Authentication'].writeModeData(str(data).split(self.splitcodeCRED)[1])
+                    self.dockAreaList['HTTP-Authentication'].writeModeData(data)
 
     def get_dns2proxy_output(self,data):
         ''' get std_ouput the thread dns2proxy and add in DockArea '''

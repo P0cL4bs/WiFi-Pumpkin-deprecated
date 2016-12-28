@@ -5,7 +5,9 @@ from datetime import datetime
 from core.utils import Refactor
 from collections import OrderedDict
 from core.utility.threads import ThreadPopen
-from core.widgets.docks.dockmonitor import dockAreaAPI
+from core.widgets.docks.dockmonitor import (
+    dockAreaAPI,dockUrlMonitor,dockCredsMonitor,dockPumpkinProxy
+)
 from core.widgets.pluginssettings import PumpkinProxySettings
 from core.utility.collection import SettingsINI
 from plugins.external.scripts import *
@@ -488,7 +490,14 @@ class PumpkinSettings(QVBoxLayout):
             for key in DockInfo.keys():
                 if DockInfo[key]['active']:
                     self.dock = QDockWidget(key)
-                    self.AllDockArea[key] = dockAreaAPI(None,DockInfo[key])
+                    if key == 'HTTP-Authentication':
+                        self.AllDockArea[key] = dockCredsMonitor(None,DockInfo[key])
+                    elif key == 'HTTP-Requests':
+                        self.AllDockArea[key] = dockUrlMonitor(None,DockInfo[key])
+                    elif key == 'PumpkinProxy':
+                        self.AllDockArea[key] = dockPumpkinProxy(None, DockInfo[key])
+                    else:
+                        self.AllDockArea[key] = dockAreaAPI(None,DockInfo[key])
                     self.dock.setWidget(self.AllDockArea[key])
                     self.dock.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
                     self.dock.setAllowedAreas(Qt.AllDockWidgetAreas)
