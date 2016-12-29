@@ -6,6 +6,7 @@ Version 0.8.4
 - fixed logging name from jskeylogger plugin
 - fixed exclude from Network-manager by interface #149
 - added tables for logging plugins HTTP-request, PumpkinProxy, HTTP-auth
+- fixed set the application GUI style QStyleFactory #151
 
 Version 0.8.3
 -------------

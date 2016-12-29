@@ -27,14 +27,9 @@ if version_info.major != 2:
     exit('[!] WiFi-Pumpkin need Python 2 :(')
 
 def checkAppQTDesigner(style):
-    from PyQt4.QtGui import QMessageBox
+    global main
     if 'gtk+' in str(style).lower():
-        QMessageBox.warning(None,'warning: bug GUI Qt::style ',
-        "\nPyQt4 app looks different when running with root, because of that the GUI does not work 100%,"
-        " some features not work. I don't find anything code or settings for fix this bug "
-        "(if you have any solution for this send me feedback :D).\n\n"
-        'if you want keep the normal user style, run app with "sudo".')
-        exit(-1)
+        main.setStyle(QStyleFactory.create('Plastique'))
 
 if __name__ == '__main__':
     from core.loaders.checker.check_depen import check_dep_pumpkin,RED,ENDC
@@ -43,7 +38,7 @@ if __name__ == '__main__':
     if not getuid() == 0:
         exit('[{}!{}] WiFi-Pumpkin must be run as root.'.format(RED,ENDC))
 
-    from PyQt4.QtGui import QApplication,QIcon
+    from PyQt4.QtGui import QApplication,QIcon,QStyleFactory
     main = QApplication(argv)
     checkAppQTDesigner(main.style().objectName())
 
