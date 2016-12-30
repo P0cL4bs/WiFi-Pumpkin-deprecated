@@ -81,7 +81,7 @@ author      = 'Marcos Nesster (@mh4x0f)  P0cl4bs Team'
 emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
 license     = ' GNU GPL 3'
 version     = '0.8.4'
-update      = '12/10/2016' # This is Brasil :D
+update      = '22/12/2016' # This is Brasil :D
 desc        = ['Framework for Rogue Wi-Fi Access Point Attacks']
 
 class Initialize(QMainWindow):
@@ -441,14 +441,6 @@ class WifiPumpkin(QWidget):
         self.btnHttpServer.menu().addAction(action)
         self.btnHttpServer.setHidden(True)
 
-        self.GroupAP = QGroupBox()
-        self.GroupAP.setTitle('Access Point::')
-        self.FormGroup3.addRow('Gateway:', self.EditGateway)
-        self.FormGroup3.addRow('SSID:',    self.EditApName)
-        self.FormGroup3.addRow('Channel:', self.EditChannel)
-        self.GroupAP.setLayout(self.FormGroup3)
-        self.GroupAP.setFixedWidth(200)
-
         # grid network adapter fix
         self.btrn_refresh = QPushButton('Refresh')
         self.btrn_refresh.setIcon(QIcon('icons/refresh.png'))
@@ -456,11 +448,50 @@ class WifiPumpkin(QWidget):
         self.btrn_refresh.setFixedWidth(90)
         self.btrn_refresh.setFixedHeight(25)
 
-        self.layout = QFormLayout()
+        # group for list network adapters
         self.GroupAdapter = QGroupBox()
-        self.GroupAdapter.setTitle('Network Adapter::')
-        self.layout.addRow(self.selectCard,self.btrn_refresh)
-        self.GroupAdapter.setLayout(self.layout)
+        self.layoutNetworkAd = QFormLayout()
+        self.GroupAdapter.setTitle('Network Adapter')
+        self.layoutNetworkAd.addRow(self.selectCard,self.btrn_refresh)
+        self.GroupAdapter.setLayout(self.layoutNetworkAd)
+
+        # settings info access point
+        self.GroupAP = QGroupBox()
+        self.GroupAP.setTitle('Access Point')
+        self.FormGroup3.addRow('Gateway:', self.EditGateway)
+        self.FormGroup3.addRow('SSID:',    self.EditApName)
+        self.FormGroup3.addRow('Channel:', self.EditChannel)
+        self.FormGroup3.addRow(self.GroupAdapter)
+        self.GroupAP.setLayout(self.FormGroup3)
+        self.GroupAP.setFixedWidth(260)
+
+        # create widgets for Wireless Security options
+        self.GroupApPassphrase = QGroupBox()
+        self.GroupApPassphrase.setTitle('Enable Wireless Security')
+        self.GroupApPassphrase.setCheckable(True)
+        self.GroupApPassphrase.setChecked(
+            self.FSettings.Settings.get_setting('accesspoint','enable_Security',format=bool))
+        self.GroupApPassphrase.clicked.connect(self.CheckStatusWPASecurity)
+        self.layoutNetworkPass  = QFormLayout()
+        self.editPasswordAP     = QLineEdit(self.FSettings.Settings.get_setting('accesspoint','WPA_SharedKey'))
+        self.WPAtype_spinbox    = QSpinBox()
+        self.wpa_pairwiseCB     = QComboBox()
+        algoritms = ['TKIP','CCMP','TKIP + CCMP']
+        wpa_algotims = self.FSettings.Settings.get_setting('accesspoint','WPA_Algorithms')
+        self.wpa_pairwiseCB.addItems(algoritms)
+        self.wpa_pairwiseCB.setCurrentIndex(algoritms.index(wpa_algotims))
+        self.WPAtype_spinbox.setMaximum(2)
+        self.WPAtype_spinbox.setMinimum(1)
+        self.WPAtype_spinbox.setValue(
+            self.FSettings.Settings.get_setting('accesspoint','WPA_type',format=int))
+        self.editPasswordAP.setFixedWidth(150)
+
+        # add widgets on layout Group
+        self.layoutNetworkPass.addRow(QLabel('Settings WPA/IEEE 802.11i'))
+        self.layoutNetworkPass.addRow('Security WPA type:',self.WPAtype_spinbox)
+        self.layoutNetworkPass.addRow('WPA Algorithms:',self.wpa_pairwiseCB)
+        self.layoutNetworkPass.addRow('WPA Shared Key:',self.editPasswordAP)
+        self.GroupApPassphrase.setLayout(self.layoutNetworkPass)
 
         self.btn_start_attack = QPushButton('Start', self)
         self.btn_start_attack.setIcon(QIcon('icons/start.png'))
@@ -478,7 +509,7 @@ class WifiPumpkin(QWidget):
         self.Main_  = QVBoxLayout()
         self.slipt = QHBoxLayout()
         self.slipt.addWidget(self.GroupAP)
-        self.slipt.addWidget(self.GroupAdapter)
+        self.slipt.addWidget(self.GroupApPassphrase)
 
         self.donatelink = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PUPJEGHLJPFQL'
         self.donateLabel = ServiceNotify('Donations allow us to devote more time to the project so'
@@ -705,6 +736,11 @@ class WifiPumpkin(QWidget):
         self.Fdns2proxy = GUIModules.frm_dns2proxy()
         self.Fdns2proxy.setWindowTitle('Dns2proxy Logger')
         self.Fdns2proxy.show()
+
+    def CheckStatusWPASecurity(self):
+        '''simple connect for get status security wireless click'''
+        self.FSettings.Settings.set_setting('accesspoint',
+        'enable_security',self.GroupApPassphrase.isChecked())
 
     def checkPlugins(self):
         ''' check plugin options saved in file ctg '''
@@ -957,6 +993,9 @@ class WifiPumpkin(QWidget):
         self.EditGateway.setEnabled(True)
         self.selectCard.setEnabled(True)
         self.EditChannel.setEnabled(True)
+        self.editPasswordAP.setEnabled(True)
+        self.WPAtype_spinbox.setEnabled(True)
+        self.wpa_pairwiseCB.setEnabled(True)
         self.PumpSettingsTAB.GroupDHCP.setEnabled(True)
         self.PopUpPlugins.tableplugins.setEnabled(True)
         self.PopUpPlugins.tableplugincheckbox.setEnabled(True)
@@ -1074,6 +1113,23 @@ class WifiPumpkin(QWidget):
                 return QMessageBox.warning(self,'Error dhcpd','isc-dhcp-server (dhcpd) is not installed')
         return True
 
+    def checkWirelessSecurity(self):
+        '''check if user add security password on AP'''
+        if self.GroupApPassphrase.isChecked() and len(self.editPasswordAP.text()) != 0:
+            self.confgSecurity = []
+            self.confgSecurity.append('wpa={}\n'.format(str(self.WPAtype_spinbox.value())))
+            self.confgSecurity.append('wpa_key_mgmt=WPA-PSK\n')
+            self.confgSecurity.append('wpa_passphrase={}\n'.format(self.editPasswordAP.text()))
+            if '+' in self.wpa_pairwiseCB.currentText():
+                self.confgSecurity.append('wpa_pairwise=TKIP CCMP\n')
+            else:
+                self.confgSecurity.append('wpa_pairwise={}\n'.format(self.wpa_pairwiseCB.currentText()))
+            for config in self.confgSecurity:
+                self.SettingsAP['hostapd'].append(config)
+            self.FSettings.Settings.set_setting('accesspoint','WPA_SharedKey',self.editPasswordAP.text())
+            self.FSettings.Settings.set_setting('accesspoint','WPA_Algorithms',self.wpa_pairwiseCB.currentText())
+            self.FSettings.Settings.set_setting('accesspoint','WPA_type',self.WPAtype_spinbox.value())
+
     def Start_PumpAP(self):
         ''' start Access Point and settings plugins  '''
         if len(self.selectCard.currentText()) == 0:
@@ -1167,6 +1223,7 @@ class WifiPumpkin(QWidget):
 
         # get Tab-Hostapd conf and configure hostapd
         self.CoreSettings()
+        self.checkWirelessSecurity() # check if user set wireless password
         ignore = ('interface=','ssid=','channel=')
         with open('settings/hostapd.conf','w') as apconf:
             for i in self.SettingsAP['hostapd']:apconf.write(i)
@@ -1189,6 +1246,9 @@ class WifiPumpkin(QWidget):
         self.EditGateway.setEnabled(False)
         self.selectCard.setEnabled(False)
         self.EditChannel.setEnabled(False)
+        self.editPasswordAP.setEnabled(False)
+        self.WPAtype_spinbox.setEnabled(False)
+        self.wpa_pairwiseCB.setEnabled(False)
         self.PumpSettingsTAB.GroupDHCP.setEnabled(False)
         self.PopUpPlugins.tableplugins.setEnabled(False)
         self.PopUpPlugins.tableplugincheckbox.setEnabled(False)
