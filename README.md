@@ -34,7 +34,6 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 * Phishing Manager
 * Partial Bypass HSTS protocol
 * Support beef hook
-* Mac Changer 
 * ARP Poison 
 * DNS Spoof 
 * Patch Binaries via MITM
