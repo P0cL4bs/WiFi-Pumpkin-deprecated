@@ -3,7 +3,8 @@ import time
 import socket
 import struct
 from collections import defaultdict
-from PyQt4.QtCore import QThread,pyqtSignal,QObject
+from PyQt4.QtCore import QThread,pyqtSignal
+import dns.message
 
 
 class OutOfLeasesError(Exception):
@@ -35,13 +36,16 @@ class DNSQuery:
             packet += str.join('', map(lambda x: chr(int(x)), ip.split('.')))
         return packet
 
-# Original https://github.com/NORMA-Inc/AtEar/blob/master/module/fake_ap.py
 class DNSServer(QThread):
-    def __init__(self, iface, address):
+    ''' Simple DNS server UDP resolver '''
+    sendRequests = pyqtSignal(object) #I'll use this object in future feature
+    def __init__(self, iface, gateway,blockResolverDNS=False):
         super(DNSServer, self).__init__(parent = None)
         self.iface = iface
         self.DnsLoop = True
-        self.address = address
+        self.GatewayAddr = gateway
+        self.DataRequest = {'Request':None,'Queries': None} #I'll use this object in future feature
+        self.blockResolverDNS = blockResolverDNS
 
     def run(self):
         self.dns_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -55,8 +59,24 @@ class DNSServer(QThread):
             except:
                 continue
             packet = DNSQuery(data)
-            # Return own IP adress.
-            self.dns_sock.sendto(packet.respuesta(self.address), addr)
+            try:
+                self.RemoteIP = socket.gethostbyname(packet.dominio[:len(packet.dominio)-1]) #get ip website
+                msg = dns.message.from_wire(data)
+                op = msg.opcode()
+                if op == 0:
+                    # standard and inverse query
+                    qs = msg.question
+                    if len(qs) > 0:
+                        query = qs[0]
+                    #RCODE
+            except Exception as e:
+                query = repr(e) # error when resolver DNS
+            self.DataRequest['Queries'] = query
+            self.DataRequest['Request']='Request %s: -> %s ' % (addr[0],packet.dominio)
+            if not self.blockResolverDNS:
+                self.dns_sock.sendto(packet.respuesta(self.RemoteIP), addr)
+                continue
+            self.dns_sock.sendto(packet.respuesta(self.GatewayAddr), addr)
         self.dns_sock.close()
 
     def stop(self):
@@ -93,7 +113,7 @@ class DHCPServer(QThread):
         self.offer_to = self.dhcp_options['range'].split('/')[1]
         self.subnet_mask = self.dhcp_options['netmask']
         self.router = self.dhcp_options['router']
-        self.dns_server = '8.8.8.8' # share internet
+        self.dns_server = self.router # share internet
         self.broadcast = '<broadcast>'
         self.file_server = self.ip
         self.file_name = '' # ??

@@ -7,7 +7,7 @@ dnspython
 isc_dhcp_leases
 netifaces
 pcapy
-configparser
+configparser==3.3.0r1
 NetfilterQueue
 configobj
 libarchive-c==2.1

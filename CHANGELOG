@@ -9,6 +9,8 @@ Version 0.8.4
 - fixed set the application GUI style QStyleFactory #151
 - added enable/disable Wireless Security WPA Shared Key on Settings Tab
 - fixed responder is not starting #162
+- fixed class DNSServer resolver domain (DNS Response)
+
 Version 0.8.3
 -------------
 - added new design main tool

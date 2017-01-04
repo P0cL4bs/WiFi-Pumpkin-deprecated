@@ -1258,12 +1258,14 @@ class WifiPumpkin(QWidget):
             self.Thread_dhcp.sendRequest.connect(self.GetDHCPRequests)
             self.Thread_dhcp.setObjectName('DHCP')
             self.Apthreads['RougeAP'].append(self.Thread_dhcp)
+            self.PopUpPlugins.checkGeneralOptions() # check rules iptables
 
         elif self.FSettings.Settings.get_setting('accesspoint','pydhcp_server',format=bool):
             self.ThreadDNSServer = DNSServer(self.ConfigTwin['AP_iface'],self.DHCP['router'])
             self.ThreadDNSServer.setObjectName('DNSServer')
             if not self.PopUpPlugins.check_dns2proy.isChecked():
                 self.Apthreads['RougeAP'].append(self.ThreadDNSServer)
+                self.PopUpPlugins.set_Dns2proxyRule() # redirect UDP port 53
 
             self.ThreadDHCPserver = DHCPServer(self.ConfigTwin['AP_iface'],self.DHCP)
             self.ThreadDHCPserver.sendConnetedClient.connect(self.GetDHCPDiscoverInfo)
