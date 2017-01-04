@@ -10,6 +10,7 @@ Version 0.8.4
 - added enable/disable Wireless Security WPA Shared Key on Settings Tab
 - fixed responder is not starting #162
 - fixed class DNSServer resolver domain (DNS Response)
+- fixed no Internet Connection AP DNSServer #164
 
 Version 0.8.3
 -------------

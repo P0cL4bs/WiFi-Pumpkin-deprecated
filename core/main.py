@@ -1261,8 +1261,14 @@ class WifiPumpkin(QWidget):
             self.PopUpPlugins.checkGeneralOptions() # check rules iptables
 
         elif self.FSettings.Settings.get_setting('accesspoint','pydhcp_server',format=bool):
-            self.ThreadDNSServer = DNSServer(self.ConfigTwin['AP_iface'],self.DHCP['router'])
+            #self.ThreadDNSServer = DNSServer(self.ConfigTwin['AP_iface'],self.DHCP['router'])
+            #self.ThreadDNSServer.setObjectName('DNSServer')
+            # I change DNSServer for dns2proxy for now.
+            self.ThreadDNSServer = ProcessThread({'python':['plugins/external/dns2proxy/dns2proxy.py','-i',
+            str(self.selectCard.currentText()),'-k',self.currentSessionID]})
+            self.ThreadDNSServer._ProcssOutput.connect(self.get_dns2proxy_output)
             self.ThreadDNSServer.setObjectName('DNSServer')
+
             if not self.PopUpPlugins.check_dns2proy.isChecked():
                 self.Apthreads['RougeAP'].append(self.ThreadDNSServer)
                 self.PopUpPlugins.set_Dns2proxyRule() # redirect UDP port 53
