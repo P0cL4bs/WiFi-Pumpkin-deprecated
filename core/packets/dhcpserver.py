@@ -60,7 +60,6 @@ class DNSServer(QThread):
                 continue
             packet = DNSQuery(data)
             try:
-                self.RemoteIP = socket.gethostbyname(packet.dominio[:len(packet.dominio)-1]) #get ip website
                 msg = dns.message.from_wire(data)
                 op = msg.opcode()
                 if op == 0:
@@ -74,8 +73,11 @@ class DNSServer(QThread):
             self.DataRequest['Queries'] = query
             self.DataRequest['Request']='Request %s: -> %s ' % (addr[0],packet.dominio)
             if not self.blockResolverDNS:
-                self.dns_sock.sendto(packet.respuesta(self.RemoteIP), addr)
-                continue
+                try:
+                    self.RemoteIP = socket.gethostbyname(packet.dominio[:len(packet.dominio)-1]) #get ip website
+                    self.dns_sock.sendto(packet.respuesta(self.RemoteIP), addr)
+                    continue
+                except Exception: pass
             self.dns_sock.sendto(packet.respuesta(self.GatewayAddr), addr)
         self.dns_sock.close()
 
