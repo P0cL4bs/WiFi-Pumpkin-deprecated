@@ -86,7 +86,6 @@ class dockUrlMonitor(QTableWidget):
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.horizontalHeader().setStretchLastSection(True)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.verticalHeader().setVisible(False)
         self.verticalHeader().setDefaultSectionSize(27)
         self.setSortingEnabled(True)

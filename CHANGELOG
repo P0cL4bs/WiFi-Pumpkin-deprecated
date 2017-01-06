@@ -11,6 +11,7 @@ Version 0.8.4
 - fixed responder is not starting #162
 - fixed class DNSServer resolver domain (DNS Response)
 - fixed no Internet Connection AP DNSServer #164
+- fixed enable Copy/edit row from HTTP-Requests Tables #167
 
 Version 0.8.3
 -------------
