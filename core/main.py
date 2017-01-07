@@ -1204,9 +1204,10 @@ class WifiPumpkin(QWidget):
                 'now you have choose the Class range different of your network.')
 
         # Check the key
-        if 1 <= self.WPAtype_spinbox.value() <= 2:
-            if not (8 <= len(self.editPasswordAP.text()) <= 63 and self.is_ascii(str(self.editPasswordAP.text()))):
-                return self.show_key_warning()
+        if self.GroupApPassphrase.isChecked():
+            if 1 <= self.WPAtype_spinbox.value() <= 2:
+                if not (8 <= len(self.editPasswordAP.text()) <= 63 and self.is_ascii(str(self.editPasswordAP.text()))):
+                    return self.show_key_warning()
 
         print('\n[*] Loading debugging mode')
         # create session ID to logging process
