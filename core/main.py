@@ -1159,12 +1159,11 @@ class WifiPumpkin(QWidget):
                     self.confgSecurity.append('wpa_pairwise={}\n'.format(self.wpa_pairwiseCB.currentText()))
 
             if self.WPAtype_spinbox.value() == 0:
-                self.confgSecurity.append('auth_algs=3\n')
+                self.confgSecurity.append('auth_algs=1\n')
+                self.confgSecurity.append('wep_default_key=0\n')
                 if len(self.editPasswordAP.text()) == 5 or len(self.editPasswordAP.text()) == 13:
-                    self.confgSecurity.append('wep_default_key=1\n')
-                    self.confgSecurity.append('wep_key1="{}"\n'.format(self.editPasswordAP.text()))
+                    self.confgSecurity.append('wep_key0="{}"\n'.format(self.editPasswordAP.text()))
                 else:
-                    self.confgSecurity.append('wep_default_key=0\n')
                     self.confgSecurity.append('wep_key0={}\n'.format(self.editPasswordAP.text()))
 
             for config in self.confgSecurity:
