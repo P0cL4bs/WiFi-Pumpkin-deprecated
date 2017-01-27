@@ -481,7 +481,7 @@ class WifiPumpkin(QWidget):
         self.wpa_pairwiseCB.addItems(algoritms)
         self.wpa_pairwiseCB.setCurrentIndex(algoritms.index(wpa_algotims))
         self.WPAtype_spinbox.setMaximum(2)
-        self.WPAtype_spinbox.setMinimum(1)
+        self.WPAtype_spinbox.setMinimum(0)
         self.WPAtype_spinbox.setValue(
             self.FSettings.Settings.get_setting('accesspoint','WPA_type',format=int))
         self.editPasswordAP.setFixedWidth(150)
@@ -490,10 +490,9 @@ class WifiPumpkin(QWidget):
         self.update_settings()
 
         # add widgets on layout Group
-        self.layoutNetworkPass.addRow(QLabel('Settings WPA/IEEE 802.11i'))
-        self.layoutNetworkPass.addRow('Security WPA type:',self.WPAtype_spinbox)
+        self.layoutNetworkPass.addRow('Security type:',self.WPAtype_spinbox)
         self.layoutNetworkPass.addRow('WPA Algorithms:',self.wpa_pairwiseCB)
-        self.layoutNetworkPass.addRow('WPA Shared Key:',self.editPasswordAP)
+        self.layoutNetworkPass.addRow('Security Key:',self.editPasswordAP)
         self.GroupApPassphrase.setLayout(self.layoutNetworkPass)
 
         self.btn_start_attack = QPushButton('Start', self)
@@ -658,12 +657,21 @@ class WifiPumpkin(QWidget):
         self.TabListWidget_Menu.setCurrentRow(0)
         self.setLayout(self.boxHome)
 
+    def is_hexadecimal(self, text):
+        try:
+            int(text, 16)
+        except ValueError:
+            return False
+        else:
+            return True
+
     def is_ascii(self, text):
         try:
             text.decode('ascii')
-            return True
         except UnicodeDecodeError:
             return False
+        else:
+            return True
 
     def update_settings(self):
         if 1 <= self.WPAtype_spinbox.value() <= 2:
@@ -671,6 +679,15 @@ class WifiPumpkin(QWidget):
                 self.editPasswordAP.setStyleSheet("QLineEdit { border: 1px solid green;}")
             else:
                 self.editPasswordAP.setStyleSheet("QLineEdit { border: 1px solid red;}")
+            self.wpa_pairwiseCB.setEnabled(True)
+        if self.WPAtype_spinbox.value() == 0:
+            if (len(self.editPasswordAP.text()) == 5 or len(self.editPasswordAP.text()) == 13) and \
+                    self.is_ascii(str(self.editPasswordAP.text())) or (len(self.editPasswordAP.text()) == 10 or len(self.editPasswordAP.text()) == 26) and \
+                    self.is_hexadecimal(str(self.editPasswordAP.text())):
+                self.editPasswordAP.setStyleSheet("QLineEdit { border: 1px solid green;}")
+            else:
+                self.editPasswordAP.setStyleSheet("QLineEdit { border: 1px solid red;}")
+            self.wpa_pairwiseCB.setEnabled(False)
 
     def show_arp_posion(self):
         ''' call GUI Arp Poison module '''
@@ -1130,15 +1147,25 @@ class WifiPumpkin(QWidget):
 
     def checkWirelessSecurity(self):
         '''check if user add security password on AP'''
-        if self.GroupApPassphrase.isChecked() and len(self.editPasswordAP.text()) != 0:
+        if self.GroupApPassphrase.isChecked():
             self.confgSecurity = []
-            self.confgSecurity.append('wpa={}\n'.format(str(self.WPAtype_spinbox.value())))
-            self.confgSecurity.append('wpa_key_mgmt=WPA-PSK\n')
-            self.confgSecurity.append('wpa_passphrase={}\n'.format(self.editPasswordAP.text()))
-            if '+' in self.wpa_pairwiseCB.currentText():
-                self.confgSecurity.append('wpa_pairwise=TKIP CCMP\n')
-            else:
-                self.confgSecurity.append('wpa_pairwise={}\n'.format(self.wpa_pairwiseCB.currentText()))
+            if 1 <= self.WPAtype_spinbox.value() <= 2:
+                self.confgSecurity.append('wpa={}\n'.format(str(self.WPAtype_spinbox.value())))
+                self.confgSecurity.append('wpa_key_mgmt=WPA-PSK\n')
+                self.confgSecurity.append('wpa_passphrase={}\n'.format(self.editPasswordAP.text()))
+                if '+' in self.wpa_pairwiseCB.currentText():
+                    self.confgSecurity.append('wpa_pairwise=TKIP CCMP\n')
+                else:
+                    self.confgSecurity.append('wpa_pairwise={}\n'.format(self.wpa_pairwiseCB.currentText()))
+
+            if self.WPAtype_spinbox.value() == 0:
+                self.confgSecurity.append('auth_algs=1\n')
+                self.confgSecurity.append('wep_default_key=0\n')
+                if len(self.editPasswordAP.text()) == 5 or len(self.editPasswordAP.text()) == 13:
+                    self.confgSecurity.append('wep_key0="{}"\n'.format(self.editPasswordAP.text()))
+                else:
+                    self.confgSecurity.append('wep_key0={}\n'.format(self.editPasswordAP.text()))
+
             for config in self.confgSecurity:
                 self.SettingsAP['hostapd'].append(config)
             self.FSettings.Settings.set_setting('accesspoint','WPA_SharedKey',self.editPasswordAP.text())
@@ -1150,7 +1177,9 @@ class WifiPumpkin(QWidget):
                                    'This Key can not be used.\n'
                                    'The requirements for a valid key are:\n\n'
                                    'WPA:\n'
-                                   '- 8 to 63 ASCII characters')
+                                   '- 8 to 63 ASCII characters\n\n'
+                                   'WEP:\n'
+                                   '- 5/13 ASCII characters or 13/26 hexadecimal characters')
 
     def Start_PumpAP(self):
         ''' start Access Point and settings plugins  '''
@@ -1207,6 +1236,10 @@ class WifiPumpkin(QWidget):
         if self.GroupApPassphrase.isChecked():
             if 1 <= self.WPAtype_spinbox.value() <= 2:
                 if not (8 <= len(self.editPasswordAP.text()) <= 63 and self.is_ascii(str(self.editPasswordAP.text()))):
+                    return self.show_key_warning()
+            if self.WPAtype_spinbox.value() == 0:
+                if not (len(self.editPasswordAP.text()) == 5 or len(self.editPasswordAP.text()) == 13) and self.is_ascii(str(self.editPasswordAP.text()))\
+                        and not ((len(self.editPasswordAP.text()) == 10 or len(self.editPasswordAP.text()) == 24) and self.is_hexadecimal(str(self.editPasswordAP.text()))):
                     return self.show_key_warning()
 
         print('\n[*] Loading debugging mode')
