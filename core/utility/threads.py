@@ -17,7 +17,7 @@ from PyQt4.QtGui import QMessageBox
 from plugins.external.sergio_proxy.plugins import *
 from multiprocessing import Process,Manager
 from core.servers.proxy.controller.handler import MasterHandler
-from mitmproxy import controller, proxy
+from mitmproxy import proxy,flow,options
 from mitmproxy.proxy.server import ProxyServer
 
 """
@@ -262,11 +262,13 @@ class ThreadPumpkinProxy(QObject):
         self.session = session
 
     def start(self):
-        config = proxy.ProxyConfig(port=8080,mode='transparent')
         print "[*] Pumpkin-Proxy running on port:8080 \n"
+        opts = options.Options(listen_port=8080,mode="transparent")
+        config = proxy.ProxyConfig(opts)
+        state = flow.State()
         server = ProxyServer(config)
         server.allow_reuse_address = True
-        self.m = MasterHandler(server,self.session)
+        self.m = MasterHandler(opts,server,state,self.session)
         self.m.run(self.send)
 
     def stop(self):

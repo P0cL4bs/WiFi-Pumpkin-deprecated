@@ -1,8 +1,7 @@
 from plugins.extension import *
 from threading import Thread
 from core.utility.collection import  SettingsINI
-from mitmproxy import controller, proxy
-from mitmproxy.proxy.server import ProxyServer
+from mitmproxy import controller,flow
 
 
 """
@@ -33,7 +32,7 @@ class ThreadController(Thread):
 
     def run(self):
         try:
-            controller.Master.run(self.main)
+            flow.FlowMaster.run(self.main)
         except :
             self.main.shutdown()
 
@@ -41,9 +40,9 @@ class ThreadController(Thread):
         self.main.shutdown()
 
 
-class MasterHandler(controller.Master):
-    def __init__(self, server,session):
-        controller.Master.__init__(self, server)
+class MasterHandler(flow.FlowMaster):
+    def __init__(self,opts, server,state,session):
+        flow.FlowMaster.__init__(self,opts, server,state)
         self.config  = SettingsINI('core/config/app/proxy.ini')
         self.session = session
         self.plugins = []
@@ -85,7 +84,8 @@ class MasterHandler(controller.Master):
         #for instance in self.plugins:
         #    instance.init_logger(self.session)
 
-    def handle_request(self, flow):
+    @controller.handler
+    def request(self, flow):
         '''
         print "-- request --"
         print flow.__dict__
@@ -99,9 +99,9 @@ class MasterHandler(controller.Master):
                 p.request(flow)
         except Exception:
             pass
-        flow.reply()
 
-    def handle_response(self, flow):
+    @controller.handler
+    def response(self, flow):
 
         '''
         print
@@ -117,4 +117,3 @@ class MasterHandler(controller.Master):
                 p.response(flow)
         except Exception:
             pass
-        flow.reply()

@@ -16,7 +16,7 @@ func_Banner(){
 	echo '   ============================='
 	echo "   |$bldblu wifi-pumpkin Installer$txtrst|"
 	echo '   ============================='
-	echo "          Version: $(tput setaf 5)0.8.3 $txtrst"
+	echo "          Version: $(tput setaf 5)0.8.4 $txtrst"
 	echo "usage: ./installer.sh --install | --uninstall"
 }
 

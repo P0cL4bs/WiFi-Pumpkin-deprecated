@@ -16,4 +16,4 @@ pefile
 capstone
 hyperframe
 h2
-mitmproxy==0.17
+mitmproxy==0.18.2
