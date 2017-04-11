@@ -1334,7 +1334,7 @@ class WifiPumpkin(QWidget):
 
             if not self.PopUpPlugins.check_dns2proy.isChecked():
                 self.Apthreads['RougeAP'].append(self.ThreadDNSServer)
-                self.PopUpPlugins.set_Dns2proxyRule() # redirect UDP port 53
+                #self.PopUpPlugins.set_Dns2proxyRule() # disabled :: redirect UDP port 53
 
             self.ThreadDHCPserver = DHCPServer(self.ConfigTwin['AP_iface'],self.DHCP)
             self.ThreadDHCPserver.sendConnetedClient.connect(self.GetDHCPDiscoverInfo)
