@@ -4,6 +4,7 @@ from multiprocessing import Process,Manager
 from modules.spreads.UpdateFake import frm_update_attack
 from core.packets.network import ThARP_posion,ThSpoofAttack
 from core.loaders.models.PackagesUI import *
+from scapy.all import get_if_hwaddr
 threadloading = {'template':[],'posion':[]}
 
 """
