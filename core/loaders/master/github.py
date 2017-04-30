@@ -75,11 +75,13 @@ class GithubUpdate(QThread):
                 if not path.isdir('.git/'):self.gitZipRepo()
                 call(['git','reset','--hard','origin/master'])
                 self.ProcessCall_(['git','pull','origin','master'])
+                self.ProcessCall_(['pip', 'install', '-r', 'requirements.txt'])
 
     def NewVersionUpdate(self):
         if not path.isdir('.git/'):self.gitZipRepo()
         call(['git','reset','--hard','origin/master'])
         self.ProcessCall_(['git','pull','origin','master'])
+        self.ProcessCall_(['pip', 'install', '-r', 'requirements.txt'])
 
     def checkUpdate(self,Version):
         if self.commit_update['Version'] != Version:
@@ -110,6 +112,7 @@ class GithubUpdate(QThread):
         call(['git','remote', 'add', 'origin', 'https://github.com/P0cL4bs/WiFi-Pumpkin.git'])
         call(['git', 'fetch','--all'])
         call(['git','reset','--hard','origin/master'])
+        call(['pip', 'install', '-r', 'requirements.txt'])
 
     def status(self):
         self.emit(SIGNAL('Activated ( QString )'),'alive::')

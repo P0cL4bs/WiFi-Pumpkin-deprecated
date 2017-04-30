@@ -18,6 +18,7 @@ Version 0.8.4
 - fixed update version mitmproxy 0.17 to 0.18.2 #195
 - fixed dnsspoof module to redirect with plugin disabled
 - fixed ARPspoof module  get MAC address by interface
+- added support for update requeriments.txt when get news versions
 
 Version 0.8.3
 -------------
