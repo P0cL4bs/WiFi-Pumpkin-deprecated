@@ -2,7 +2,8 @@ from plugins.extension import *
 from collections import OrderedDict
 from PyQt4.QtGui import (
     QListWidget,QTableWidget,QSizePolicy,
-    QAbstractItemView,QTableWidgetItem,QIcon,QListWidgetItem
+    QAbstractItemView,QTableWidgetItem,QIcon,QListWidgetItem,
+    QTreeView,QStandardItemModel,QStandardItem
 )
 from PyQt4.QtCore import (
     SIGNAL,QProcess,pyqtSlot,QObject,SLOT,Qt,QSize
@@ -14,7 +15,7 @@ Description:
     for Activity-Monitor tab.
 
 Copyright:
-    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2017 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -76,54 +77,6 @@ class dockAreaAPI(QListWidget):
         if self.processThread != None:
             self.processThread.stop()
 
-class dockUrlMonitor(QTableWidget):
-    ''' dock widget for get all url monitor '''
-    def __init__(self, parent=None,info={}):
-        super(dockUrlMonitor, self).__init__(parent)
-        self.setMinimumWidth(580)
-        self.logger = info
-        self.startThread  = False
-        self.processThread = None
-        self.setColumnCount(3)
-        self.resizeRowsToContents()
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        self.horizontalHeader().setStretchLastSection(True)
-        self.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.verticalHeader().setVisible(False)
-        self.verticalHeader().setDefaultSectionSize(27)
-        self.setSortingEnabled(True)
-        self.THeaders  = OrderedDict([ ('IP Address',[]),('Method',[]),('Path',[])])
-        self.setHorizontalHeaderLabels(self.THeaders.keys())
-        self.horizontalHeader().resizeSection(0,100)
-        self.horizontalHeader().resizeSection(1,60)
-
-    def writeModeData(self,data):
-        '''get data output and add on QtableWidgets '''
-        Headers = []
-        data = data.split()
-        self.THeaders['IP Address'].append(data[0])
-        self.THeaders['Method'].append(data[1])
-        self.THeaders['Path'].append(data[2])
-        self.setRowCount(len(self.THeaders['Path']))
-        for n, key in enumerate(self.THeaders.keys()):
-            Headers.append(key)
-            for m, item in enumerate(self.THeaders[key]):
-                item = QTableWidgetItem(item)
-                if key == 'Path':
-                    item.setIcon(QIcon('icons/accept.png'))
-                else:
-                    item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
-                self.setItem(m, n, item)
-        self.setHorizontalHeaderLabels(self.THeaders.keys())
-        self.scrollToBottom()
-
-    def stopProcess(self):
-        self.clearContents()
-        self.setRowCount(0)
-        self.setHorizontalHeaderLabels(self.THeaders.keys())
-        self.verticalHeader().setDefaultSectionSize(27)
-
-
 class dockCredsMonitor(QTableWidget):
     ''' dock widget for get all credentials logger netcreds'''
     def __init__(self, parent=None,info={}):
@@ -131,7 +84,7 @@ class dockCredsMonitor(QTableWidget):
         self.logger = info
         self.startThread  = False
         self.processThread = None
-        self.setColumnCount(3)
+        self.setColumnCount(4)
         self.resizeRowsToContents()
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.horizontalHeader().setStretchLastSection(True)
@@ -139,31 +92,96 @@ class dockCredsMonitor(QTableWidget):
         self.verticalHeader().setVisible(False)
         self.verticalHeader().setDefaultSectionSize(27)
         self.setSortingEnabled(True)
-        self.THeaders  = OrderedDict([ ('Username',[]),('Password',[]),('Source/Destination',[])])
+        self.THeaders  = OrderedDict([ ('Username',[]),('Password',[]),('Url',[]),('Source/Destination',[])])
         self.setHorizontalHeaderLabels(self.THeaders.keys())
-        self.horizontalHeader().resizeSection(0,170)
-        self.horizontalHeader().resizeSection(1,150)
+        self.horizontalHeader().resizeSection(0,120)
+        self.horizontalHeader().resizeSection(1,120)
+        self.horizontalHeader().resizeSection(2,180)
 
     def writeModeData(self,data):
         ''' get data output and add on QtableWidgets '''
-        packetsIp = data.split(':[creds]')[1].split('HTTP username:')[0]
-        for count,value in enumerate(data.split()):
-            if 'username:' in value:
-                username = data.split()[count+1]
-                self.THeaders['Username'].append(username.split('=')[1])
-            if 'password:' in value:
-                password = data.split()[count+1]
-                self.THeaders['Password'].append(password.split('=')[1])
-
+        self.THeaders['Username'].append(data['POSTCreds']['User'])
+        self.THeaders['Password'].append(data['POSTCreds']['Pass'])
+        self.THeaders['Url'].append(data['POSTCreds']['Url'])
+        self.THeaders['Source/Destination'].append(data['POSTCreds']['Destination'])
         Headers = []
-        if packetsIp not in self.THeaders['Source/Destination'] and not 'SessionID' in packetsIp:
-            self.THeaders['Source/Destination'].append(packetsIp)
         self.setRowCount(len(self.THeaders['Username']))
         for n, key in enumerate(self.THeaders.keys()):
             Headers.append(key)
             for m, item in enumerate(self.THeaders[key]):
                 item = QTableWidgetItem(item)
                 item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+                self.setItem(m, n, item)
+        self.setHorizontalHeaderLabels(self.THeaders.keys())
+        self.verticalHeader().setDefaultSectionSize(27)
+        self.scrollToBottom()
+
+    def stopProcess(self):
+        self.setRowCount(0)
+        self.clearContents()
+        self.setHorizontalHeaderLabels(self.THeaders.keys())
+
+class dockUrlMonitor(QTreeView):
+    ''' dock widget for get all credentials logger netcreds'''
+    def __init__(self, parent=None,info={}):
+        super(dockUrlMonitor, self).__init__(parent)
+        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.model = QStandardItemModel()
+        self.model.setHorizontalHeaderLabels(['URL','HTTP-Headers'])
+        self.setModel(self.model)
+        self.setUniformRowHeights(True)
+        self.setColumnWidth(0,130)
+
+    def writeModeData(self,data):
+        ''' get data output and add on QtableWidgets '''
+        ParentMaster = QStandardItem('[ {0[src]} > {0[dst]} ] {1[Method]} {1[Host]}{1[Path]}'.format(
+        data['urlsCap']['IP'], data['urlsCap']['Headers']))
+        ParentMaster.setIcon(QIcon('icons/accept.png'))
+        ParentMaster.setSizeHint(QSize(30,30))
+        for item in data['urlsCap']['Headers']:
+            ParentMaster.appendRow([QStandardItem('{}'.format(item)),
+            QStandardItem(data['urlsCap']['Headers'][item])])
+        self.model.appendRow(ParentMaster)
+        self.setFirstColumnSpanned(ParentMaster.row(),
+        self.rootIndex(), True)
+        self.scrollToBottom()
+
+    def clear(self):
+        self.model.clear()
+
+    def stopProcess(self):
+        self.clearSelection()
+
+
+class dockTCPproxy(QTableWidget):
+    ''' dock widget for get all credentials logger netcreds'''
+    def __init__(self, parent=None):
+        super(dockTCPproxy, self).__init__(parent)
+        self.setColumnCount(2)
+        self.resizeRowsToContents()
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.horizontalHeader().setStretchLastSection(True)
+        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.verticalHeader().setVisible(False)
+        self.verticalHeader().setDefaultSectionSize(27)
+        self.setSortingEnabled(True)
+        self.THeaders  = OrderedDict([ ('Plugin',[]),('Logging',[])])
+        self.setHorizontalHeaderLabels(self.THeaders.keys())
+        self.horizontalHeader().resizeSection(0,150)
+        self.horizontalHeader().resizeSection(1,150)
+
+    def writeModeData(self,data):
+        ''' get data output and add on QtableWidgets '''
+        self.THeaders['Plugin'].append(data.keys()[0])
+        self.THeaders['Logging'].append(data[data.keys()[0]])
+        Headers = []
+        self.setRowCount(len(self.THeaders['Plugin']))
+        for n, key in enumerate(self.THeaders.keys()):
+            Headers.append(key)
+            for m, item in enumerate(self.THeaders[key]):
+                item = QTableWidgetItem(item)
+                if key != 'Logging':
+                    item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
                 self.setItem(m, n, item)
         self.setHorizontalHeaderLabels(self.THeaders.keys())
         self.verticalHeader().setDefaultSectionSize(27)

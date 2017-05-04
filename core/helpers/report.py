@@ -4,13 +4,16 @@ try:
     from PyQt4.QtWebKit import QWebView
 except Exception:
     QWebView_checker = False
+from os import getcwd,listdir
+from shutil import copyfile
+from os import path,mkdir
 
 """
 Description:
     This program is a module for wifi-pumpkin.py. Report FIles Logger PDF or HTML
 
 Copyright:
-    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2017 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -62,13 +65,35 @@ class frm_ReportLogger(PumpkinModule):
         self.ExportPDF.print_(printer)
         QMessageBox.information(self, 'WiFi Pumpkin Report PDF', 'file PDF has been generated successfully.')
 
+    def getImagesCapturedSession(self,session):
+        ''' find images by session for export '''
+        list_images = []
+        if session == '':
+            for image in listdir('logs/ImagesCap/'):
+                list_images.append('{}/logs/ImagesCap/{}'.format(getcwd(),image))
+            return list_images
+        for image in listdir('logs/ImagesCap'):
+            if session in image:
+                list_images.append('{}/logs/ImagesCap/{}'.format(getcwd(),image))
+        return list_images
+
+    def ExportImagesCaptured(self,filename):
+        ''' get images captured on session and copy to folter images_captured '''
+        if len(filename[0]) != 0:
+            pathdir = path.dirname(str(filename[0]))+'/images_captured/'
+            if self.files_images != []:
+                if not path.exists(pathdir):
+                    mkdir(pathdir)
+                for file in self.files_images:
+                    copyfile(file,pathdir+path.basename(file))
+
     def exportFilesSystem(self):
         # export HTML or pdf file
         all_unchecked = self.get_all_items_Unchecked()
         if not self.checkHTML.isChecked() and not self.checkPDF.isChecked():
             return QMessageBox.warning(self, 'WiFi Pumpkin Options',
             'You have to select a <strong>option</strong> file type  for export.')
-        if  len(all_unchecked.keys()) == 9:
+        if  len(all_unchecked.keys()) == Refactor.exportHtml(all_unchecked,'')['Count']:
             return QMessageBox.warning(self, 'WiFi Pumpkin empty session',
             'logger:ERROR Could not find log files.')
 
@@ -80,6 +105,7 @@ class frm_ReportLogger(PumpkinModule):
                 [self.sessions[key]['started'],self.sessions[key]['stoped']],apname)
                 sessions_activated = key
                 break
+        self.files_images  =  self.getImagesCapturedSession(sessions_activated)
         if sessions_activated == '':
             contents = Refactor.exportHtml(all_unchecked,sessions_activated)
 
@@ -101,6 +127,8 @@ class frm_ReportLogger(PumpkinModule):
                 printer.setOutputFormat(QPrinter.PdfFormat)
                 printer.setOutputFileName(filename[0])
                 self.convertIt(printer)
+
+        self.ExportImagesCaptured(filename)
 
     @pyqtSlot(QModelIndex)
     def combo_clicked(self, session):

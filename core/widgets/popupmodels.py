@@ -11,7 +11,7 @@ Description:
     for load plugins mitm attack and phishing module.
 
 Copyright:
-    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2017 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -47,6 +47,7 @@ class PopUpPlugins(QVBoxLayout):
 
         self.check_netcreds     = QCheckBox('net-creds ')
         self.check_responder    = QCheckBox('Responder')
+        self.check_tcpproxy     = QCheckBox('TCP-Proxy')
         self.check_pumpkinProxy = QRadioButton('Pumpkin-Proxy')
         self.check_dns2proy     = QRadioButton('SSLstrip+|Dns2proxy')
         self.check_sergioProxy  = QRadioButton('SSLstrip|Sergio-proxy')
@@ -73,6 +74,8 @@ class PopUpPlugins(QVBoxLayout):
         # desction plugin checkbox
         self.check_netcreds.setObjectName('Sniff passwords and hashes from an interface or pcap file.'
         ' coded by: Dan McInerney')
+        self.check_tcpproxy.setObjectName('sniff for isntercept network traffic on UDP,TCP protocol.'
+        ' get password,hash,image,etc...')
         self.check_responder.setObjectName('Responder an LLMNR, NBT-NS and MDNS poisoner. '
         'By default, the tool will only answer to File Server Service request, which is for SMB.')
 
@@ -88,9 +91,9 @@ class PopUpPlugins(QVBoxLayout):
 
         # table 2 for add plugins with checkbox
         self.THeadersPlugins  = OrderedDict(
-        [   ('Plugins',[self.check_netcreds,self.check_responder]),
+        [   ('Plugins',[self.check_tcpproxy,self.check_responder]),
             ('Settings',[QPushButton('None'),self.btnResponderSettings]),
-            ('Description',[self.check_netcreds.objectName(),self.check_responder.objectName(),])
+            ('Description',[self.check_tcpproxy.objectName(),self.check_responder.objectName(),])
         ])
 
         self.tableplugins = QTableWidget()
@@ -155,7 +158,7 @@ class PopUpPlugins(QVBoxLayout):
         self.proxyGroup.addButton(self.check_noproxy)
         self.proxyGroup.addButton(self.check_bdfproxy)
 
-        self.check_netcreds.clicked.connect(self.checkBoxNecreds)
+        self.check_tcpproxy.clicked.connect(self.checkBoxTCPproxy)
         self.check_pumpkinProxy.clicked.connect(self.checkGeneralOptions)
         self.check_dns2proy.clicked.connect(self.checkGeneralOptions)
         self.check_sergioProxy.clicked.connect(self.checkGeneralOptions)
@@ -173,7 +176,7 @@ class PopUpPlugins(QVBoxLayout):
         self.check_noproxy.setChecked(True)
         self.tableplugincheckbox.setEnabled(True)
         self.sendSingal_disable.emit(self.check_noproxy.isChecked())
-        self.checkBoxNecreds()
+        self.checkBoxTCPproxy()
 
     # control checkbox plugins
     def checkGeneralOptions(self):
@@ -219,11 +222,15 @@ class PopUpPlugins(QVBoxLayout):
         self.SettingsResponder  = ResponderSettings()
         self.SettingsResponder.show()
 
-    def checkBoxNecreds(self):
-        if self.check_netcreds.isChecked():
-            self.FSettings.Settings.set_setting('plugins','netcreds_plugin',True)
+    def checkBoxTCPproxy(self):
+        if self.check_tcpproxy.isChecked():
+            self.FSettings.Settings.set_setting('plugins','tcpproxy_plugin',True)
+            self.main_method.PacketSnifferTAB.tabcontrol.setEnabled(True)
+            self.main_method.ImageCapTAB.TableImage.setEnabled(True)
         else:
-            self.FSettings.Settings.set_setting('plugins','netcreds_plugin',False)
+            self.FSettings.Settings.set_setting('plugins','tcpproxy_plugin',False)
+            self.main_method.PacketSnifferTAB.tabcontrol.setEnabled(False)
+            self.main_method.ImageCapTAB.TableImage.setEnabled(False)
 
     def checkBoxResponder(self):
         if self.check_responder.isChecked():

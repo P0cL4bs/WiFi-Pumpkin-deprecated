@@ -5,16 +5,27 @@ import struct
 from collections import defaultdict
 from PyQt4.QtCore import QThread,pyqtSignal
 import dns.message
+from dns import resolver
 
 
 class OutOfLeasesError(Exception):
     pass
 
-# Original from http://code.activestate.com/recipes/491264/ (r4)
+
 class DNSQuery:
     def __init__(self, data):
         self.data = data
         self.dominio = ''
+        self.RECORD_TYPES = {
+            '\x00\x01': 'A',
+            '\x00\x05': 'CNAME',
+            '\x00\x0f': 'MX',
+            '\x00\x02': 'NS',
+            '\x00\x10': 'TXT',
+            '\x00\x1c': 'AAAA',
+            '\x00\xff': 'ANY',
+        }
+
         # Copy Opcode to variable 'tipo'.
         tipo = (ord(data[2]) >> 3) & 15
         if tipo == 0: # Opcode 0 mean a standard query(QUERY)
@@ -28,13 +39,73 @@ class DNSQuery:
     def respuesta(self, ip):
         packet = ''
         if self.dominio:
-            packet += self.data[:2] + "\x81\x80"                            # Response & No error.
-            packet += self.data[4:6] + self.data[4:6] + '\x00\x00\x00\x00'  # Questions and Answers Counts.
-            packet += self.data[12:]                                        # Original Domain Name Question.
-            packet += '\xc0\x0c'                                            # A domain name to which this resource record pertains.
-            packet += '\x00\x01\x00\x01\x00\x00\x00\x3c\x00\x04'            # type, class, ttl, data-length
+            packet += self.data[:2] + "\x81\x80" # Response & No error.
+            packet += self.data[4:6] + self.data[4:6] + '\x00\x00\x00\x00' # Questions and Answers Counts.
+            packet += self.data[12:] # Original Domain Name Question.
+            packet += '\xc0\x0c'   # A domain name to which this resource record pertains.
+            packet += '\x00\x01\x00\x01\x00\x00\x00\x3c\x00\x04' # type, class, ttl, data-length
             packet += str.join('', map(lambda x: chr(int(x)), ip.split('.')))
         return packet
+
+    def render_packet(self,ip):
+        packet = ''
+        if self.dominio:
+            d = self.data
+            packet += d[:2]  # Transaction ID
+            flags = ''
+            flags += '1'  # 1=response, 0=query
+            flags += '0000'  # opcode, 0=standard query, 1=inverse query, 2=server status request
+            flags += '1'  # Authoritative Answer
+            flags += '0'  # Trancated response
+            flags += '0'  # Recursion Desired
+            flags += '0'  # Recursion Available
+            flags += '000'  # reserved, have to be 0
+            flags += '0000'  # RCode, 0=no error
+            packet += self.bin_to_hex(flags)
+            packet += d[4:6]  # Number of Questions
+            packet += d[4:6]  # Number of Answer RRs
+            packet += '\x00\x00'  # Number of Authority RRs
+            packet += '\x00\x00'  # Number of Additional RRs
+            packet += d[12:]  # Original Domain Name Question
+            packet += '\xc0\x0c'  # NAME (domain)
+            packet += self._get_raw_type()  # TYPE
+            packet += '\x00\x01'  # CLASS (Internet)
+            packet += self._get_ttl_bytes()  # TTL time to live
+            packet += self.int_to_hex(4, zfill=2)  # RDLENGTH
+            packet += str.join('', map(lambda x: chr(int(x)), ip.split('.')))  # RDATA
+        return packet
+
+    def make_response(self,data,RCODE=None):
+        qry= dns.message.from_wire(data)
+        resp = dns.message.make_response(qry)
+        resp.flags |= dns.flags.AA
+        resp.flags |= dns.flags.RA
+        resp.set_rcode(RCODE)
+        return resp.to_wire()
+
+    def _get_domainReal(self):
+        return self.dominio[:-1]
+
+    def _get_dnsType(self):
+        return self.RECORD_TYPES.get(self._get_raw_type(), 'Unknown')
+
+    def _get_raw_type(self):
+        return self.data[-4:-2]
+
+    def _get_ttl_bytes(self):
+        return self.int_to_hex(300, zfill=4)
+
+    def int_to_hex(self,value, zfill=None):
+        h = hex(value)  # 300 -> '0x12c'
+        h = h[2:].zfill((zfill or 0) * 2)  # '0x12c' -> '00012c' if zfill=3
+        return h.decode('hex')
+
+    def bin_to_hex(self,value):
+        # http://stackoverflow.com/questions/2072351/python-conversion-from-binary-string-to-hexadecimal/2072384#2072384
+        # '0000 0100 1000 1101' -> '\x04\x8d'
+        value = value.replace(' ', '')
+        h = '%0*X' % ((len(value) + 3) // 4, int(value, 2))
+        return h.decode('hex')
 
 class DNSServer(QThread):
     ''' Simple DNS server UDP resolver '''
@@ -44,8 +115,13 @@ class DNSServer(QThread):
         self.iface = iface
         self.DnsLoop = True
         self.GatewayAddr = gateway
-        self.DataRequest = {'Request':None,'Queries': None} #I'll use this object in future feature
+        self.data_request = {'logger':None,'type':None,
+        'query': None} #I'll use this object in future feature
         self.blockResolverDNS = blockResolverDNS
+        self.Resolver = resolver.Resolver()
+        self.Resolver.nameservers = ['8.8.8.8']
+        self.Resolver.timeout = 1
+        self.Resolver.lifetime = 1
 
     def run(self):
         self.dns_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -70,15 +146,26 @@ class DNSServer(QThread):
                     #RCODE
             except Exception as e:
                 query = repr(e) # error when resolver DNS
-            self.DataRequest['Queries'] = query
-            self.DataRequest['Request']='Request %s: -> %s ' % (addr[0],packet.dominio)
+            self.data_request['query'] = query # get query resquest from client
+            self.data_request['type'] = packet._get_dnsType() # get type query
+            self.data_request['logger']='Client [{}]: -> [{}]'.format(addr[0], packet.dominio)
             if not self.blockResolverDNS:
                 try:
-                    self.RemoteIP = socket.gethostbyname(packet.dominio[:len(packet.dominio)-1]) #get ip website
-                    self.dns_sock.sendto(packet.respuesta(self.RemoteIP), addr)
-                    continue
-                except Exception: pass
-            self.dns_sock.sendto(packet.respuesta(self.GatewayAddr), addr)
+                    answers = self.Resolver.query(packet._get_domainReal()) # try resolver domain
+                    for rdata in answers: # get real Ipaddress
+                        self.dns_sock.sendto(packet.render_packet(rdata.address), addr) #send resquest
+                except dns.resolver.NXDOMAIN: # error domain not found
+                    # send domain not exist RCODE 3
+                    self.dns_sock.sendto(packet.make_response(data,3), addr)
+                except dns.resolver.Timeout:
+                    # unable to respond query RCODE 2
+                    self.dns_sock.sendto(packet.make_response(data,2), addr) #timeout
+                except dns.exception.DNSException:
+                    # server format ERROR unable to responde #RCODE 1
+                    self.dns_sock.sendto(packet.make_response(data,1), addr)
+                continue
+            # I'll use this in future for implements new feature
+            self.dns_sock.sendto(packet.respuesta(self.GatewayAddr), addr) # for next feature
         self.dns_sock.close()
 
     def stop(self):

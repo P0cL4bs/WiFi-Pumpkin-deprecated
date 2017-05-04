@@ -9,7 +9,7 @@ Description:
     This program is a module for wifi-pumpkin.py.
 
 Copyright:
-    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2017 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -40,10 +40,12 @@ class SettingsTabGeneral(QVBoxLayout):
         self.GruPag2=QButtonGroup()
         self.GruPag3=QButtonGroup()
         self.GruPag4=QButtonGroup()
+        self.GruPag5=QButtonGroup()
 
         # group options
         self.groupAP = QGroupBox()
         self.groupDhcp = QGroupBox()
+        self.groupDNS =  QGroupBox()
         self.groupDeauth = QGroupBox()
         self.groupScan   = QGroupBox()
         self.groupThemes = QGroupBox()
@@ -51,6 +53,7 @@ class SettingsTabGeneral(QVBoxLayout):
         #form group
         self.formGroupAP = QFormLayout()
         self.formGroupDHCP = QFormLayout()
+        self.formGroupDNS = QFormLayout()
         self.formGroupDeauth = QFormLayout()
         self.formGroupScan = QFormLayout()
         self.formGroupThemes = QFormLayout()
@@ -58,12 +61,14 @@ class SettingsTabGeneral(QVBoxLayout):
         # set layout into groupbox
         self.groupAP.setLayout(self.formGroupAP)
         self.groupDhcp.setLayout(self.formGroupDHCP)
+        self.groupDNS.setLayout(self.formGroupDNS)
         self.groupDeauth.setLayout(self.formGroupDeauth)
         self.groupScan.setLayout(self.formGroupScan)
         self.groupThemes.setLayout(self.formGroupThemes)
 
         self.groupAP.setTitle('Access Point:')
         self.groupDhcp.setTitle('DHCP Server:')
+        self.groupDNS.setTitle('DNS Server:')
         self.groupDeauth.setTitle('Deauth Attack:')
         self.groupScan.setTitle('Scan Network:')
         self.groupThemes.setTitle('Pumpkin Themes:')
@@ -72,11 +77,16 @@ class SettingsTabGeneral(QVBoxLayout):
         self.Apname =  QLineEdit()
         self.Apname.setFixedWidth(80)
         self.channel = QSpinBox()
+        self.checkConnectionWifi = QCheckBox('Verify Wireless Connection GUI on startup')
         self.network_manager = QCheckBox('Ignore USB Wi-Fi Adapter permanently')
         self.network_manager.setToolTip('We will use this file to tell Network Manager to stop controlling '
         'a particular interface.\nif you enable this options in next time you start AP the tool will not '
         'remove the key\nfor exclude card in file of configuration.')
+        self.checkConnectionWifi.setToolTip('We will use this file to tell Network Manager to stop controlling '
+        'a particular interface.\nif you enable this options in next time you start AP the tool will not '
+        'check if you is connected on Wireless connection for \nfor exclude card in file of configuration.')
         self.network_manager.setChecked(self.Settings.get_setting('accesspoint','persistNetwokManager',format=bool))
+        self.checkConnectionWifi.setChecked(self.Settings.get_setting('accesspoint','checkConnectionWifi',format=bool))
 
         #page 1 widgets
         self.AP_0 = QRadioButton('Hostapd')
@@ -90,6 +100,8 @@ class SettingsTabGeneral(QVBoxLayout):
         self.scan_airodump = QRadioButton('Scan from airodump-ng')
         self.dhcpdserver = QRadioButton('Isc DHCP Server (dhcpd)')
         self.pydhcpserver = QRadioButton('python DHCPServer')
+        self.ch_pyDNS_server = QRadioButton('Python DNS Server')
+        self.ch_DNSproxy_server = QRadioButton('dnsproxy as DNS-Server')
         self.theme1 = QRadioButton('theme Default')
         self.theme2 = QRadioButton('theme Blue Dark ')
         self.theme3 = QRadioButton('theme Orange Dark')
@@ -103,6 +115,8 @@ class SettingsTabGeneral(QVBoxLayout):
         self.GruPag1.addButton(self.d_mdk)
         self.GruPag2.addButton(self.pydhcpserver)
         self.GruPag2.addButton(self.dhcpdserver)
+        self.GruPag5.addButton(self.ch_pyDNS_server)
+        self.GruPag5.addButton(self.ch_DNSproxy_server)
         self.GruPag3.addButton(self.scan_scapy)
         self.GruPag3.addButton(self.scan_airodump)
         self.GruPag4.addButton(self.theme1)
@@ -119,6 +133,8 @@ class SettingsTabGeneral(QVBoxLayout):
         self.scan_airodump.setChecked(self.Settings.get_setting('settings','scan_airodump',format=bool))
         self.pydhcpserver.setChecked(self.Settings.get_setting('accesspoint', 'pydhcp_server',format=bool))
         self.dhcpdserver.setChecked(self.Settings.get_setting('accesspoint', 'dhcpd_server',format=bool))
+        self.ch_pyDNS_server.setChecked(self.Settings.get_setting('accesspoint', 'pydns_server',format=bool))
+        self.ch_DNSproxy_server.setChecked(self.Settings.get_setting('accesspoint', 'dnsproxy_server',format=bool))
         self.theme_selected = self.Settings.get_setting('settings','themes')
 
         check_path_hostapd = self.Settings.get_setting('accesspoint','hostapd_path')
@@ -143,18 +159,22 @@ class SettingsTabGeneral(QVBoxLayout):
         self.formGroupAP.addRow(self.AP_1)
         self.formGroupAP.addRow('Location:',self.edit_hostapd_path)
         self.formGroupAP.addRow(self.network_manager)
+        self.formGroupAP.addRow(self.checkConnectionWifi)
         self.formGroupDeauth.addRow(self.d_scapy)
         self.formGroupDeauth.addRow(self.d_mdk)
         self.formGroupScan.addRow(self.scan_scapy)
         self.formGroupScan.addRow(self.scan_airodump)
         self.formGroupDHCP.addRow(self.pydhcpserver)
         self.formGroupDHCP.addRow(self.dhcpdserver)
+        self.formGroupDNS.addRow(self.ch_pyDNS_server)
+        self.formGroupDNS.addRow(self.ch_DNSproxy_server)
         self.formGroupThemes.addRow(self.theme1)
         self.formGroupThemes.addRow(self.theme2)
         self.formGroupThemes.addRow(self.theme3)
 
         self.mainLayout.addRow(self.groupAP)
         self.mainLayout.addRow(self.groupDhcp)
+        self.mainLayout.addRow(self.groupDNS)
         self.mainLayout.addRow(self.groupScan)
         self.mainLayout.addRow(self.groupDeauth)
         self.mainLayout.addRow(self.groupThemes)
@@ -208,6 +228,8 @@ class frm_Settings(QDialog):
         self.Settings.set_setting('settings','scan_airodump',self.pageTab1.scan_airodump.isChecked())
         self.Settings.set_setting('accesspoint','dhcpd_server',self.pageTab1.dhcpdserver.isChecked())
         self.Settings.set_setting('accesspoint','pydhcp_server',self.pageTab1.pydhcpserver.isChecked())
+        self.Settings.set_setting('accesspoint','pydns_server',self.pageTab1.ch_pyDNS_server.isChecked())
+        self.Settings.set_setting('accesspoint','dnsproxy_server',self.pageTab1.ch_DNSproxy_server.isChecked())
         if self.pageTab1.theme1.isChecked():
             self.Settings.set_setting('settings','themes',str(self.pageTab1.theme1.objectName()))
         elif self.pageTab1.theme2.isChecked():
@@ -224,6 +246,7 @@ class frm_Settings(QDialog):
         self.Settings.set_setting('accesspoint','ssid', str(self.pageTab1.Apname.text()))
         self.Settings.set_setting('accesspoint','channel', str(self.pageTab1.channel.value()))
         self.Settings.set_setting('accesspoint','persistNetwokManager',self.pageTab1.network_manager.isChecked())
+        self.Settings.set_setting('accesspoint','checkConnectionWifi',self.pageTab1.checkConnectionWifi.isChecked())
         self.Settings.set_setting('accesspoint','check_support_ap_mode',self.check_interface_mode_AP.isChecked())
         self.Settings.set_setting('settings','redirect_port', str(self.redirectport.text()))
         if not path.isfile(self.pageTab1.edit_hostapd_path.text()):

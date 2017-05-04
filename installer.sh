@@ -16,7 +16,7 @@ func_Banner(){
 	echo '   ============================='
 	echo "   |$bldblu wifi-pumpkin Installer$txtrst|"
 	echo '   ============================='
-	echo "          Version: $(tput setaf 5)0.8.4 $txtrst"
+	echo "          Version: $(tput setaf 5)0.8.5 $txtrst"
 	echo "usage: ./installer.sh --install | --uninstall"
 }
 
@@ -75,7 +75,7 @@ func_install(){
 	bin_install
 	echo "[$green✔$txtrst] wifi-pumpkin installed with success"
 	echo "[$green✔$txtrst] execute $bldred sudo wifi-pumpkin$txtrst in terminal"
-	echo "[$green+$txtrst]$color_y P0cL4bs Team CopyRight 2015-2016$txtrst"
+	echo "[$green+$txtrst]$color_y P0cL4bs Team CopyRight 2015-2017$txtrst"
 	echo "[$green+$txtrst] Enjoy"
 	exit 0
 }

@@ -1,4 +1,7 @@
 #!/usr/bin/env python2.7
+from logging import getLogger,ERROR
+getLogger('scapy.runtime').setLevel(ERROR)
+
 """
 Author : Marcos Nesster - mh4root@gmail.com  PocL4bs Team
 Licence : GPL v3
@@ -7,7 +10,7 @@ Description:
     WiFi-Pumpkin - Framework for Rogue Wi-Fi Access Point Attack.
 
 Copyright:
-    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2017 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -32,7 +35,11 @@ def checkAppQTDesigner(style):
         main.setStyle(QStyleFactory.create('Plastique'))
 
 if __name__ == '__main__':
-    from core.loaders.checker.check_depen import check_dep_pumpkin,RED,ENDC
+    from core.loaders.checker.depedences import check_dep_pumpkin,RED,ENDC
+    from core.loaders.checker.networkmanager import CLI_NetworkManager,UI_NetworkManager
+    from core.utility.collection import SettingsINI
+    from core.main import Initialize
+
     check_dep_pumpkin()
     from os import getuid
     if not getuid() == 0:
@@ -42,7 +49,17 @@ if __name__ == '__main__':
     main = QApplication(argv)
     checkAppQTDesigner(main.style().objectName())
 
-    from core.main import Initialize
+    # check if Wireless connection
+    conf = SettingsINI('core/config/app/config.ini')
+    if  conf.get_setting('accesspoint','checkConnectionWifi',format=bool):
+        networkcontrol = CLI_NetworkManager() # add all interface avaliable for exclude
+        if networkcontrol.run():
+            if  networkcontrol.isWiFiConnected() and len(networkcontrol.ifaceAvaliable) > 0:
+                settings = UI_NetworkManager()
+                settings.setWindowIcon(QIcon('icons/icon.ico'))
+                settings.show()
+                exit(main.exec_())
+
     print('Loading GUI...')
     app = Initialize()
     app.setWindowIcon(QIcon('icons/icon.ico'))

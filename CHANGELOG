@@ -1,3 +1,16 @@
+Version 0.8.5
+-------------
+- added new plugin TCP-Proxy
+- added capture image HTTP request (Tab ImageCap)
+- added new HTTP-request widgets get info from Headers requests
+- added new columm (url) on HTTP-Authentication
+- added now WF allow to start without internet connection
+- added option that exclude USB card on start
+- added support to use 2 wireless cards #211
+- remove netcreds plugin thks for all DanMcInerney
+- added Python DNS Server improvements #165
+- added new style in progressbar on home
+
 Version 0.8.4
 -------------
 - added new plugin Pumpkin-Proxy (mitmproxy API)

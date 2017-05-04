@@ -10,7 +10,7 @@ Description:
     for Pumpkin-Proxy Core.
 
 Copyright:
-    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2017 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -66,19 +66,19 @@ class MasterHandler(flow.FlowMaster):
                     pluginconf = p()
                     if  pluginconf.Name == name:
                         pluginconf.send_output = self.sendMethod
-                        print('plugin:{0:17} status:On'.format(name))
+                        print('PumpkinProxy::{0:17} status:On'.format(name))
                         self.plugins.append(pluginconf)
         else:
             for plugin in self.plugins:
                 if plugin.Name == name:
-                    print('plugin:{0:17} status:Off'.format(name))
+                    print('PumpkinProxy::{0:17} status:Off'.format(name))
                     self.plugins.remove(plugin)
 
     def initializePlugins(self):
         self.plugin_classes = plugin.PluginTemplate.__subclasses__()
         for p in self.plugin_classes:
             if self.config.get_setting('plugins',p().Name,format=bool):
-                print('plugins::{0:17} status:On'.format(p().Name))
+                print('PumpkinProxy::{0:17} status:On'.format(p().Name))
                 self.plugins.append(p())
         # initialize logging in all plugins enable
         #for instance in self.plugins:

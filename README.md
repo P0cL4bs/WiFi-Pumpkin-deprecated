@@ -40,11 +40,13 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 * Karma Attacks (support hostapd-mana)
 * LLMNR, NBT-NS and MDNS poisoner (Responder)
 * Pumpkin-Proxy (ProxyServer (mitmproxy API))
+* Capture images on the fly
+* TCP-Proxy
+
 
 ### Plugins
 | Plugin | Description | 
 |:-----------|:------------|
-[net-creds](https://github.com/DanMcInerney/net-creds) | Sniff passwords and hashes from an interface or pcap file
 [dns2proxy](https://github.com/LeonardoNve/dns2proxy) | This tools offer a different features for post-explotation once you change the DNS server to a Victim.
 [sslstrip2](https://github.com/LeonardoNve/sslstrip2) | Sslstrip is a MITM tool that implements Moxie Marlinspike's SSL stripping attacks based version fork @LeonardoNve/@xtr4nge.
 [sergio-proxy](https://github.com/supernothing/sergio-proxy) | Sergio Proxy (a Super Effective Recorder of Gathered Inputs and Outputs) is an HTTP proxy that was written in Python for the Twisted framework.
@@ -113,6 +115,57 @@ class Nameplugin(PluginTemplate):
 ```
 #### About plugins
 [plugins](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Plugins) on the wiki 
+
+#### TCP/UDP Proxy
+A proxy that you can place between in a TCP stream. It filters the request and response streams with ([scapy](http://www.secdev.org/projects/scapy/) module) and actively modify packets of a TCP protocol that gets intercepted by WiFi-Pumpkin. this plugin uses modules to view or modify the intercepted data that possibly easiest implementation of a module, just add your custom module on  "plugins/analyzers/" automatically will be listed on TCP/UDP Proxy tab.
+
+``` python
+from scapy.all import *
+from scapy_http import http # for layer HTTP
+from default import PSniffer # base plugin class
+
+class ExamplePlugin(PSniffer):
+    _activated     = False
+    _instance      = None
+    meta = {
+        'Name'      : 'Example',
+        'Version'   : '1.0',
+        'Description' : 'Brief description of the new plugin',
+        'Author'    : 'your name',
+    }
+    def __init__(self):
+        for key,value in self.meta.items():
+            self.__dict__[key] = value
+
+    @staticmethod
+    def getInstance():
+        if ExamplePlugin._instance is None:
+            ExamplePlugin._instance = ExamplePlugin()
+        return ExamplePlugin._instance
+
+    def filterPackets(self,pkt): # (pkt) object in order to modify the data on the fly
+        if pkt.haslayer(http.HTTPRequest): # filter only http request 
+        
+            http_layer = pkt.getlayer(http.HTTPRequest) # get http fields as dict type
+            ip_layer = pkt.getlayer(IP)# get ip headers fields as dict type
+            
+            print http_layer.fields['Method'] # show method http request
+            # show all item in Header request http
+            for item in http_layer.fields['Headers']:
+                print('{} : {}'.format(item,http_layer.fields['Headers'][item]))
+            
+            print ip_layer.fields['src'] # show source ip address 
+            print ip_layer.fields['dst'] # show destiny ip address 
+            
+            print http_layer # show item type dict
+            print ip_layer # show item type dict
+            
+            return self.output.emit({'name_module':{'IP': ip_layer.fields,
+            'Headers': http_layer.fields}}) 
+
+```
+#### About TCP/UDP Proxy
+[TCP/UDPProxy](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/TCP-UDPProxy) on the wiki 
 
 ### Screenshots
 [Screenshot](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Screenshots) on the wiki 

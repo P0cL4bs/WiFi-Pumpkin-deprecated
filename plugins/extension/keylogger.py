@@ -29,7 +29,7 @@ class jskeylogger(PluginTemplate):
         for key,value in self.meta.items():
             self.__dict__[key] = value
         self.ConfigParser = False
-        self.filejs     = 'core/servers/proxy/scripts/msfkeylogger.js'
+        self.filejs     = 'core/servers/proxy/http/scripts/msfkeylogger.js'
         if path.isfile(self.filejs):
             self.isfilePath = True
             self.content = open(self.filejs,'r').read()

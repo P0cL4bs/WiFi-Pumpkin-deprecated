@@ -19,7 +19,7 @@ Description:
     for modules.
 
 Copyright:
-    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2017 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -144,7 +144,9 @@ class Refactor:
          'dnsspoofAP': {'logs/AccessPoint/dnsspoof.log':[]},
          'responder': {'logs/AccessPoint/responder.log':[]},
          'pumpkinproxy': {'logs/AccessPoint/pumpkin-proxy.log':[]},
+         'tcpproxy': {'logs/AccessPoint/tcp-proxy.log':[]},
          'phishing': {'logs/Phishing/requests.log':[]},}
+        count_files = len(readFile.keys())
         if unchecked != {}:
             for key in unchecked.keys(): readFile.pop(key)
         for key in readFile.keys():
@@ -174,11 +176,11 @@ class Refactor:
             elif Refactor.getSize(readFile[key].keys()[0]) == 0:
                 emptyFile.append(key)
         HTML += '</span></pre>\n<TABLE CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#C0C0C0" >\
-        <TR><TD><CENTER>''<FONT FACE="Arial, Helvetica" COLOR="#000000">WiFi-Pumpkin (C) 2015-2016 P0cL4bs Team' \
+        <TR><TD><CENTER>''<FONT FACE="Arial, Helvetica" COLOR="#000000">WiFi-Pumpkin (C) 2015-2017 P0cL4bs Team' \
         '</FONT></center></TD></TR></TABLE></body>\n</html>\n'
 
         Load_ = {'HTML': HTML,'Files':[readFile[x].keys()[0] for x in readFile.keys()],
-        'activated_Files':activated_Files,'empty_files': emptyFile}
+        'activated_Files':activated_Files,'empty_files': emptyFile, 'Count': count_files}
         return Load_
 
     @staticmethod
@@ -267,7 +269,7 @@ class Refactor:
                 itype = 'ethernet'
             interfaces['activated'][1] = itype
         except KeyError:
-            print('Error: find network interface information ')
+            print('Error: find network interface ')
         return interfaces
 
     @staticmethod

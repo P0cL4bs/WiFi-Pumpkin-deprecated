@@ -6,20 +6,21 @@ from core.utils import Refactor
 from collections import OrderedDict
 from core.utility.threads import ThreadPopen
 from core.widgets.docks.dockmonitor import (
-    dockAreaAPI,dockUrlMonitor,dockCredsMonitor,dockPumpkinProxy
+    dockAreaAPI,dockUrlMonitor,dockCredsMonitor,dockPumpkinProxy,dockTCPproxy
 )
 from core.widgets.pluginssettings import PumpkinProxySettings
 from core.utility.collection import SettingsINI
 from plugins.external.scripts import *
 from plugins.extension import *
 from functools import partial
+from plugins.analyzers import *
 """
 Description:
     This program is a core for wifi-pumpkin.py. file which includes functionality
     for pumpkin-proxy,pumokin-monitor,pumpkin-settings tab.
 
 Copyright:
-    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2017 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -33,6 +34,157 @@ Copyright:
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
+
+class PacketsSniffer(QVBoxLayout):
+    ''' settings  Transparent Proxy '''
+    sendError = pyqtSignal(str)
+    def __init__(self,main_method,parent = None):
+        super(PacketsSniffer, self).__init__(parent)
+        self.mainLayout     = QVBoxLayout()
+        self.config         = SettingsINI('core/config/app/tcpproxy.ini')
+        self.plugins        = []
+        self.main_method    = main_method
+        self.bt_SettingsDict    = {}
+        self.check_PluginDict   = {}
+        self.search_all_ProxyPlugins()
+        #scroll area
+        self.scrollwidget = QWidget()
+        self.scrollwidget.setLayout(self.mainLayout)
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(self.scrollwidget)
+
+        self.tabcontrol = QTabWidget()
+        self.tab1 = QWidget()
+        self.tab2 = QWidget()
+        self.page_1 = QVBoxLayout(self.tab1)
+        self.page_2 = QVBoxLayout(self.tab2)
+        self.tableLogging  = dockTCPproxy()
+
+        self.tabcontrol.addTab(self.tab1, 'Plugins')
+        self.tabcontrol.addTab(self.tab2, 'Logging')
+
+        self.TabPlugins = QTableWidget()
+        self.TabPlugins.setColumnCount(3)
+        self.TabPlugins.setRowCount(len(self.plugins))
+        self.TabPlugins.resizeRowsToContents()
+        self.TabPlugins.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.TabPlugins.horizontalHeader().setStretchLastSection(True)
+        self.TabPlugins.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.TabPlugins.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.TabPlugins.verticalHeader().setVisible(False)
+        self.TabPlugins.verticalHeader().setDefaultSectionSize(27)
+        self.TabPlugins.setSortingEnabled(True)
+        self.THeaders  = OrderedDict([ ('Plugins',[]),('Author',[]),('Description',[])])
+        self.TabPlugins.setHorizontalHeaderLabels(self.THeaders.keys())
+        self.TabPlugins.horizontalHeader().resizeSection(0,158)
+        self.TabPlugins.horizontalHeader().resizeSection(1,120)
+
+        self.page_1.addWidget(self.TabPlugins)
+        self.page_2.addWidget(self.tableLogging)
+        # get all plugins and add into TabWidget
+        Headers = []
+        for plugin in self.plugins:
+            self.bt_SettingsDict[plugin.Name] = QPushButton(plugin.Author)
+            self.check_PluginDict[plugin.Name] = QCheckBox(plugin.Name)
+            self.check_PluginDict[plugin.Name].setObjectName(plugin.Name)
+            self.check_PluginDict[plugin.Name].clicked.connect(partial(self.setPluginOption,plugin.Name))
+            self.THeaders['Plugins'].append(self.check_PluginDict[plugin.Name])
+            self.THeaders['Author'].append({'name': plugin.Name})
+            self.THeaders['Description'].append(plugin.Description)
+        for n, key in enumerate(self.THeaders.keys()):
+            Headers.append(key)
+            for m, item in enumerate(self.THeaders[key]):
+                if type(item) == type(QCheckBox()):
+                    self.TabPlugins.setCellWidget(m,n,item)
+                elif type(item) == type(dict()):
+                    self.TabPlugins.setCellWidget(m,n,self.bt_SettingsDict[item['name']])
+                else:
+                    item = QTableWidgetItem(item)
+                    self.TabPlugins.setItem(m, n, item)
+        self.TabPlugins.setHorizontalHeaderLabels(self.THeaders.keys())
+
+        # check status all checkbox plugins
+        for box in self.check_PluginDict.keys():
+            self.check_PluginDict[box].setChecked(self.config.get_setting('plugins',box,format=bool))
+
+        self.mainLayout.addWidget(self.tabcontrol)
+        self.layout = QHBoxLayout()
+        self.layout.addWidget(self.scroll)
+        self.addLayout(self.layout)
+
+    def setPluginOption(self, name,status):
+        ''' get each plugins status'''
+        # enable realtime disable and enable plugin
+        if self.main_method.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
+            self.main_method.Thread_TCPproxy.disablePlugin(name, status)
+        self.config.set_setting('plugins',name,status)
+
+    def search_all_ProxyPlugins(self):
+        ''' load all plugins function '''
+        plugin_classes = default.PSniffer.__subclasses__()
+        for p in plugin_classes:
+            if p().Name != 'httpCap':
+                self.plugins.append(p())
+
+class ImageCapture(QVBoxLayout):
+    ''' settings Image capture '''
+    sendError = pyqtSignal(str)
+    def __init__(self,main_method,parent = None):
+        super(ImageCapture, self).__init__(parent)
+        self.mainLayout     = QVBoxLayout()
+        self.main_method    = main_method
+        #scroll area
+        self.scrollwidget = QWidget()
+        self.scrollwidget.setLayout(self.mainLayout)
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(self.scrollwidget)
+        self.imagesList = []
+
+        self.THUMBNAIL_SIZE = 146
+        self.SPACING = 8
+        self.IMAGES_PER_ROW = 4
+        self.TableImage = QTableWidget()
+        self.TableImage.setIconSize(QSize(146, 146))
+        self.TableImage.setColumnCount(self.IMAGES_PER_ROW)
+        self.TableImage.setGridStyle(Qt.NoPen)
+
+        self.TableImage.verticalHeader().setDefaultSectionSize(self.THUMBNAIL_SIZE + self.SPACING)
+        self.TableImage.verticalHeader().hide()
+        self.TableImage.horizontalHeader().setDefaultSectionSize(self.THUMBNAIL_SIZE + self.SPACING)
+        self.TableImage.horizontalHeader().hide()
+
+        self.TableImage.setMinimumWidth((self.THUMBNAIL_SIZE + self.SPACING) * self.IMAGES_PER_ROW + (self.SPACING * 2))
+        self.imageListPath  = OrderedDict([ ('Path',[])])
+        self.mainLayout.addWidget(self.TableImage)
+        self.layout = QHBoxLayout()
+        self.layout.addWidget(self.scroll)
+        self.addLayout(self.layout)
+
+    def SendImageTableWidgets(self,image):
+        self.imageListPath['Path'].append(image)
+        rowCount = len(self.imageListPath['Path']) // self.IMAGES_PER_ROW
+        if len(self.imageListPath['Path']) % self.IMAGES_PER_ROW: rowCount += 1
+        self.TableImage.setRowCount(rowCount)
+        row = -1
+        for i, picture in enumerate(self.imageListPath['Path']):
+            col = i % self.IMAGES_PER_ROW
+            if not col: row += 1
+            self.addPicture(row, col, picture)
+
+    def addPicture(self, row, col, picturePath):
+        item = QTableWidgetItem()
+        p = QPixmap(picturePath)
+        if not p.isNull():
+            if p.height() > p.width():
+                p = p.scaledToWidth(self.THUMBNAIL_SIZE)
+            else:
+                p = p.scaledToHeight(self.THUMBNAIL_SIZE)
+            p = p.copy(0, 0, self.THUMBNAIL_SIZE, self.THUMBNAIL_SIZE)
+            item.setIcon(QIcon(p))
+            self.TableImage.setItem(row, col, item)
+            self.TableImage.scrollToBottom()
 
 class PumpkinMitmproxy(QVBoxLayout):
     ''' settings  Transparent Proxy '''
@@ -53,6 +205,17 @@ class PumpkinMitmproxy(QVBoxLayout):
         self.scroll.setWidgetResizable(True)
         self.scroll.setWidget(self.scrollwidget)
 
+        # create for add dock logging
+        self.tabcontrol = QTabWidget()
+        self.tab1 = QWidget()
+        self.tab2 = QWidget()
+        self.page_1 = QVBoxLayout(self.tab1)
+        self.page_2 = QVBoxLayout(self.tab2)
+        self.tableLogging  = dockPumpkinProxy()
+
+        self.tabcontrol.addTab(self.tab1, 'Plugins')
+        self.tabcontrol.addTab(self.tab2, 'Logging')
+
         self.TabPlugins = QTableWidget()
         self.TabPlugins.setColumnCount(3)
         self.TabPlugins.setRowCount(len(self.plugins))
@@ -68,6 +231,10 @@ class PumpkinMitmproxy(QVBoxLayout):
         self.TabPlugins.setHorizontalHeaderLabels(self.THeaders.keys())
         self.TabPlugins.horizontalHeader().resizeSection(0,158)
         self.TabPlugins.horizontalHeader().resizeSection(1,80)
+
+        # add on tab
+        self.page_1.addWidget(self.TabPlugins)
+        self.page_2.addWidget(self.tableLogging)
 
         # get all plugins and add into TabWidget
         Headers = []
@@ -99,7 +266,7 @@ class PumpkinMitmproxy(QVBoxLayout):
         for box in self.check_PluginDict.keys():
             self.check_PluginDict[box].setChecked(self.config.get_setting('plugins',box,format=bool))
 
-        self.mainLayout.addWidget(self.TabPlugins)
+        self.mainLayout.addWidget(self.tabcontrol)
         self.layout = QHBoxLayout()
         self.layout.addWidget(self.scroll)
         self.addLayout(self.layout)
@@ -363,14 +530,15 @@ class PumpkinSettings(QVBoxLayout):
     ''' settings DHCP options'''
     sendMensage = pyqtSignal(str)
     checkDockArea = pyqtSignal(dict)
-    def __init__(self, parent=None,settingsAP=None,dockinfo=None,InitialMehtod=None,FsettingsUI=None):
+    def __init__(self, parent=None,widgets=None):
         super(PumpkinSettings, self).__init__(parent)
-        self.SettingsAp      = settingsAP
-        self.InitialMehtod   = InitialMehtod
-        self.dockInfo      = dockinfo
-        self.SettingsDHCP  = {}
-        self.FSettings     = FsettingsUI
+        self.SettingsAp      = widgets['SettingsAP']
+        self.Tab_Dock      = widgets['Tab_dock']
+        self.dockInfo      = widgets['DockInfo']
+        self.FSettings     = widgets['Settings']
+        self.NetworkGroup  = widgets['Network']
         self.mainLayout    = QFormLayout()
+        self.SettingsDHCP  = {}
 
         #scroll area
         self.scrollwidget = QWidget()
@@ -454,7 +622,7 @@ class PumpkinSettings(QVBoxLayout):
         self.gridArea.addWidget(self.CB_bdfproxy,1,0)
         self.gridArea.addWidget(self.CB_dns2proxy,1,1)
         self.gridArea.addWidget(self.CB_responder,1,2)
-        self.gridArea.addWidget(self.CB_pumpkinPro,0,2)
+        #self.gridArea.addWidget(self.CB_pumpkinPro,0,2) disable tab plugin
         self.layoutArea.addRow(self.gridArea)
         self.GroupArea.setTitle('Activity Monitor settings')
         self.GroupArea.setLayout(self.layoutArea)
@@ -463,6 +631,7 @@ class PumpkinSettings(QVBoxLayout):
         self.btnDefault.clicked.connect(self.setdefaultSettings)
         self.btnSave.clicked.connect(self.savesettingsDHCP)
         self.mainLayout.addRow(self.SettingsAp)
+        self.mainLayout.addRow(self.NetworkGroup)
         self.mainLayout.addRow(self.GroupArea)
         self.mainLayout.addRow(self.GroupDHCP)
         self.layout = QHBoxLayout()
@@ -502,12 +671,12 @@ class PumpkinSettings(QVBoxLayout):
                     self.dock.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
                     self.dock.setAllowedAreas(Qt.AllDockWidgetAreas)
                     self.dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-                    self.InitialMehtod.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
+                    self.Tab_Dock.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
                     self.dockList.insert(0,self.dock)
             if len(self.dockList) > 1:
                 for index in range(1, len(self.dockList) - 1):
                     if self.dockList[index].objectName() != 'HTTP-Requests':
-                        self.InitialMehtod.tabifyDockWidget(self.dockList[index],
+                        self.Tab_Dock.tabifyDockWidget(self.dockList[index],
                             self.dockList[index + 1])
             try:
                 self.dockList[0].raise_()
@@ -547,11 +716,11 @@ class PumpkinSettings(QVBoxLayout):
         if self.CB_ActiveMode.isChecked():
             self.AreaWidgetLoader(self.dockInfo)
             self.checkDockArea.emit(self.AllDockArea)
-            if hasattr(self.InitialMehtod,'form_widget'):
-                if hasattr(self.InitialMehtod.form_widget,'Apthreads'):
-                    if self.InitialMehtod.form_widget.Apthreads['RougeAP'] != []:
-                        for dock in self.InitialMehtod.form_widget.dockAreaList.keys():
-                            self.InitialMehtod.form_widget.dockAreaList[dock].RunThread()
+            if hasattr(self.Tab_Dock,'form_widget'):
+                if hasattr(self.Tab_Dock.form_widget,'Apthreads'):
+                    if self.Tab_Dock.form_widget.Apthreads['RougeAP'] != []:
+                        for dock in self.Tab_Dock.form_widget.dockAreaList.keys():
+                            self.Tab_Dock.form_widget.dockAreaList[dock].RunThread()
         else:
             if hasattr(self,'dockList'):
                 for dock in self.dockList: dock.close()

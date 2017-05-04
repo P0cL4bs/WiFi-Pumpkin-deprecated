@@ -17,3 +17,5 @@ capstone
 hyperframe
 h2
 mitmproxy==0.18.2
+scapy_http
+service_identity

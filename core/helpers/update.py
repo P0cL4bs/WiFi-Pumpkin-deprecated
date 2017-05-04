@@ -11,7 +11,7 @@ Description:
     This program is a module for wifi-pumpkin.py. GUI update from github
 
 Copyright:
-    Copyright (C) 2015 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2017 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -174,9 +174,32 @@ class ProgressBarWid(QProgressBar):
         font=QFont('White Rabbit')
         font.setPointSize(5)
         self.setFont(font)
+        self.effect = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(self.effect)
+        self.animationIn = QPropertyAnimation(self.effect, 'opacity')
+        self.animationIn.setDuration(300)
+        self.animationIn.setStartValue(0)
+        self.animationIn.setEndValue(1.0)
+        self.animationIn.start()
         self._active = False
         self.setAlignment(Qt.AlignCenter)
         self._text = None
+
+    def hideProcessbar(self):
+        self.animationOut = QPropertyAnimation(self.effect, 'opacity')
+        self.animationOut.setDuration(300)
+        self.animationOut.setStartValue(1.0)
+        self.animationOut.setEndValue(0)
+        self.animationOut.start()
+        self.animationOut.finished.connect(self.hide)
+
+    def showProcessBar(self):
+        self.animationIn = QPropertyAnimation(self.effect, 'opacity')
+        self.animationIn.setDuration(300)
+        self.animationIn.setStartValue(0)
+        self.animationIn.setEndValue(1.0)
+        self.animationIn.start()
+        self.show()
 
     def setText(self, text):
         self._text = text

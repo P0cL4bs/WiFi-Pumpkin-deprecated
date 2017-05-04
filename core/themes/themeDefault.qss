@@ -39,14 +39,14 @@ QProgressBar::chunk
 
 
 QProgressBar::chunk {
-    background-color: #05B8CC;
+    background-color: #808080;
     width: 20px;
 }
 
 QProgressBar::chunk:horizontal {
-    background-color: #05B8CC;
-    width: 5px;
-    margin: 0.5px;
+    background-color: #808080;
+    width: 10px;
+    margin: 0.1px;
 }
 
 QToolTip

