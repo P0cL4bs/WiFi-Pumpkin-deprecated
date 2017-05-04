@@ -11,6 +11,7 @@ Version 0.8.5
 - added Python DNS Server improvements #165
 - added new style in progressbar on home
 - fixed possible bug when start AP with interface wlanx
+- fixed exit app when exclude USB adapter
 
 Version 0.8.4
 -------------

@@ -58,7 +58,6 @@ if __name__ == '__main__':
                 settings = UI_NetworkManager()
                 settings.setWindowIcon(QIcon('icons/icon.ico'))
                 settings.show()
-                exit(main.exec_())
 
     print('Loading GUI...')
     app = Initialize()
