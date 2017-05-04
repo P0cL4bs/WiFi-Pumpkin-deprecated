@@ -1481,7 +1481,7 @@ class WifiPumpkin(QWidget):
                     rulesetfilter = rulesetfilter.replace('$inet',str(Refactor.get_interfaces()['activated'][0]))
                 if '$wlan' in rulesetfilter:
                     rulesetfilter = rulesetfilter.replace('$wlan',self.SettingsEnable['AP_iface'])
-            if not ('$inet' in rulesetfilter or 'wlan' in rulesetfilter):
+            if not ('$inet' in rulesetfilter or '$wlan' in rulesetfilter):
                 popen(rulesetfilter)
 
         # start all Thread in sessions

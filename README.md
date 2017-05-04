@@ -160,8 +160,7 @@ class ExamplePlugin(PSniffer):
             print http_layer # show item type dict
             print ip_layer # show item type dict
             
-            return self.output.emit({'name_module':{'IP': ip_layer.fields,
-            'Headers': http_layer.fields}}) 
+            return self.output.emit({'name_module':'send output to tab TCP-Proxy'}) 
 
 ```
 #### About TCP/UDP Proxy

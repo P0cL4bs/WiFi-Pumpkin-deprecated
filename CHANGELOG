@@ -10,6 +10,7 @@ Version 0.8.5
 - remove netcreds plugin thks for all DanMcInerney
 - added Python DNS Server improvements #165
 - added new style in progressbar on home
+- fixed possible bug when start AP with interface wlanx
 
 Version 0.8.4
 -------------
