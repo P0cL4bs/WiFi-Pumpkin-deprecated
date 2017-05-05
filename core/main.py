@@ -1478,11 +1478,12 @@ class WifiPumpkin(QWidget):
         for rulesetfilter in iptables:
             if self.InternetShareWiFi: # disable share internet from network
                 if '$inet' in rulesetfilter:
-                    rulesetfilter = rulesetfilter.replace('$inet',str(Refactor.get_interfaces()['activated'][0]))
+                    rulesetfilter = rulesetfilter.replace('$inet',str(self.interfacesLink['activated'][0]))
                 if '$wlan' in rulesetfilter:
                     rulesetfilter = rulesetfilter.replace('$wlan',self.SettingsEnable['AP_iface'])
-            if not ('$inet' in rulesetfilter or '$wlan' in rulesetfilter):
-                popen(rulesetfilter)
+            if '$inet' in rulesetfilter or '$wlan' in rulesetfilter:
+                continue
+            popen(rulesetfilter)
 
         # start all Thread in sessions
         for thread in self.Apthreads['RougeAP']:

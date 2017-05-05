@@ -13,6 +13,7 @@ Version 0.8.5
 - fixed possible bug when start AP with interface wlanx
 - fixed exit app when exclude USB adapter
 - fixed Network-ManagerUI again
+- fixed error: iptables Bad argument
 
 Version 0.8.4
 -------------
