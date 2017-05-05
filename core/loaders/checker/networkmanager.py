@@ -26,9 +26,10 @@ Copyright:
 """
 
 class UI_NetworkManager(QWidget):
-    def __init__(self, parent = None):
+    def __init__(self, app,parent = None):
         super(UI_NetworkManager, self).__init__(parent)
         self.label = QLabel()
+        self.app   = app
         self.Main  = QVBoxLayout()
         self.config = frm_Settings()
         self.setGeometry(0, 0, 300, 120)
@@ -38,13 +39,10 @@ class UI_NetworkManager(QWidget):
         self.UI()
 
     def closeEvent(self, event):
-        print('Loading GUI...')
-        app = Initialize()
-        app.setWindowIcon(QIcon('icons/icon.ico'))
         if self.check_no_internet.isChecked:
-            app.form_widget.InternetShareWiFi = False # show window without internet connection
-        app.center()
-        app.show()
+            self.app.form_widget.InternetShareWiFi = False # show window without internet connection
+        self.app.center()
+        self.app.show()
         print('WiFi-Pumpkin Running!')
 
     def loadtheme(self,theme):

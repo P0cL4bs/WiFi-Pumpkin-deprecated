@@ -49,20 +49,20 @@ if __name__ == '__main__':
     main = QApplication(argv)
     checkAppQTDesigner(main.style().objectName())
 
+    print('Loading GUI...')
+    app = Initialize()
+    app.setWindowIcon(QIcon('icons/icon.ico'))
+    app.center()
     # check if Wireless connection
     conf = SettingsINI('core/config/app/config.ini')
     if  conf.get_setting('accesspoint','checkConnectionWifi',format=bool):
         networkcontrol = CLI_NetworkManager() # add all interface avaliable for exclude
         if networkcontrol.run():
             if  networkcontrol.isWiFiConnected() and len(networkcontrol.ifaceAvaliable) > 0:
-                settings = UI_NetworkManager()
+                settings = UI_NetworkManager(app)
                 settings.setWindowIcon(QIcon('icons/icon.ico'))
                 settings.show()
-
-    print('Loading GUI...')
-    app = Initialize()
-    app.setWindowIcon(QIcon('icons/icon.ico'))
-    app.center()
+                exit(main.exec_())
     app.show()
 
     print('WiFi-Pumpkin Running!')

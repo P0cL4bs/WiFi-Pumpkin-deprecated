@@ -12,6 +12,7 @@ Version 0.8.5
 - added new style in progressbar on home
 - fixed possible bug when start AP with interface wlanx
 - fixed exit app when exclude USB adapter
+- fixed Network-ManagerUI again
 
 Version 0.8.4
 -------------
