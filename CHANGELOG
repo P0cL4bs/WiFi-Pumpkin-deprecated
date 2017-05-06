@@ -14,6 +14,7 @@ Version 0.8.5
 - fixed exit app when exclude USB adapter
 - fixed Network-ManagerUI again
 - fixed error: iptables Bad argument
+- added option for check network connection Tab->Settings
 
 Version 0.8.4
 -------------

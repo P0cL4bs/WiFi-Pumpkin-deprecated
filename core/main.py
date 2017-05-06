@@ -391,7 +391,7 @@ class WifiPumpkin(QWidget):
     def DefaultTABContent(self):
         ''' configure all widget in home page '''
         self.StatusBar = QStatusBar()
-        self.StatusBar.setFixedHeight(20)
+        self.StatusBar.setFixedHeight(23)
         self.StatusDhcp = QLabel("")
         self.connectedCount = QLabel('')
         self.StatusDhcp = QLabel('')
@@ -404,14 +404,14 @@ class WifiPumpkin(QWidget):
         # add widgets in status bar
         self.StatusBar.addWidget(QLabel('Connected:'))
         self.StatusBar.addWidget(self.connected_status)
+        self.StatusBar.addWidget(QLabel('Activate-Plugin:'))
+        self.StatusBar.addWidget(self.status_plugin_proxy_name)
         self.StatusBar.addWidget(QLabel('SSID:'))
         self.StatusBar.addWidget(self.StatusApname)
         self.StatusBar.addWidget(QLabel('Channel:'))
         self.StatusBar.addWidget(self.StatusApchannel)
         self.StatusBar.addWidget(QLabel("Status-AP:"))
         self.StatusBar.addWidget(self.StatusDhcp)
-        self.StatusBar.addWidget(QLabel('Activate-Plugin:'))
-        self.StatusBar.addWidget(self.status_plugin_proxy_name)
         self.set_proxy_scripts(False)
 
         self.Started(False)
@@ -479,12 +479,19 @@ class WifiPumpkin(QWidget):
         self.btrn_refresh.setFixedWidth(90)
         self.btrn_refresh.setFixedHeight(25)
 
+        self.btrn_find_Inet = QPushButton('Check Network Connection')
+        self.btrn_find_Inet.setIcon(QIcon('icons/router2.png'))
+        self.btrn_find_Inet.clicked.connect(self.checkNetworkConnection)
+        self.btrn_find_Inet.setFixedHeight(25)
+        self.btrn_find_Inet.setFixedWidth(220)
+
         # group for list network adapters
         self.GroupAdapter = QGroupBox()
         self.layoutNetworkAd = QHBoxLayout()
         self.GroupAdapter.setTitle('Network Adapter')
         self.layoutNetworkAd.addWidget(self.selectCard)
         self.layoutNetworkAd.addWidget(self.btrn_refresh)
+        self.layoutNetworkAd.addWidget(self.btrn_find_Inet)
         self.GroupAdapter.setLayout(self.layoutNetworkAd)
 
         # settings info access point
@@ -810,6 +817,21 @@ class WifiPumpkin(QWidget):
         self.FSettings.Settings.set_setting('accesspoint',
         'enable_security',self.GroupApPassphrase.isChecked())
 
+    def checkNetworkConnection(self):
+        self.btrn_find_Inet.setEnabled(False)
+        interfaces = Refactor.get_interfaces()
+        self.set_StatusConnected_Iface(False,'checking...',check=True)
+        QTimer.singleShot(3000, lambda: self.backgroudCheckNetwork(interfaces))
+
+    def backgroudCheckNetwork(self,get_interfaces):
+        if get_interfaces['activated'][0] != None:
+            self.InternetShareWiFi = True
+            self.btrn_find_Inet.setEnabled(True)
+            return self.set_StatusConnected_Iface(True, get_interfaces['activated'][0])
+        self.InternetShareWiFi = False
+        self.btrn_find_Inet.setEnabled(True)
+        return self.set_StatusConnected_Iface(False,'')
+
     def checkPlugins(self):
         ''' check plugin options saved in file ctg '''
         if self.FSettings.Settings.get_setting('plugins','tcpproxy_plugin',format=bool):
@@ -866,12 +888,15 @@ class WifiPumpkin(QWidget):
             self.proxy_lstatus.setText("[OFF]")
             self.proxy_lstatus.setStyleSheet("QLabel {  color : red; }")
 
-    def set_StatusConnected_Iface(self,bool,txt=''):
+    def set_StatusConnected_Iface(self,bool,txt='',check=False):
         if bool:
-            self.connected_status.setText(txt)
+            self.connected_status.setText('[{}]'.format(txt))
             self.connected_status.setStyleSheet("QLabel {  background-color: #996633; color : #000000; }")
-        else:
-            self.connected_status.setText('None')
+        elif bool == False and check == True:
+            self.connected_status.setText('[{}]'.format(txt))
+            self.connected_status.setStyleSheet("QLabel {  background-color: #808080; color : #000000; }")
+        elif bool == False:
+            self.connected_status.setText('[None]')
             self.connected_status.setStyleSheet("QLabel {  background-color: #808080; color : #000000; }")
 
     def StatusDHCPRequests(self,mac,user_info):
@@ -1013,10 +1038,15 @@ class WifiPumpkin(QWidget):
     def refrash_interface(self):
         ''' get all wireless interface available '''
         self.selectCard.clear()
-        n = Refactor.get_interfaces()['all']
-        for i,j in enumerate(n):
-            if search('wl', j):
-                self.selectCard.addItem(n[i])
+        self.btrn_refresh.setEnabled(False)
+        ifaces = Refactor.get_interfaces()['all']
+        QTimer.singleShot(3000, lambda : self.add_avaliableIterfaces(ifaces))
+
+    def add_avaliableIterfaces(self,ifaces):
+        for index,item in enumerate(ifaces):
+            if search('wl', item):
+                self.selectCard.addItem(ifaces[index])
+        return self.btrn_refresh.setEnabled(True)
 
     def Stop_PumpAP(self):
         ''' stop all thread :Access point attack and restore all settings  '''
