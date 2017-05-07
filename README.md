@@ -6,7 +6,7 @@ WiFi-Pumpkin
 
 Framework for Rogue Wi-Fi Access Point Attack
 ### Description
-WiFi-Pumpkin is an open source security tool that provides the Rogue access point to Man-In-The-Middle and network attacks.
+WiFi-Pumpkin is a very complete framework for auditing Wi-Fi security. The main feature is the ability to create a fake AP and make Man In The Middle attack, but the list of features is quite broad.
 ### Installation
 
 - Python 2.7
@@ -17,7 +17,8 @@ WiFi-Pumpkin is an open source security tool that provides the Rogue access poin
 ```
 or download [.deb](https://github.com/P0cL4bs/WiFi-Pumpkin/releases) file to install
 ``` sh
-sudo dpkg -i wifi-pumpkin-0.8.4-all.deb
+sudo dpkg -i wifi-pumpkin-0.8.5-all.deb
+sudo apt-get -f install # force install dependencies if not install normally
 
 ```
 
@@ -41,7 +42,7 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 * LLMNR, NBT-NS and MDNS poisoner (Responder)
 * Pumpkin-Proxy (ProxyServer (mitmproxy API))
 * Capture images on the fly
-* TCP-Proxy
+* TCP-Proxy (with [scapy](http://www.secdev.org/projects/scapy/))
 
 
 ### Plugins
@@ -116,7 +117,7 @@ class Nameplugin(PluginTemplate):
 #### About plugins
 [plugins](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Plugins) on the wiki 
 
-#### TCP/UDP Proxy
+### TCP-Proxy Server
 A proxy that you can place between in a TCP stream. It filters the request and response streams with ([scapy](http://www.secdev.org/projects/scapy/) module) and actively modify packets of a TCP protocol that gets intercepted by WiFi-Pumpkin. this plugin uses modules to view or modify the intercepted data that possibly easiest implementation of a module, just add your custom module on  "plugins/analyzers/" automatically will be listed on TCP/UDP Proxy tab.
 
 ``` python
@@ -163,7 +164,7 @@ class ExamplePlugin(PSniffer):
             return self.output.emit({'name_module':'send output to tab TCP-Proxy'}) 
 
 ```
-#### About TCP/UDP Proxy
+#### About TCP-Proxy
 [TCP/UDPProxy](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/TCP-UDPProxy) on the wiki 
 
 ### Screenshots
