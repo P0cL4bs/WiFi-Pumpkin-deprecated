@@ -165,7 +165,7 @@ class ExamplePlugin(PSniffer):
 
 ```
 #### About TCP-Proxy
-[TCP/UDPProxy](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/TCP-UDPProxy) on the wiki 
+[TCP-Proxy](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/TCP-PProxy) on the wiki 
 
 ### Screenshots
 [Screenshot](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Screenshots) on the wiki 
