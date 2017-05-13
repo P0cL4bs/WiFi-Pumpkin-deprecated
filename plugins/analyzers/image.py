@@ -4,6 +4,7 @@ from default import PSniffer
 from urllib import urlretrieve
 from scapy_http import http
 from os.path import splitext
+from string import ascii_letters
 
 class ImageCap(PSniffer):
     ''' capture image content http'''
@@ -40,4 +41,4 @@ class ImageCap(PSniffer):
             self.output.emit({'image': file_name})
 
     def random_char(self,y):
-           return ''.join(random.choice(string.ascii_letters) for x in range(y))
+           return ''.join(random.choice(ascii_letters) for x in range(y))

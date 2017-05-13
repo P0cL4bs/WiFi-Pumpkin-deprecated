@@ -118,7 +118,7 @@ class Nameplugin(PluginTemplate):
 [plugins](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Plugins) on the wiki 
 
 ### TCP-Proxy Server
-A proxy that you can place between in a TCP stream. It filters the request and response streams with ([scapy](http://www.secdev.org/projects/scapy/) module) and actively modify packets of a TCP protocol that gets intercepted by WiFi-Pumpkin. this plugin uses modules to view or modify the intercepted data that possibly easiest implementation of a module, just add your custom module on  "plugins/analyzers/" automatically will be listed on TCP/UDP Proxy tab.
+A proxy that you can place between in a TCP stream. It filters the request and response streams with ([scapy](http://www.secdev.org/projects/scapy/) module) and actively modify packets of a TCP protocol that gets intercepted by WiFi-Pumpkin. this plugin uses modules to view or modify the intercepted data that possibly easiest implementation of a module, just add your custom module on  "plugins/analyzers/" automatically will be listed on TCP-Proxy tab.
 
 ``` python
 from scapy.all import *
