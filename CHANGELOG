@@ -16,6 +16,7 @@ Version 0.8.5
 - fixed error: iptables Bad argument
 - added option for check network connection Tab->Settings
 - fixed error TCP-Proxy plugin imageCap #218
+- fixed possible error [Errno 2] No such file or directory #217
 
 Version 0.8.4
 -------------

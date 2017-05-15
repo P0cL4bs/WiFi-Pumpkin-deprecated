@@ -15,6 +15,7 @@ from re import search,sub
 from platform import dist
 from netaddr import EUI
 from collections import OrderedDict
+from shlex import split
 
 from os import (
     system,path,getcwd,
@@ -1068,7 +1069,7 @@ class WifiPumpkin(QWidget):
         except Exception: pass
         # remove iptables commands and stop dhcpd if pesist in process
         for kill in self.SettingsAP['kill']:
-            Popen(kill.split(), stdout=PIPE,shell=False,stderr=PIPE)
+            Popen(split(kill), stdout=PIPE,shell=False,stderr=PIPE)
         #disabled options
         # check if persistent option in Settigs is enable
         #if not self.FSettings.Settings.get_setting('accesspoint','persistNetwokManager',format=bool):
@@ -1196,8 +1197,8 @@ class WifiPumpkin(QWidget):
         }
         print('[*] enable forwarding in iptables...')
         Refactor.set_ip_forward(1)
-        for i in self.SettingsAP['kill']: Popen(i.split(), stdout=PIPE,shell=False,stderr=PIPE)
-        for i in self.SettingsAP['interface']: Popen(i.split(), stdout=PIPE,shell=False,stderr=PIPE)
+        for line in self.SettingsAP['kill']: Popen(split(line), stdout=PIPE,shell=False,stderr=PIPE)
+        for line in self.SettingsAP['interface']: Popen(split(line), stdout=PIPE,shell=False,stderr=PIPE)
         dhcp_select = self.FSettings.Settings.get_setting('accesspoint','dhcp_server')
         if dhcp_select != 'dnsmasq':
             with open('settings/dhcpd.conf','w') as dhcp:
