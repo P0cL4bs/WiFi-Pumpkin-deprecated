@@ -1,4 +1,4 @@
-from bs4 import BeautifulSoup
+from BeautifulSoup import BeautifulSoup
 from mitmproxy.models import decoded
 from plugins.extension.plugin import PluginTemplate
 
