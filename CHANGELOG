@@ -18,6 +18,7 @@ Version 0.8.5
 - fixed error TCP-Proxy plugin imageCap #218
 - fixed possible error [Errno 2] No such file or directory #217
 - fixed replace bs4 to BeautifulSoup #228
+- fixed argument for 's' must be a string #232 thanks @okazymyrov
 
 Version 0.8.4
 -------------

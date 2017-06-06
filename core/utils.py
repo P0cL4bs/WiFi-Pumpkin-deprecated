@@ -290,10 +290,10 @@ class Refactor:
 
     @staticmethod
     def get_Ipaddr(card):
-        ''' get ipadress from send arg None or interface name '''
+        ''' get ipadress by interface name'''
         if card == None:
-            return get_if_addr(Refactor.get_interfaces()['activated'][0])
-        return get_if_addr(card)
+            return get_if_addr('{}'.format(Refactor.get_interfaces()['activated'][0]))
+        return get_if_addr('{}'.format(card))
 
     @staticmethod
     def get_mac(host):
