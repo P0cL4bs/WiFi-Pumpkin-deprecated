@@ -431,7 +431,6 @@ class WifiPumpkin(QWidget):
         self.EditChannel.setMinimum(1)
         self.EditChannel.setMaximum(13)
         self.EditChannel.setFixedWidth(50)
-        self.EditApName.setFixedWidth(120)
         self.EditGateway.setFixedWidth(120)
         self.EditGateway.setHidden(True) # disable Gateway
         self.selectCard = QComboBox(self)
@@ -458,7 +457,7 @@ class WifiPumpkin(QWidget):
         #edits
         self.mConfigure()
         self.FormGroup2 = QFormLayout()
-        self.FormGroup3 = QFormLayout()
+        self.FormGroup3 = QVBoxLayout()
 
         # popupMenu HTTP server quick start
         self.btnHttpServer = QToolButton(self)
@@ -498,9 +497,10 @@ class WifiPumpkin(QWidget):
         # settings info access point
         self.GroupAP = QGroupBox()
         self.GroupAP.setTitle('Access Point')
-        self.FormGroup3.addRow('Gateway:', self.EditGateway)
-        self.FormGroup3.addRow('SSID:',    self.EditApName)
-        self.FormGroup3.addRow('Channel:', self.EditChannel)
+        self.FormGroup3.addWidget(QLabel("SSID:"))
+        self.FormGroup3.addWidget(self.EditApName)
+        self.FormGroup3.addWidget(QLabel("Channel:"))
+        self.FormGroup3.addWidget(self.EditChannel)
         self.GroupAP.setLayout(self.FormGroup3)
         self.GroupAP.setFixedWidth(260)
 
@@ -589,9 +589,9 @@ class WifiPumpkin(QWidget):
         exportAction.triggered.connect(self.exportlogger)
 
         Menu_View = self.myQMenuBar.addMenu('&View')
-        phishinglog = QAction('Monitor Phishing', self)
-        netcredslog = QAction('Monitor NetCreds', self)
-        dns2proxylog = QAction('Monitor Dns2proxy', self)
+        phishinglog = QAction('Phishing Logger', self)
+        netcredslog = QAction('MonitorCap Logger', self)
+        dns2proxylog = QAction('Dns2proxy Logger', self)
         #connect
         phishinglog.triggered.connect(self.credentials)
         netcredslog.triggered.connect(self.logsnetcreds)
@@ -803,8 +803,8 @@ class WifiPumpkin(QWidget):
 
     def logsnetcreds(self):
         ''' call GUI netcreds monitor logger '''
-        self.FnetCreds = GUIModules.frm_NetCredsLogger()
-        self.FnetCreds.setWindowTitle('NetCreds Logger')
+        self.FnetCreds = GUIModules.frm_MonitorCapLogger()
+        self.FnetCreds.setWindowTitle('MonitorCap Logger')
         self.FnetCreds.show()
 
     def logdns2proxy(self):

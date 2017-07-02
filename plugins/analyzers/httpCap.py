@@ -73,23 +73,22 @@ class MonitorCreds(PSniffer):
     def filterPackets(self,pkt):
         if not pkt.haslayer(http.HTTPRequest):
             return
+        try:
+            if pkt.haslayer(TCP) and pkt.haslayer(Raw) and pkt.haslayer(IP):
+                self.dport = pkt[TCP].dport
+                self.sport = pkt[TCP].sport
+                self.src_ip_port = str(pkt[IP].src) + ':' + str(self.sport)
+                self.dst_ip_port = str(pkt[IP].dst) + ':' + str(self.dport)
 
-        if pkt.haslayer(TCP) and pkt.haslayer(Raw) and pkt.haslayer(IP):
-            self.dport = pkt[TCP].dport
-            self.sport = pkt[TCP].sport
-            self.src_ip_port = str(pkt[IP].src) + ':' + str(self.sport)
-            self.dst_ip_port = str(pkt[IP].dst) + ':' + str(self.dport)
+            http_layer = pkt.getlayer(http.HTTPRequest)
+            ip_layer = pkt.getlayer(IP)
 
-        http_layer = pkt.getlayer(http.HTTPRequest)
-        ip_layer = pkt.getlayer(IP)
+            if http_layer.fields['Method'] == 'POST':
+                self.getCredentials_POST(pkt.getlayer(Raw).load, http_layer.fields['Host'],
+                http_layer.fields['Headers'], self.dst_ip_port, self.src_ip_port)
 
-        if http_layer.fields['Method'] == 'POST':
-            self.load = pkt[Raw].load
-            header, url = self.get_http_POST(self.load)
-            self.getCredentials_POST(pkt.getlayer(Raw).load, http_layer.fields['Host'],
-            header, self.dst_ip_port, self.src_ip_port)
-
-        return self.output.emit({'urlsCap':{'IP': ip_layer.fields, 'Headers': http_layer.fields}})
+            return self.output.emit({'urlsCap':{'IP': ip_layer.fields, 'Headers': http_layer.fields}})
+        except: pass
 
 
     def random_char(self,y):

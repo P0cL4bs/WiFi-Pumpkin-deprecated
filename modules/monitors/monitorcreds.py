@@ -2,9 +2,9 @@ from os import getcwd,path
 from core.loaders.models.PackagesUI import *
 
 
-class frm_NetCredsLogger(PumpkinModule):
+class frm_MonitorCapLogger(PumpkinModule):
     def __init__(self, parent = None):
-        super(frm_NetCredsLogger, self).__init__(parent)
+        super(frm_MonitorCapLogger, self).__init__(parent)
         self.setGeometry(0, 0, 550, 400)
         self.Main       = QVBoxLayout()
         self.owd        = getcwd()
@@ -24,10 +24,10 @@ class frm_NetCredsLogger(PumpkinModule):
         # Thread Capture logs
         creds = ThreadPopen(['tail','-f','logs/AccessPoint/credentials.log'])
         self.connect(creds,SIGNAL('Activated ( QString ) '), self.loggercreds)
-        creds.setObjectName('Netcreds::Credentials')
+        creds.setObjectName('Monitor::Credentials')
         urls = ThreadPopen(['tail','-f','logs/AccessPoint/urls.log'])
         self.connect(urls,SIGNAL('Activated ( QString ) '), self.loggerurls)
-        urls.setObjectName('Netcreds::Urls')
+        urls.setObjectName('Monitor::Urls')
         if path.exists('logs/AccessPoint/credentials.log'):
             self.thread.append(creds)
             creds.start()
@@ -35,7 +35,7 @@ class frm_NetCredsLogger(PumpkinModule):
             self.thread.append(urls)
             urls.start()
         if not urls.isRunning():
-            QMessageBox.warning(self,'error logger read','netcreds no logger found.')
+            QMessageBox.warning(self,'error logger read','No logger found.')
 
     def loggercreds(self,data):
         self.list_creds.addItem(data)

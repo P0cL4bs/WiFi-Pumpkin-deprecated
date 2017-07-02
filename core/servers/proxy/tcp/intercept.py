@@ -46,7 +46,7 @@ class ThreadSniffingPackets(QThread):
         while not self.stopped:
             try:
                 sniff(iface=self.interface,
-                      filter="tcp and ( port 80 or port 8080)",
+                      filter="tcp and ( port 80 or port 8080 or port 10000)",
                       prn =lambda x : q.put(x), store=0)
             except Exception:pass
             if self.stopped:
