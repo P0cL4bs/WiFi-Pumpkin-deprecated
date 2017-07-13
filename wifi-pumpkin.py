@@ -57,6 +57,7 @@ if __name__ == '__main__':
     conf = SettingsINI('core/config/app/config.ini')
     if  conf.get_setting('accesspoint','checkConnectionWifi',format=bool):
         networkcontrol = CLI_NetworkManager() # add all interface avaliable for exclude
+        app.networkcontrol = networkcontrol
         if networkcontrol.run():
             if  networkcontrol.isWiFiConnected() and len(networkcontrol.ifaceAvaliable) > 0:
                 settings = UI_NetworkManager(app)

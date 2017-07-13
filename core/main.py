@@ -93,6 +93,8 @@ class Initialize(QMainWindow):
         self.FSettings      = frm_Settings()
         self.form_widget    = WifiPumpkin(self,self,self.FSettings)
 
+        #for exclude USB adapter if the option is checked in settings tab
+        self.networkcontrol = None
         # create advanced mode support
         dock = QDockWidget()
         dock.setTitleBarWidget(QWidget())
@@ -123,6 +125,13 @@ class Initialize(QMainWindow):
         ''' When the user clicks on the X button '''
         if self.form_widget.THReactor.isRunning():
             self.form_widget.THReactor.stop()
+
+        # remove card apdater from network-manager conf
+        if not self.form_widget.FSettings.Settings.get_setting(
+            'accesspoint','persistNetwokManager',format=bool):
+            if self.networkcontrol != None:
+                self.networkcontrol.remove_settingsNM()
+
         # check if any wireless card is enable as Monitor mode
         iwconfig = Popen(['iwconfig'], stdout=PIPE,shell=False,stderr=PIPE)
         for i in iwconfig.stdout.readlines():
@@ -587,6 +596,8 @@ class WifiPumpkin(QWidget):
         Menu_file.addAction(deleteAction)
         deleteAction.triggered.connect(self.delete_logger)
         exportAction.triggered.connect(self.exportlogger)
+        action_settings = QAction('Settings...',self)
+        Menu_file.addAction(action_settings)
 
         Menu_View = self.myQMenuBar.addMenu('&View')
         phishinglog = QAction('Phishing Logger', self)
@@ -623,7 +634,6 @@ class WifiPumpkin(QWidget):
         btn_arp = QAction('ARP Poisoner ',self)
         btn_dns = QAction('DNS Spoofer ',self)
         btn_phishing = QAction('Phishing Manager',self)
-        action_settings = QAction('Settings',self)
 
         # Shortcut modules
         btn_deauth.setShortcut('Ctrl+W')
@@ -663,7 +673,6 @@ class WifiPumpkin(QWidget):
         Menu_module.addAction(btn_arp)
         Menu_module.addAction(btn_dns)
         Menu_module.addAction(btn_phishing)
-        Menu_module.addAction(action_settings)
 
         #menu extra
         Menu_extra= self.myQMenuBar.addMenu('&Help')
@@ -1195,7 +1204,7 @@ class WifiPumpkin(QWidget):
                 'dhcp-option=6, 10.0.0.1\n',
             ]
         }
-        print('[*] enable forwarding in iptables...')
+        print('[*] Enable forwarding in iptables...')
         Refactor.set_ip_forward(1)
         for line in self.SettingsAP['kill']: Popen(split(line), stdout=PIPE,shell=False,stderr=PIPE)
         for line in self.SettingsAP['interface']: Popen(split(line), stdout=PIPE,shell=False,stderr=PIPE)

@@ -20,6 +20,8 @@ Version 0.8.5
 - fixed replace bs4 to BeautifulSoup #228
 - fixed argument for 's' must be a string #232 thanks @okazymyrov
 - fixed IndexError: Layer [Raw] not found #234
+- added option for restore NM USB adpater after app closed #239
+- moved option settings -> Menu File
 
 Version 0.8.4
 -------------

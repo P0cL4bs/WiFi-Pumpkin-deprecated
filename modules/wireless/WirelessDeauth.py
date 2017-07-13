@@ -88,7 +88,7 @@ class frm_deauth(PumpkinModule):
         self.tables.resizeRowsToContents()
         self.tables.horizontalHeader().resizeSection(1,115)
         self.tables.horizontalHeader().resizeSection(0,80)
-        self.tables.horizontalHeader().resizeSection(2,150)
+        self.tables.horizontalHeader().resizeSection(2,130)
         self.tables.verticalHeader().setVisible(False)
         self.tables.setSortingEnabled(True)
         Headers = []
