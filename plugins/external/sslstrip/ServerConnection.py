@@ -159,8 +159,10 @@ class ServerConnection(HTTPClient):
 
         if (self.contentLength != None):
             self.client.setHeader('Content-Length', len(data))
-
-        self.client.write(data)
+        try:
+            self.client.write(data)
+        except:
+            pass
         self.shutdown()
 
     def replaceSecureLinks(self, data):
