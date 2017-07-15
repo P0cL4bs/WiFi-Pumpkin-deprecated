@@ -23,6 +23,7 @@ Version 0.8.5
 - added option for restore NM USB adpater after app closed #239
 - moved option settings -> Menu File
 - fixed hide error sslstrip exceptions.RuntimeError
+- fixed [Errno socket error] [Errno -2] Name or service not known #252
 
 Version 0.8.4
 -------------

@@ -91,7 +91,9 @@ class ThreadSniffingPackets(QThread):
                 pkt = q.get(timeout = 0)
                 for Active in self.plugins.keys():
                     if self.plugins[Active].getInstance()._activated:
-                        self.plugins[Active].filterPackets(pkt)
+                        try:
+                            self.plugins[Active].filterPackets(pkt)
+                        except Exception: pass
             except Queue.Empty:
               pass
 
