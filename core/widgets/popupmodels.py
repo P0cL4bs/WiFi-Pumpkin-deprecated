@@ -191,23 +191,33 @@ class PopUpPlugins(QVBoxLayout):
         self.FSettings.Settings.set_setting('plugins','noproxy',self.check_noproxy.isChecked())
         if self.check_sergioProxy.isChecked():
             self.main_method.set_proxy_statusbar('SSLstrip|Sergio-proxy')
+            self.main_method.PumpkinProxyTAB.tabcontrol.setEnabled(False) # disable ProxyPumpkinTAB
+            self.main_method.ProxyPluginsTAB.scrollwidget.setEnabled(True) # enable SSLSTRIP Proxy TAB
             self.set_sslStripRule()
         elif self.check_dns2proy.isChecked():
             self.main_method.set_proxy_statusbar('SSLstrip+|Dns2-proxy')
+            self.main_method.PumpkinProxyTAB.tabcontrol.setEnabled(False)
+            self.main_method.ProxyPluginsTAB.scrollwidget.setEnabled(True)
             self.set_sslStripRule()
             self.set_Dns2proxyRule()
         elif self.check_bdfproxy.isChecked():
             self.main_method.set_proxy_statusbar('BDF-proxy-ng')
+            self.main_method.PumpkinProxyTAB.tabcontrol.setEnabled(False)
+            self.main_method.ProxyPluginsTAB.scrollwidget.setEnabled(False)
             self.unset_Rules('dns2proxy')
             self.unset_Rules('sslstrip')
             self.set_BDFproxyRule()
         elif self.check_pumpkinProxy.isChecked():
             self.main_method.set_proxy_statusbar('Pumpkin-Proxy')
+            self.main_method.PumpkinProxyTAB.tabcontrol.setEnabled(True)
+            self.main_method.ProxyPluginsTAB.scrollwidget.setEnabled(False)
             self.unset_Rules('dns2proxy')
             self.unset_Rules('sslstrip')
             self.set_PumpkinProxy()
         elif self.check_noproxy.isChecked():
             self.main_method.set_proxy_statusbar('',disabled=True)
+            self.main_method.PumpkinProxyTAB.tabcontrol.setEnabled(False)
+            self.main_method.ProxyPluginsTAB.scrollwidget.setEnabled(False)
             self.unset_Rules('dns2proxy')
             self.unset_Rules('sslstrip')
             self.unset_Rules('bdfproxy')
