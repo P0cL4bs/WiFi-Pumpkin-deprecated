@@ -91,8 +91,10 @@ class ThreadHTTPServerPhishing(QThread):
         self.request.emit('{}'.format(list(args)[0]))
 
     def stop(self):
-        self.httpd.shutdown()
-        self.httpd.server_close()
+        try:
+            self.httpd.shutdown()
+            self.httpd.server_close()
+        except AttributeError: pass
 
 class ServerThreadHTTP(QThread):
     ''' server http for website custom module Phishing '''
@@ -118,5 +120,7 @@ class ServerThreadHTTP(QThread):
         self.requestHTTP.emit(list(args)[0])
 
     def stop(self):
-        self.httpd.shutdown()
-        self.httpd.socket.close()
+        try:
+            self.httpd.shutdown()
+            self.httpd.server_close()
+        except AttributeError: pass

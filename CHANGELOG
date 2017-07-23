@@ -25,6 +25,7 @@ Version 0.8.5
 - fixed hide error sslstrip exceptions.RuntimeError
 - fixed [Errno socket error] [Errno -2] Name or service not known #252
 - fixed control lock/unlock plugins tabs when changes options
+- fixed PhishingManager error when try shutdown httpd server
 
 Version 0.8.4
 -------------
