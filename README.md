@@ -7,6 +7,7 @@ WiFi-Pumpkin
 Framework for Rogue Wi-Fi Access Point Attack
 ### Description
 WiFi-Pumpkin is a very complete framework for auditing Wi-Fi security. The main feature is the ability to create a fake AP and make Man In The Middle attack, but the list of features is quite broad.
+
 ### Installation
 
 - Python 2.7
@@ -44,6 +45,13 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 * Capture images on the fly
 * TCP-Proxy (with [scapy](http://www.secdev.org/projects/scapy/))
 
+### Donation
+##### Patreon:
+[![Patreon](https://cloud.githubusercontent.com/assets/8225057/5990484/70413560-a9ab-11e4-8942-1a63607c0b00.png)](http://www.patreon.com/wifipumpkin)
+##### paypal:
+[![donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PUPJEGHLJPFQL)
+##### Via BTC:
+1HBXz6XX3LcHqUnaca5HRqq6rPUmA3pf6f
 
 ### Plugins
 | Plugin | Description | 
@@ -176,10 +184,3 @@ class ExamplePlugin(PSniffer):
 ### Contact Us
 Whether you want to report a [bug](https://github.com/P0cL4bs/WiFi-Pumpkin/issues/new), send a patch or give some suggestions on this project, drop us or open [pull requests](https://github.com/P0cL4bs/WiFi-Pumpkin/pulls) 
 
-### Donate
-##### paypal:
-[![donate](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PUPJEGHLJPFQL)
-
-Via BTC: 1HBXz6XX3LcHqUnaca5HRqq6rPUmA3pf6f
-
-Happy MITM!
