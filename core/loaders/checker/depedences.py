@@ -14,10 +14,8 @@ def check_dep_pumpkin():
     hostapd = popen('which hostapd').read().split('\n')
     if not path.isfile(hostapd[0]): notinstall('hostapd')
     # checck source.tar.gz tamplate module
-    if not path.isfile('templates/Update/Windows_Update/Settins_WinUpdate.html'):
-        copy('settings/source.tar.gz','templates/')
-        system('cd templates/ && tar -xf source.tar.gz')
-        remove('templates/source.tar.gz')
+    if not path.isfile('templates/fakeupdate/Windows_Update/Settins_WinUpdate.html'):
+        system('cd templates/ && tar -xf fakeupdate.tar.gz')
 
     # check if hostapd is found and save path
     settings = SettingsINI('core/config/app/config.ini')

@@ -1372,7 +1372,7 @@ class WifiPumpkin(QWidget):
         self.CoreSettings()
         self.checkWirelessSecurity() # check if user set wireless password
         ignore = ('interface=','ssid=','channel=')
-        with open('settings/hostapd.conf','w') as apconf:
+        with open('core/config/hostapd/hostapd.conf','w') as apconf:
             for i in self.SettingsAP['hostapd']:apconf.write(i)
             for config in str(self.FSettings.ListHostapd.toPlainText()).split('\n'):
                 if not config.startswith('#') and len(config) > 0:
@@ -1381,7 +1381,8 @@ class WifiPumpkin(QWidget):
             apconf.close()
 
         # create thread for hostapd and connect GetHostapdStatus function
-        self.Thread_hostapd = ProcessHostapd({self.hostapd_path:[getcwd()+'/settings/hostapd.conf']}, self.currentSessionID)
+        self.Thread_hostapd = ProcessHostapd({self.hostapd_path:[getcwd()+
+                                            '/core/config/hostapd/hostapd.conf']}, self.currentSessionID)
         self.Thread_hostapd.setObjectName('hostapd')
         self.Thread_hostapd.statusAP_connected.connect(self.GetHostapdStatus)
         self.Thread_hostapd.statusAPError.connect(self.GetErrorhostapdServices)

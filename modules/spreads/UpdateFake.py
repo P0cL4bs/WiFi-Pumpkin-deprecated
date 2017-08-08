@@ -138,10 +138,10 @@ class frm_update_attack(PumpkinModule):
         self.setLayout(self.Main)
 
     def removefiles(self):
-        pathList = ['templates/Update/Windows_Update/index.html',
-        'templates/Update/Windows_Update/windows-update.exe',
-        'templates/Update/Java_Update/index.html',
-        'templates/Update/Java_Update/java-update.exe']
+        pathList = ['templates/fakeupdate/Windows_Update/index.html',
+        'templates/fakeupdate/Windows_Update/windows-update.exe',
+        'templates/fakeupdate/Java_Update/index.html',
+        'templates/fakeupdate/Java_Update/java-update.exe']
         for i in pathList:
             if path.isfile(i):remove(i)
 
@@ -152,6 +152,7 @@ class frm_update_attack(PumpkinModule):
         self.logBox.clear()
         self.status.showMessage('')
         self.btn_stop.setEnabled(False)
+        self.btn_start_server.setEnabled(True)
 
     def inter_get(self):
         self.refresh_interface(self.cb_interface)
@@ -199,11 +200,11 @@ class frm_update_attack(PumpkinModule):
         if len(self.path.text()) <= 0:
             return QMessageBox.information(self, 'Path file Error', 'Error in get the file path.')
         if self.rb_windows.isChecked():
-            return self.SettingsPage('templates/Update/Settings_WinUpdate.html',
-            'templates/Update/Windows_Update/','windows-update.exe',True)
+            return self.SettingsPage('templates/fakeupdate/Settings_WinUpdate.html',
+            'templates/fakeupdate/Windows_Update/','windows-update.exe',True)
         elif self.rb_java.isChecked():
-            return self.SettingsPage('templates/Update/Settings_java.html',
-            'templates/Update/Java_Update/','java-update.exe',False)
+            return self.SettingsPage('templates/fakeupdate/Settings_java.html',
+            'templates/fakeupdate/Java_Update/','java-update.exe',False)
 
         return QMessageBox.information(self, 'Phishing settings', 'Please select an option in the Phishing page:')
 

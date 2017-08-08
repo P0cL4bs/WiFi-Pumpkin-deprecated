@@ -222,7 +222,7 @@ class frm_PhishingManager(QWidget):
             if self.checkRequests(site):
                 self.ServerHTTPLoad = ServerThreadHTTP(str(self.txt_redirect.text()),
                 self.BoxPort.value(),redirect=str(self.cloneLineEdit.text()),
-                directory='templates/Phishing/web_server/index.html',session=self.session)
+                directory='templates/phishing/web_server/index.html',session=self.session)
                 self.ThreadTemplates['Server'].append(self.ServerHTTPLoad)
                 self.ServerHTTPLoad.requestHTTP.connect(self.ResponseSignal)
                 self.btn_start_template.setEnabled(False)
@@ -241,10 +241,10 @@ class frm_PhishingManager(QWidget):
 
         elif self.check_custom.isChecked():
             self.html = BeautifulSoup(self.txt_html.toPlainText())
-            self.CheckHookInjection(self.html,'templates/Phishing/custom/index.html')
+            self.CheckHookInjection(self.html,'templates/phishing/custom/index.html')
             self.ServerHTTPLoad = ServerThreadHTTP(str(self.txt_redirect.text()),
             self.BoxPort.value(),redirect=str(self.cloneLineEdit.text()),
-            directory='templates/Phishing/custom/index.html',session=self.session)
+            directory='templates/phishing/custom/index.html',session=self.session)
             self.ThreadTemplates['Server'].append(self.ServerHTTPLoad)
             self.ServerHTTPLoad.requestHTTP.connect(self.ResponseSignal)
             self.btn_start_template.setEnabled(False)
@@ -291,7 +291,7 @@ class frm_PhishingManager(QWidget):
                 for tag in request.find_all('form'):
                     tag['method'],tag['action'] ='post',''
             except Exception: pass
-            self.CheckHookInjection(request,'templates/Phishing/web_server/index.html')
+            self.CheckHookInjection(request,'templates/phishing/web_server/index.html')
         except URLError:
             QMessageBox.warning(self,'Request HTTP','It seems like the server is down.')
             return False

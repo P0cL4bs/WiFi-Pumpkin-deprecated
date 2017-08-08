@@ -26,6 +26,7 @@ Version 0.8.5
 - fixed [Errno socket error] [Errno -2] Name or service not known #252
 - fixed control lock/unlock plugins tabs when changes options
 - fixed PhishingManager error when try shutdown httpd server
+- fixed Windows UpdateFake modules
 
 Version 0.8.4
 -------------
