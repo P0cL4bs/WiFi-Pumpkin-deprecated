@@ -27,6 +27,7 @@ Version 0.8.5
 - fixed control lock/unlock plugins tabs when changes options
 - fixed PhishingManager error when try shutdown httpd server
 - fixed Windows UpdateFake modules
+- fixed check return is NoneType from function get_interface_mac
 
 Version 0.8.4
 -------------

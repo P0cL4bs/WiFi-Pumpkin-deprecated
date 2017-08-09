@@ -162,10 +162,9 @@ class CLI_NetworkManager(object):
     def check_interfaceinNetWorkManager(self,interface):
         ''' check if interface is already in file config'''
         mac = Refactor.get_interface_mac(interface)
-        if mac in open(self.mn_path,'r').read():
-            return True
-        if interface in open(self.mn_path,'r').read():
-            return True
+        if mac != None:
+            if mac in open(self.mn_path,'r').read(): return True
+            if interface in open(self.mn_path,'r').read(): return True
         return False
 
     def run(self):
