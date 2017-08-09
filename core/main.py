@@ -1206,22 +1206,17 @@ class WifiPumpkin(QWidget):
         }
         print('[*] Enable forwarding in iptables...')
         Refactor.set_ip_forward(1)
+        # clean iptables settings
         for line in self.SettingsAP['kill']: Popen(split(line), stdout=PIPE,shell=False,stderr=PIPE)
+        # set interface using ifconfig
         for line in self.SettingsAP['interface']: Popen(split(line), stdout=PIPE,shell=False,stderr=PIPE)
-        dhcp_select = self.FSettings.Settings.get_setting('accesspoint','dhcp_server')
-        if dhcp_select != 'dnsmasq':
-            with open('settings/dhcpd.conf','w') as dhcp:
-                for i in self.SettingsAP['dhcp-server']:dhcp.write(i)
+        # check if dhcp option is enabled.
+        if self.FSettings.Settings.get_setting('accesspoint','dhcp_server',format=bool):
+            with open('core/config/dhcpd_wp.conf','w') as dhcp:
+                for line in self.SettingsAP['dhcp-server']:dhcp.write(line)
                 dhcp.close()
-                if path.isfile('/etc/dhcp/dhcpd.conf'):
-                    system('rm /etc/dhcp/dhcpd.conf')
-                if not path.isdir('/etc/dhcp/'):mkdir('/etc/dhcp')
-                move('settings/dhcpd.conf', '/etc/dhcp/')
-        else:
-            with open('core/config/dnsmasq.conf','w') as dhcp:
-                for i in self.SettingsAP['dnsmasq']:
-                    dhcp.write(i)
-                dhcp.close()
+                if not path.isdir('/etc/dhcp/'): mkdir('/etc/dhcp')
+                move('core/config/dhcpd_wp.conf', '/etc/dhcp/')
 
     def SoftDependencies(self):
         ''' check if Hostapd, isc-dhcp-server is installed '''
@@ -1403,7 +1398,7 @@ class WifiPumpkin(QWidget):
         print('[*] Configuring dhcpd...')
         if  self.FSettings.Settings.get_setting('accesspoint','dhcpd_server',format=bool):
             self.Thread_dhcp = ThRunDhcp(['dhcpd','-d','-f','-lf','/var/lib/dhcp/dhcpd.leases','-cf',
-            '/etc/dhcp/dhcpd.conf',self.SettingsEnable['AP_iface']],self.currentSessionID)
+            '/etc/dhcp/dhcpd_wp.conf',self.SettingsEnable['AP_iface']],self.currentSessionID)
             self.Thread_dhcp.sendRequest.connect(self.GetDHCPRequests)
             self.Thread_dhcp.setObjectName('DHCP')
             self.Apthreads['RougeAP'].append(self.Thread_dhcp)
