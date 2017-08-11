@@ -29,6 +29,7 @@ Version 0.8.5
 - fixed Windows UpdateFake modules
 - fixed check return is NoneType from function get_interface_mac
 - fixed No such file or directory: 'settings/dhcpd.conf' #266
+- fixed Wireless Deauth module scan network with airodump-ng
 
 Version 0.8.4
 -------------

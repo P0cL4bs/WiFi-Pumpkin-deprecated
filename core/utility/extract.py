@@ -27,7 +27,7 @@ def airdump_start(interface):
     process = ProcessThreadScanner(['xterm',
     '-geometry', '85x15-1+250', '-T',
     'scan AP Airodump-ng', '-e', 'airodump-ng', interface,
-    '--write', 'settings/Dump/networkdump'])
+    '--write', 'logs/Caplog/Dump/networkdump'])
     process.name = "Airodump-ng scan"
     process.start()
     process.join()
@@ -46,7 +46,7 @@ def Beef_Hook_url(soup,hook_url):
 def get_network_scan():
     list_scan = []
     try:
-        xml = BeautifulSoup(open("settings/Dump/networkdump-01.kismet.netxml", 'r').read())
+        xml = BeautifulSoup(open("logs/Caplog/Dump/networkdump-01.kismet.netxml", 'r').read())
         for network in xml.findAll('wireless-network'):
             try:
                 essid = network.find('essid').text
@@ -57,7 +57,7 @@ def get_network_scan():
                 list_scan.append(channel + "||" + essid + "||" + bssid)
             except Exception:
                 pass
-        popen("rm settings/Dump/networkdump*")
+        popen("rm logs/Caplog/Dump/networkdump*")
         return list_scan
     except IOError:
         return None

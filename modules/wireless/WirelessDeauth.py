@@ -174,7 +174,7 @@ class frm_deauth(PumpkinModule):
             self.input_client.setEnabled(False)
 
     def scan_diveces_airodump(self):
-        dirpath = "settings/Dump"
+        dirpath = "logs/Caplog/Dump"
         if not path.isdir(dirpath): makedirs(dirpath)
         self.data = {'Bssid':[], 'Essid':[], 'Channel':[]}
         exit_air = airdump_start(self.interface)
@@ -244,12 +244,13 @@ class frm_deauth(PumpkinModule):
                     self.threadScanAP.start()
                 elif self.configure.Settings.get_setting('settings','scan_airodump',format=bool):
                     if path.isfile(popen('which airodump-ng').read().split("\n")[0]):
-                        self.thread_airodump = threading.Thread(target=self.scan_diveces_airodump)
-                        self.thread_airodump.daemon = True
-                        self.thread_airodump.start()
-                    else:
-                        QMessageBox.information(self,'Error airodump','airodump-ng is not installed')
-                        set_monitor_mode(self.get_placa.currentText()).setDisable()
+                        if path.isfile(popen('which xterm').read().split("\n")[0]):
+                            self.thread_airodump = threading.Thread(target=self.scan_diveces_airodump)
+                            self.thread_airodump.daemon = True
+                            return self.thread_airodump.start()
+                        QMessageBox.warning(self, 'Error xterm', 'xterm is not installed')
+                    QMessageBox.information(self,'Error airodump','airodump-ng is not installed')
+            set_monitor_mode(self.get_placa.currentText()).setDisable()
 
 
     def attack_deauth(self):
