@@ -1,6 +1,6 @@
 from PyQt4.QtCore import QThread,pyqtSignal
 from core.utils import setup_logger
-import BeautifulSoup
+from core.utility.constants import LOG_PHISHING
 import SimpleHTTPServer
 import BaseHTTPServer
 import SocketServer
@@ -111,7 +111,7 @@ class ServerThreadHTTP(QThread):
         self.httpd = None
         self.httpd = MyHTTPServer((self.Address, self.PORT), self.Handler,on_before_serve = self.httpd)
         self.Handler.log_message = self.Method_GET_LOG
-        setup_logger('phishing', './logs/Phishing/requests.log',key=self.session)
+        setup_logger('phishing', LOG_PHISHING, key=self.session)
         self.log_phishing = logging.getLogger('phishing')
         self.httpd.serve_forever()
 

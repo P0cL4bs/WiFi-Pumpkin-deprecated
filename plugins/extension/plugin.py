@@ -1,11 +1,13 @@
 import logging
+from bs4 import BeautifulSoup
 from PyQt4.QtCore import QObject,pyqtSignal
 from core.utility.collection import SettingsINI
+import core.utility.constants as C
 
 class PluginTemplate(QObject):
 	name		= 'plugin master'
 	version		= '1.0'
-	config		= SettingsINI('core/config/app/proxy.ini')
+	config		= SettingsINI(C.PUMPPROXY_INI)
 	loggers 	= {}
 	send_output = pyqtSignal(object)
 

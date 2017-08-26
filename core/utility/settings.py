@@ -3,6 +3,7 @@ from re import search
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from core.utility.collection import SettingsINI
+import core.utility.constants as C
 
 """
 Description:
@@ -198,7 +199,7 @@ class frm_Settings(QDialog):
     def __init__(self, parent = None):
         super(frm_Settings, self).__init__(parent)
         self.setWindowTitle('WiFi-Pompkin - Settings')
-        self.Settings = SettingsINI('core/config/app/config.ini')
+        self.Settings = SettingsINI(C.CONFIG_INI)
         self.loadtheme(self.XmlThemeSelected())
         self.setGeometry(0, 0, 420, 440)
         self.center()
@@ -252,7 +253,7 @@ class frm_Settings(QDialog):
         if not path.isfile(self.pageTab1.edit_hostapd_path.text()):
             return QMessageBox.warning(self,'Path Hostapd Error','hostapd binary path is not found')
         self.Settings.set_setting('accesspoint','hostapd_path',self.pageTab1.edit_hostapd_path.text())
-        with open('core/config/hostapd/hostapd+.conf','w') as apconf:
+        with open(C.HOSTAPDCONF_PATH2,'w') as apconf:
             apconf.write(self.ListHostapd.toPlainText())
         self.close()
 
@@ -370,7 +371,7 @@ class frm_Settings(QDialog):
         # page hostpad
         self.ListHostapd = QTextEdit(self)
         self.ListHostapd.setFixedHeight(300)
-        with open('core/config/hostapd/hostapd+.conf','r') as apconf:
+        with open(C.HOSTAPDCONF_PATH2,'r') as apconf:
             self.ListHostapd.setText(apconf.read())
 
         # grup page 2

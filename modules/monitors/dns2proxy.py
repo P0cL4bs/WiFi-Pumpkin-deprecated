@@ -21,8 +21,8 @@ class frm_dns2proxy(PumpkinModule):
         self.btn_getdata.setEnabled(False)
         self.btn_exit.setEnabled(True)
         # Thread Capture logs
-        if path.exists('logs/AccessPoint/dns2proxy.log'):
-            dns = ThreadPopen(['tail','-f','logs/AccessPoint/dns2proxy.log'])
+        if path.exists(C.LOG_DNS2PROXY):
+            dns = ThreadPopen(['tail','-f',C.LOG_DNS2PROXY])
             self.connect(dns,SIGNAL('Activated ( QString ) '), self.loggerdns)
             dns.setObjectName('Dns2proxy::Capture')
             self.thread.append(dns)

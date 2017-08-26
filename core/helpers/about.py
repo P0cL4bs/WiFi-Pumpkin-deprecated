@@ -135,6 +135,7 @@ class frmAbout(PumpkinModule):
         self.formDonate.addRow(QLabel('Paypal:'),QLabel('<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick'
         '&hosted_button_id=PUPJEGHLJPFQL">WiFi-Pumpkin project - Paypal Donataion </a>'))
         self.formDonate.addRow(QLabel('BTC:'),QLabel('<a href="1HBXz6XX3LcHqUnaca5HRqq6rPUmA3pf6f">1HBXz6XX3LcHqUnaca5HRqq6rPUmA3pf6f</a>'))
+        self.formDonate.addRow(QLabel('Patreon:'),QLabel('<a href="https://www.patreon.com/wifipumpkin">https://www.patreon.com/wifipumpkin</a>'))
         self.TabDonate.setLayout(self.formDonate)
 
         # Version Section

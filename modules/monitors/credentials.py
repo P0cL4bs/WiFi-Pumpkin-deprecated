@@ -20,8 +20,8 @@ class frm_get_credentials(PumpkinModule):
         self.btn_getdata.setEnabled(False)
         self.btn_exit.setEnabled(True)
         # Thread Capture logs
-        if path.exists('logs/Phishing/requests.log'):
-            dns = ThreadPopen(['tail','-f','logs/Phishing/requests.log'])
+        if path.exists(C.LOG_PHISHING):
+            dns = ThreadPopen(['tail','-f',C.LOG_PHISHING])
             self.connect(dns,SIGNAL('Activated ( QString ) '), self.loggerdns)
             dns.setObjectName('Phishing::Capture')
             self.thread.append(dns)

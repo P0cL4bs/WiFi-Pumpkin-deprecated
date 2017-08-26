@@ -2,6 +2,7 @@ from plugins.extension import *
 from threading import Thread
 from core.utility.collection import  SettingsINI
 from mitmproxy import controller,flow
+import core.utility.constants as C
 
 
 """
@@ -43,7 +44,7 @@ class ThreadController(Thread):
 class MasterHandler(flow.FlowMaster):
     def __init__(self,opts, server,state,session):
         flow.FlowMaster.__init__(self,opts, server,state)
-        self.config  = SettingsINI('core/config/app/proxy.ini')
+        self.config  = SettingsINI(C.PUMPPROXY_INI)
         self.session = session
         self.plugins = []
         self.initializePlugins()

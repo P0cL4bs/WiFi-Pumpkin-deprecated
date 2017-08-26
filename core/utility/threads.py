@@ -19,6 +19,7 @@ from multiprocessing import Process,Manager
 from core.servers.proxy.http.controller.handler import MasterHandler
 from mitmproxy import proxy,flow,options
 from mitmproxy.proxy.server import ProxyServer
+import core.utility.constants as C
 
 """
 Description:
@@ -92,7 +93,7 @@ class ThRunDhcp(QThread):
         self.process = Popen(self.args,
         stdout=PIPE,stderr=STDOUT,preexec_fn=setsid)
         print '[New Thread {} ({})]'.format(self.process.pid,self.objectName())
-        setup_logger('dhcp', './logs/AccessPoint/dhcp.log',self.session)
+        setup_logger('dhcp', C.LOG_DHCP,self.session)
         loggerDhcp = logging.getLogger('dhcp')
         loggerDhcp.info('---[ Start DHCP '+asctime()+']---')
         for line,data in enumerate(iter(self.process.stdout.readline, b'')):
@@ -233,7 +234,7 @@ class ProcessHostapd(QObject):
         print '[New Thread {} ({})]'.format(self.procHostapd.pid(),self.objectName())
 
     def makeLogger(self):
-        setup_logger('hostapd', './logs/AccessPoint/hostapd.log',self.session)
+        setup_logger('hostapd', C.LOG_HOSTAPD, self.session)
         self.log_hostapd = logging.getLogger('hostapd')
 
     def stop(self):

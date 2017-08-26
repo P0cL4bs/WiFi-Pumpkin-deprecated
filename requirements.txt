@@ -1,6 +1,6 @@
 Twisted
 scapy
-BeautifulSoup
+bs4
 netaddr
 config
 dnspython

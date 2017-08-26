@@ -34,8 +34,7 @@ class frm_githubUpdate(PumpkinModule):
         self.loadtheme(self.configure.XmlThemeSelected())
         self.checkHasCommits = False
         self.version = version
-        self.UrlDownloadCommits = \
-        'https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/Core/config/commits/Lcommits.cfg'
+        self.UrlDownloadCommits = C.LCOMMITS
         self.PathUrlLcommits = self.get_file_cfg_Update('Core')
         self.PathUrlRcommits = self.PathUrlLcommits.replace('L','R')
         self.center()

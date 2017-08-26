@@ -1,6 +1,5 @@
-from BeautifulSoup import BeautifulSoup
 from mitmproxy.models import decoded
-from plugins.extension.plugin import PluginTemplate
+from plugins.extension.plugin import PluginTemplate,BeautifulSoup
 
 """
 Description:

@@ -22,16 +22,16 @@ class frm_MonitorCapLogger(PumpkinModule):
         self.btn_getdata.setEnabled(False)
         self.btn_exit.setEnabled(True)
         # Thread Capture logs
-        creds = ThreadPopen(['tail','-f','logs/AccessPoint/credentials.log'])
+        creds = ThreadPopen(['tail','-f',C.LOG_CREDSCAPTURE])
         self.connect(creds,SIGNAL('Activated ( QString ) '), self.loggercreds)
         creds.setObjectName('Monitor::Credentials')
-        urls = ThreadPopen(['tail','-f','logs/AccessPoint/urls.log'])
+        urls = ThreadPopen(['tail','-f',C.LOG_URLCAPTURE])
         self.connect(urls,SIGNAL('Activated ( QString ) '), self.loggerurls)
         urls.setObjectName('Monitor::Urls')
-        if path.exists('logs/AccessPoint/credentials.log'):
+        if path.exists(C.LOG_CREDSCAPTURE):
             self.thread.append(creds)
             creds.start()
-        if path.exists('logs/AccessPoint/urls.log'):
+        if path.exists(C.LOG_URLCAPTURE):
             self.thread.append(urls)
             urls.start()
         if not urls.isRunning():

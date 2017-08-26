@@ -1,6 +1,5 @@
-from BeautifulSoup import BeautifulSoup
 from mitmproxy.models import decoded
-from plugins.extension.plugin import PluginTemplate
+from plugins.extension.plugin import PluginTemplate,BeautifulSoup
 
 """
 Description:
@@ -28,7 +27,7 @@ class beef(PluginTemplate):
         'Name'      : 'beef',
         'Version'   : '1.0',
         'Description' : 'this module proxy inject hook beef api url.[Hook URL]',
-        'Author'    : 'Marcos Nesster'
+        'Author'    : 'Pumpkin Dev'
     }
     def __init__(self):
         for key,value in self.meta.items():
@@ -41,7 +40,7 @@ class beef(PluginTemplate):
 
     def response(self,flow):
         with decoded(flow.response):  # Remove content encoding (gzip, ...)
-            html = BeautifulSoup(flow.response.content)
+            html = BeautifulSoup(flow.response.content,'lxml')
             """
             # To Allow CORS
             if "Content-Security-Policy" in flow.response.headers:

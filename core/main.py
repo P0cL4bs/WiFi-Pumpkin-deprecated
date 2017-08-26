@@ -49,6 +49,7 @@ import modules as GUIModules
 from core.helpers.about import frmAbout
 from core.helpers.update import frm_githubUpdate
 from core.utility.settings import frm_Settings
+import core.utility.constants as C
 from core.helpers.update import ProgressBarWid
 from core.helpers.report import frm_ReportLogger
 from core.packets.dhcpserver import DHCPServer,DNSServer
@@ -105,7 +106,7 @@ class Initialize(QMainWindow):
         self.addDockWidget(Qt.LeftDockWidgetArea, dock)
         # set window title
         self.setWindowTitle('WiFi-Pumpkin v' + version)
-        self.setGeometry(0, 0, 800, 450) # set geometry window
+        self.setGeometry(0, 0, C.GEOMETRYH, C.GEOMETRYW) # set geometry window
         self.loadtheme(self.FSettings.XmlThemeSelected())
 
     def loadtheme(self,theme):
@@ -256,11 +257,7 @@ class WifiPumpkin(QWidget):
         self.Stack.addWidget(self.Tab_Default)
         self.TabListWidget_Menu.currentRowChanged.connect(self.display_tab_stack)
         self.TabListWidget_Menu.setFixedWidth(140)
-        self.TabListWidget_Menu.setStyleSheet('QListWidget::item '
-        '{border-style: solid; border-width:1px; border-color:#3A3939;}'
-        'QListWidget::item:selected {border-style: solid;color:#FFFFFF; '
-        'border-width:1px; border-color:#3A3939;}'
-        'QListWidget {background-color: #302F2F;border-width:1px;border-color:#201F1F;}')
+        self.TabListWidget_Menu.setStyleSheet(C.MENU_STYLE)
         # add in Tab default widget TABs
 
         # create Layout for add contents widgets TABs
@@ -524,10 +521,9 @@ class WifiPumpkin(QWidget):
         self.editPasswordAP     = QLineEdit(self.FSettings.Settings.get_setting('accesspoint','WPA_SharedKey'))
         self.WPAtype_spinbox    = QSpinBox()
         self.wpa_pairwiseCB     = QComboBox()
-        algoritms = ['TKIP','CCMP','TKIP + CCMP']
         wpa_algotims = self.FSettings.Settings.get_setting('accesspoint','WPA_Algorithms')
-        self.wpa_pairwiseCB.addItems(algoritms)
-        self.wpa_pairwiseCB.setCurrentIndex(algoritms.index(wpa_algotims))
+        self.wpa_pairwiseCB.addItems(C.ALGORITMS)
+        self.wpa_pairwiseCB.setCurrentIndex(C.ALGORITMS.index(wpa_algotims))
         self.WPAtype_spinbox.setMaximum(2)
         self.WPAtype_spinbox.setMinimum(0)
         self.WPAtype_spinbox.setValue(
@@ -561,10 +557,9 @@ class WifiPumpkin(QWidget):
         self.slipt.addWidget(self.GroupAP)
         self.slipt.addWidget(self.GroupApPassphrase)
 
-        self.donatelink = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PUPJEGHLJPFQL'
-        self.donateLabel = ServiceNotify('Donations allow us to devote more time to the project so'
-        ' if you are able to donate any amount. click ',title='Attention',
-        link=self.donatelink,timeout=20000)
+        self.donatelink = C.DONATE
+        self.donateLabel = ServiceNotify(C.DONATE_TXT,title='Support development',
+        link=self.donatelink,timeout=30000)
         # set main page Tool
         self.widget = QWidget()
         self.layout = QVBoxLayout(self.widget)
@@ -934,7 +929,7 @@ class WifiPumpkin(QWidget):
         elif len(data) == 7:
             if Refactor.check_is_mac(data[4]):
                 if data[4] not in self.APclients.keys():
-                    leases = IscDhcpLeases('/var/lib/dhcp/dhcpd.leases')
+                    leases = IscDhcpLeases(C.DHCPLEASES_PATH)
                     hostname = None
                     try:
                         for item in leases.get():
@@ -1100,7 +1095,7 @@ class WifiPumpkin(QWidget):
                 for log in lines: injectionlog.write(log+'\n')
                 injectionlog.close()
         # clear dhcpd.leases
-        with open('/var/lib/dhcp/dhcpd.leases','w') as dhcpLease:
+        with open(C.DHCPLEASES_PATH,'w') as dhcpLease:
             dhcpLease.write(''),dhcpLease.close()
         self.btn_start_attack.setDisabled(False)
         # disable IP Forwarding in Linux
@@ -1212,11 +1207,11 @@ class WifiPumpkin(QWidget):
         for line in self.SettingsAP['interface']: Popen(split(line), stdout=PIPE,shell=False,stderr=PIPE)
         # check if dhcp option is enabled.
         if self.FSettings.Settings.get_setting('accesspoint','dhcp_server',format=bool):
-            with open('core/config/dhcpd_wp.conf','w') as dhcp:
+            with open(C.DHCPCONF_PATH,'w') as dhcp:
                 for line in self.SettingsAP['dhcp-server']:dhcp.write(line)
                 dhcp.close()
                 if not path.isdir('/etc/dhcp/'): mkdir('/etc/dhcp')
-                move('core/config/dhcpd_wp.conf', '/etc/dhcp/')
+                move(C.DHCPCONF_PATH, '/etc/dhcp/')
 
     def SoftDependencies(self):
         ''' check if Hostapd, isc-dhcp-server is installed '''
@@ -1353,7 +1348,7 @@ class WifiPumpkin(QWidget):
         #        'Not found file NetworkManager.conf in folder /etc/NetworkManager/')
 
         # create dhcpd.leases and set permission for acesss DHCPD
-        leases = '/var/lib/dhcp/dhcpd.leases'
+        leases = C.DHCPLEASES_PATH
         if not path.exists(leases[:-12]):
             mkdir(leases[:-12])
         if not path.isfile(leases):
@@ -1367,7 +1362,7 @@ class WifiPumpkin(QWidget):
         self.CoreSettings()
         self.checkWirelessSecurity() # check if user set wireless password
         ignore = ('interface=','ssid=','channel=')
-        with open('core/config/hostapd/hostapd.conf','w') as apconf:
+        with open(C.HOSTAPDCONF_PATH,'w') as apconf:
             for i in self.SettingsAP['hostapd']:apconf.write(i)
             for config in str(self.FSettings.ListHostapd.toPlainText()).split('\n'):
                 if not config.startswith('#') and len(config) > 0:
@@ -1376,8 +1371,7 @@ class WifiPumpkin(QWidget):
             apconf.close()
 
         # create thread for hostapd and connect GetHostapdStatus function
-        self.Thread_hostapd = ProcessHostapd({self.hostapd_path:[getcwd()+
-                                            '/core/config/hostapd/hostapd.conf']}, self.currentSessionID)
+        self.Thread_hostapd = ProcessHostapd({self.hostapd_path:[C.HOSTAPDCONF_PATH]}, self.currentSessionID)
         self.Thread_hostapd.setObjectName('hostapd')
         self.Thread_hostapd.statusAP_connected.connect(self.GetHostapdStatus)
         self.Thread_hostapd.statusAPError.connect(self.GetErrorhostapdServices)
@@ -1397,8 +1391,8 @@ class WifiPumpkin(QWidget):
         # create thread dhcpd and connect fuction GetDHCPRequests
         print('[*] Configuring dhcpd...')
         if  self.FSettings.Settings.get_setting('accesspoint','dhcpd_server',format=bool):
-            self.Thread_dhcp = ThRunDhcp(['dhcpd','-d','-f','-lf','/var/lib/dhcp/dhcpd.leases','-cf',
-            '/etc/dhcp/dhcpd_wp.conf',self.SettingsEnable['AP_iface']],self.currentSessionID)
+            self.Thread_dhcp = ThRunDhcp(['dhcpd','-d','-f','-lf',C.DHCPLEASES_PATH,'-cf',
+            C.DHCPCONF_PATH,self.SettingsEnable['AP_iface']],self.currentSessionID)
             self.Thread_dhcp.sendRequest.connect(self.GetDHCPRequests)
             self.Thread_dhcp.setObjectName('DHCP')
             self.Apthreads['RougeAP'].append(self.Thread_dhcp)
@@ -1442,30 +1436,30 @@ class WifiPumpkin(QWidget):
                 self.THReactor.start()
 
         #create logging for somes threads
-        setup_logger('pumpkinproxy', 'logs/AccessPoint/pumpkin-proxy.log', self.currentSessionID)
-        setup_logger('urls_capture', 'logs/AccessPoint/urls.log', self.currentSessionID)
-        setup_logger('creds_capture', 'logs/AccessPoint/credentials.log', self.currentSessionID)
-        setup_logger('tcp_proxy', 'logs/AccessPoint/tcp-proxy.log', self.currentSessionID)
+        setup_logger('pumpkinproxy', C.LOG_PUMPKINPROXY, self.currentSessionID)
+        setup_logger('urls_capture', C.LOG_URLCAPTURE, self.currentSessionID)
+        setup_logger('creds_capture', C.LOG_CREDSCAPTURE, self.currentSessionID)
+        setup_logger('tcp_proxy', C.LOG_TCPPROXY, self.currentSessionID)
+        setup_logger('responder', C.LOG_RESPONDER, self.currentSessionID)
         self.LogPumpkinproxy    = getLogger('pumpkinproxy')
         self.LogUrlMonitor      = getLogger('urls_capture')
         self.LogCredsMonitor    = getLogger('creds_capture')
         self.LogTcpproxy        = getLogger('tcp_proxy')
+        self.responderlog       = getLogger('responder')
 
 
         if self.PopUpPlugins.check_responder.isChecked():
             # create thread for plugin responder
-            setup_logger('responder', 'logs/AccessPoint/responder.log',self.currentSessionID)
-            self.responderlog = getLogger('responder')
-            self.Thread_responder = ProcessThread({'python':['plugins/external/Responder/Responder.py','-I',
-            str(self.selectCard.currentText()),'-wrFbv']})
+            self.Thread_responder = ProcessThread({
+                'python':[C.RESPONDER_EXEC,'-I', str(self.selectCard.currentText()),'-wrFbv']})
             self.Thread_responder._ProcssOutput.connect(self.get_responder_output)
             self.Thread_responder.setObjectName('Responder')
             self.Apthreads['RougeAP'].append(self.Thread_responder)
 
         if self.PopUpPlugins.check_dns2proy.isChecked():
             # create thread for plugin DNS2proxy
-            self.Thread_dns2proxy = ProcessThread({'python':['plugins/external/dns2proxy/dns2proxy.py','-i',
-            str(self.selectCard.currentText()),'-k',self.currentSessionID]})
+            self.Thread_dns2proxy = ProcessThread(
+            {'python':[C.DNS2PROXY_EXEC,'-i',str(self.selectCard.currentText()),'-k',self.currentSessionID]})
             self.Thread_dns2proxy._ProcssOutput.connect(self.get_dns2proxy_output)
             self.Thread_dns2proxy.setObjectName('Dns2Proxy')
             self.Apthreads['RougeAP'].append(self.Thread_dns2proxy)
@@ -1485,8 +1479,7 @@ class WifiPumpkin(QWidget):
 
         elif self.PopUpPlugins.check_bdfproxy.isChecked():
             # create thread for plugin BDFproxy-ng
-            self.Thread_bdfproxy = ProcessThread({'python':
-            ['plugins/external/BDFProxy-ng/bdf_proxy.py','-k',self.currentSessionID]})
+            self.Thread_bdfproxy = ProcessThread({'python':[C.BDFPROXY_EXEC,'-k',self.currentSessionID]})
             self.Thread_bdfproxy._ProcssOutput.connect(self.get_bdfproxy_output)
             self.Thread_bdfproxy.setObjectName('BDFProxy-ng')
             self.Apthreads['RougeAP'].append(self.Thread_bdfproxy)
@@ -1632,5 +1625,6 @@ class WifiPumpkin(QWidget):
 
     def donate(self):
         ''' open page donation the project '''
-        if not QDesktopServices.openUrl(self.donatelink):
-            QMessageBox.warning(self, 'Open Url', 'Could not open url: {}'.format(self.donatelink))
+        self.Fabout = frmAbout(author,emails,version,update,license,desc)
+        self.Fabout.tabwid.setCurrentIndex(4)
+        self.Fabout.show()

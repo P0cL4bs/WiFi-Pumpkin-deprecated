@@ -2,7 +2,7 @@ from configobj import ConfigObj,Section
 from collections import OrderedDict
 import modules as GUI
 from core.loaders.models.PackagesUI import *
-
+import core.utility.constants as C
 """
 Description:
     This program is a core for modules wifi-pumpkin.py. file which includes all Implementation
@@ -228,7 +228,7 @@ class PumpkinProxySettings(PumpkinModule):
         super(PumpkinProxySettings, self).__init__(parent)
         self.setWindowTitle('Settings: {} '.format(plugin[4:]))
         self.THeaders   = {'Config':[],'Value':[] }
-        self.config     = SettingsINI('core/config/app/proxy.ini')
+        self.config     = SettingsINI(C.PUMPPROXY_INI)
         self.loadtheme(self.configure.XmlThemeSelected())
         self.main       = QVBoxLayout()
         self.plugin_items = items

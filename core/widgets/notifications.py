@@ -1,4 +1,5 @@
 from PyQt4 import QtCore, QtGui
+from core.utility.constants import NOTIFYSTYLE
 """
 Description:
     This program is a core for wifi-pumpkin.py. file which includes functionality
@@ -67,16 +68,7 @@ class ServiceNotify(QtGui.QLabel):
 
     def setstylelabel(self):
         ''' docorate label using stylesheet options '''
-        color = '#996633' #ff6600
-        border = 1
-        padding = 2
-        label_style =  "; ".join((
-            "color: #302F2F",
-            'background-color: %s' % color,
-            "border-color: %s" % color,
-            "border: %dpx solid %s" % (border, color),
-            "padding: %dpx" % padding))
-        self.setStyleSheet(label_style)
+        self.setStyleSheet(NOTIFYSTYLE)
 
     def close(self):
         ''' start effect fade out on Label '''

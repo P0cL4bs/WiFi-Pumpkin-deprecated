@@ -1,5 +1,5 @@
 from os import popen
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 from core.utility.threads import ProcessThreadScanner
 
 """
@@ -46,7 +46,7 @@ def Beef_Hook_url(soup,hook_url):
 def get_network_scan():
     list_scan = []
     try:
-        xml = BeautifulSoup(open("logs/Caplog/Dump/networkdump-01.kismet.netxml", 'r').read())
+        xml = BeautifulSoup(open("logs/Caplog/Dump/networkdump-01.kismet.netxml", 'r').read(),'lxml')
         for network in xml.findAll('wireless-network'):
             try:
                 essid = network.find('essid').text

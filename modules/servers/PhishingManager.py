@@ -2,11 +2,12 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from os import popen
 from urllib2 import urlopen,URLError
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 from core.utils import ThreadPhishingServer
 from core.utility.extract import Beef_Hook_url
 from core.utility.settings import frm_Settings
 from modules.servers.ServerHTTP  import ServerThreadHTTP
+import core.utility.constants as C
 """
 Description:
     This program is a module for wifi-pumpkin.py file which includes functionality
@@ -83,6 +84,7 @@ class frm_PhishingManager(QWidget):
         self.check_server   = QRadioButton('Set Directory')
         self.check_beef     = QCheckBox('Enable Beef')
         self.check_clone    = QRadioButton('Website clone')
+        self.check_custom.setChecked(True)
 
         # group clone site
         self.cloneLineEdit  = QLineEdit(self)
@@ -136,7 +138,6 @@ class frm_PhishingManager(QWidget):
         '\n<h3 align=\'center\'>WiFi-Pumpkin Framework</h3>\n'
         '\n<p align=\'center\'>this is demo Attack Redirect.</p>\n'
         '\n</body>\n</html>')
-        self.txt_html.setEnabled(False)
 
         # connect checkbox
         self.check_beef.clicked.connect(self.check_options)
@@ -222,7 +223,7 @@ class frm_PhishingManager(QWidget):
             if self.checkRequests(site):
                 self.ServerHTTPLoad = ServerThreadHTTP(str(self.txt_redirect.text()),
                 self.BoxPort.value(),redirect=str(self.cloneLineEdit.text()),
-                directory='templates/phishing/web_server/index.html',session=self.session)
+                directory=C.TEMPLATE_CLONE,session=self.session)
                 self.ThreadTemplates['Server'].append(self.ServerHTTPLoad)
                 self.ServerHTTPLoad.requestHTTP.connect(self.ResponseSignal)
                 self.btn_start_template.setEnabled(False)
@@ -240,11 +241,11 @@ class frm_PhishingManager(QWidget):
             self.emit(SIGNAL('Activated( QString )'),'started')
 
         elif self.check_custom.isChecked():
-            self.html = BeautifulSoup(self.txt_html.toPlainText())
-            self.CheckHookInjection(self.html,'templates/phishing/custom/index.html')
+            self.html = BeautifulSoup(str(self.txt_html.toPlainText()),'lxml')
+            self.CheckHookInjection(self.html,C.TEMPLATE_PH)
             self.ServerHTTPLoad = ServerThreadHTTP(str(self.txt_redirect.text()),
             self.BoxPort.value(),redirect=str(self.cloneLineEdit.text()),
-            directory='templates/phishing/custom/index.html',session=self.session)
+            directory=C.TEMPLATE_PH,session=self.session)
             self.ThreadTemplates['Server'].append(self.ServerHTTPLoad)
             self.ServerHTTPLoad.requestHTTP.connect(self.ResponseSignal)
             self.btn_start_template.setEnabled(False)
@@ -286,12 +287,12 @@ class frm_PhishingManager(QWidget):
     def checkRequests(self,siteName):
         try:
             html = urlopen(siteName).read()
-            request = BeautifulSoup(html)
+            request = BeautifulSoup(html,'lxml')
             try:
                 for tag in request.find_all('form'):
                     tag['method'],tag['action'] ='post',''
             except Exception: pass
-            self.CheckHookInjection(request,'templates/phishing/web_server/index.html')
+            self.CheckHookInjection(request,C.TEMPLATE_CLONE)
         except URLError:
             QMessageBox.warning(self,'Request HTTP','It seems like the server is down.')
             return False

@@ -12,6 +12,7 @@ from PyQt4.QtGui import *
 import logging
 import signal
 import configparser
+import core.utility.constants as C
 
 """
 Description:
@@ -134,18 +135,18 @@ class Refactor:
     def exportHtml(unchecked={},sessionID='',dataLogger=[],APname=''):
         ''' funtion for get and check report files '''
         readFile = {
-         'dhcp': {'logs/AccessPoint/dhcp.log':[]},
-         'urls': {'logs/AccessPoint/urls.log':[]},
-         'hostapd': {'logs/AccessPoint/hostapd.log':[]},
-         'bdfproxy': {'logs/AccessPoint/bdfproxy.log':[]},
-         'credentials': {'logs/AccessPoint/credentials.log':[]},
-         'dns2proxy': {'logs/AccessPoint/dns2proxy.log':[]},
-         'injectionPage': {'logs/AccessPoint/injectionPage.log':[]},
-         'dnsspoofAP': {'logs/AccessPoint/dnsspoof.log':[]},
-         'responder': {'logs/AccessPoint/responder.log':[]},
-         'pumpkinproxy': {'logs/AccessPoint/pumpkin-proxy.log':[]},
-         'tcpproxy': {'logs/AccessPoint/tcp-proxy.log':[]},
-         'phishing': {'logs/Phishing/requests.log':[]},}
+         'dhcp': {C.LOG_DHCP:[]},
+         'urls': {C.LOG_URLCAPTURE:[]},
+         'hostapd': {C.LOG_HOSTAPD:[]},
+         'bdfproxy': {C.LOG_BDFPROXY:[]},
+         'credentials': {C.LOG_CREDSCAPTURE:[]},
+         'dns2proxy': {C.LOG_DNS2PROXY:[]},
+         'injectionPage': {C.LOG_SSLSTRIP:[]},
+         'dnsspoofAP': {C.LOG_DNSSPOOF:[]},
+         'responder': {C.LOG_RESPONDER:[]},
+         'pumpkinproxy': {C.LOG_PUMPKINPROXY:[]},
+         'tcpproxy': {C.LOG_TCPPROXY:[]},
+         'phishing': {C.LOG_PHISHING:[]},}
         count_files = len(readFile.keys())
         if unchecked != {}:
             for key in unchecked.keys(): readFile.pop(key)
@@ -186,7 +187,7 @@ class Refactor:
     @staticmethod
     def settingsNetworkManager(interface=str,Remove=False):
         ''' mac address of interface to exclude '''
-        networkmanager = '/etc/NetworkManager/NetworkManager.conf'
+        networkmanager = C.NETWORKMANAGER
         config  = configparser.RawConfigParser()
         MAC     = Refactor.get_interface_mac(interface)
         exclude = {'MAC': 'mac:{}'.format(MAC),'interface': 'interface-name:{}'.format(interface)}
@@ -221,7 +222,7 @@ class Refactor:
     @staticmethod
     def set_ip_forward(value):
         '''set forward to redirect packets '''
-        with open('/proc/sys/net/ipv4/ip_forward', 'w') as file:
+        with open(C.IPFORWARD, 'w') as file:
             file.write(str(value))
             file.close()
     '''

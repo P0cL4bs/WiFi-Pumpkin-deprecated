@@ -5,6 +5,7 @@ import threading
 from os import path
 from PyQt4.QtCore import QThread,SIGNAL,pyqtSignal
 from PyQt4.QtGui import QMessageBox
+import core.utility.constants as C
 
 """
 Description:
@@ -109,7 +110,7 @@ class GithubUpdate(QThread):
 
     def gitZipRepo(self):
         call(['git','init'])
-        call(['git','remote', 'add', 'origin', 'https://github.com/P0cL4bs/WiFi-Pumpkin.git'])
+        call(['git','remote', 'add', 'origin', C.SOURCE_URL])
         call(['git', 'fetch','--all'])
         call(['git','reset','--hard','origin/master'])
         call(['pip', 'install', '-r', 'requirements.txt'])

@@ -2,23 +2,21 @@
 from core.utility.collection import SettingsINI
 from os import path,popen,remove,system
 from shutil import copy
-YELLOW = '\033[33m'
-RED = '\033[91m'
-ENDC = '\033[0m'
+import core.utility.constants as C
 
 def notinstall(app):
-    print '[%s✘%s] %s is not %sinstalled%s.'%(RED,ENDC,app,YELLOW,ENDC)
+    print '[%s✘%s] %s is not %sinstalled%s.'%(C.RED,C.ENDC,app,C.YELLOW,C.ENDC)
 
 def check_dep_pumpkin():
     # check hostapd
     hostapd = popen('which hostapd').read().split('\n')
     if not path.isfile(hostapd[0]): notinstall('hostapd')
     # checck source.tar.gz tamplate module
-    if not path.isfile('templates/fakeupdate/Windows_Update/Settins_WinUpdate.html'):
-        system('cd templates/ && tar -xf fakeupdate.tar.gz')
+    if not path.isfile(C.TEMPLATES):
+        system(C.EXTRACT_TEMP)
 
     # check if hostapd is found and save path
-    settings = SettingsINI('core/config/app/config.ini')
+    settings = SettingsINI(C.CONFIG_INI)
     hostapd_path = settings.get_setting('accesspoint','hostapd_path')
     if not path.isfile(hostapd_path) and len(hostapd[0]) > 2:
         return settings.set_setting('accesspoint','hostapd_path',hostapd[0])

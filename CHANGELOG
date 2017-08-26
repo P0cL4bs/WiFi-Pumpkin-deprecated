@@ -31,6 +31,7 @@ Version 0.8.5
 - fixed No such file or directory: 'settings/dhcpd.conf' #266
 - fixed Wireless Deauth module scan network with airodump-ng
 - added plugin PumpkinProxy: disable browser caching, cache-control in HTML
+- added constants into a separate module [more modular design]
 
 Version 0.8.4
 -------------

@@ -3,6 +3,7 @@ from subprocess import Popen
 from core.utils import Refactor
 from core.main import Initialize
 from core.utility.settings import frm_Settings
+import core.utility.constants as C
 from core.widgets.notifications import ServiceNotify
 """
 Description:
@@ -130,7 +131,7 @@ class CLI_NetworkManager(object):
     def __init__(self,parent = None):
         super(CLI_NetworkManager, self).__init__()
         self.interfaces = Refactor.get_interfaces()
-        self.mn_path = '/etc/NetworkManager/NetworkManager.conf'
+        self.mn_path = C.NETWORKMANAGER
         self.ifaceAvaliable = []
         self.flag = 0
 

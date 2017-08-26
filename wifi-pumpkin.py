@@ -26,16 +26,17 @@ Copyright:
 """
 
 from sys import argv,exit,version_info
+import core.utility.constants as C
 if version_info.major != 2:
     exit('[!] WiFi-Pumpkin need Python 2 :(')
 
 def checkAppQTDesigner(style):
     global main
     if 'gtk+' in str(style).lower():
-        main.setStyle(QStyleFactory.create('Plastique'))
+        main.setStyle(QStyleFactory.create(C.GTKTHEME))
 
 if __name__ == '__main__':
-    from core.loaders.checker.depedences import check_dep_pumpkin,RED,ENDC
+    from core.loaders.checker.depedences import check_dep_pumpkin
     from core.loaders.checker.networkmanager import CLI_NetworkManager,UI_NetworkManager
     from core.utility.collection import SettingsINI
     from core.main import Initialize
@@ -43,7 +44,7 @@ if __name__ == '__main__':
     check_dep_pumpkin()
     from os import getuid
     if not getuid() == 0:
-        exit('[{}!{}] WiFi-Pumpkin must be run as root.'.format(RED,ENDC))
+        exit('[{}!{}] WiFi-Pumpkin must be run as root.'.format(C.RED,C.ENDC))
 
     from PyQt4.QtGui import QApplication,QIcon,QStyleFactory
     main = QApplication(argv)
@@ -54,7 +55,7 @@ if __name__ == '__main__':
     app.setWindowIcon(QIcon('icons/icon.ico'))
     app.center()
     # check if Wireless connection
-    conf = SettingsINI('core/config/app/config.ini')
+    conf = SettingsINI(C.CONFIG_INI)
     if  conf.get_setting('accesspoint','checkConnectionWifi',format=bool):
         networkcontrol = CLI_NetworkManager() # add all interface avaliable for exclude
         app.networkcontrol = networkcontrol

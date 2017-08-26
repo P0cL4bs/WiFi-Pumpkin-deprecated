@@ -14,6 +14,7 @@ from plugins.external.scripts import *
 from plugins.extension import *
 from functools import partial
 from plugins.analyzers import *
+import core.utility.constants as C
 """
 Description:
     This program is a core for wifi-pumpkin.py. file which includes functionality
@@ -41,7 +42,7 @@ class PacketsSniffer(QVBoxLayout):
     def __init__(self,main_method,parent = None):
         super(PacketsSniffer, self).__init__(parent)
         self.mainLayout     = QVBoxLayout()
-        self.config         = SettingsINI('core/config/app/tcpproxy.ini')
+        self.config         = SettingsINI(C.TCPPROXY_INI)
         self.plugins        = []
         self.main_method    = main_method
         self.bt_SettingsDict    = {}
@@ -192,7 +193,7 @@ class PumpkinMitmproxy(QVBoxLayout):
     def __init__(self,main_method,parent = None):
         super(PumpkinMitmproxy, self).__init__(parent)
         self.mainLayout     = QVBoxLayout()
-        self.config         = SettingsINI('core/config/app/proxy.ini')
+        self.config         = SettingsINI(C.PUMPPROXY_INI)
         self.plugins        = []
         self.main_method    = main_method
         self.bt_SettingsDict    = {}
@@ -412,10 +413,10 @@ class ProxySSLstrip(QVBoxLayout):
 
     def ProcessReadLogger(self):
         '''function for read log injection proxy '''
-        if path.exists('logs/AccessPoint/injectionPage.log'):
-            with open('logs/AccessPoint/injectionPage.log','w') as bufferlog:
+        if path.exists(C.LOG_SSLSTRIP):
+            with open(C.LOG_SSLSTRIP,'w') as bufferlog:
                 bufferlog.write(''), bufferlog.close()
-            self.injectionThread = ThreadPopen(['tail','-f','logs/AccessPoint/injectionPage.log'])
+            self.injectionThread = ThreadPopen(['tail','-f',C.LOG_SSLSTRIP])
             self.connect(self.injectionThread,SIGNAL('Activated ( QString ) '), self.GetloggerInjection)
             self.injectionThread.setObjectName('Pump-Proxy::Capture')
             return self.injectionThread.start()
@@ -423,8 +424,8 @@ class ProxySSLstrip(QVBoxLayout):
 
     def GetloggerInjection(self,data):
         ''' read load file and add in Qlistwidget '''
-        if Refactor.getSize('logs/AccessPoint/injectionPage.log') > 255790:
-            with open('logs/AccessPoint/injectionPage.log','w') as bufferlog:
+        if Refactor.getSize(C.LOG_SSLSTRIP) > 255790:
+            with open(C.LOG_SSLSTRIP,'w') as bufferlog:
                 bufferlog.write(''), bufferlog.close()
         if data not in self.urlinjected:
             self.log_inject.addItem(data)
@@ -591,6 +592,7 @@ class PumpkinSettings(QVBoxLayout):
         # Area Group
         self.gridArea = QGridLayout()
         self.CB_ActiveMode = QCheckBox('::Advanced Mode:: Monitor MITM Attack')
+        self.CB_ActiveMode.setHidden(True)
         self.CB_Cread    = QCheckBox('HTTP-Authentication')
         self.CB_monitorURL = QCheckBox('HTTP-Requests')
         self.CB_bdfproxy   = QCheckBox('BDFProxy-ng')

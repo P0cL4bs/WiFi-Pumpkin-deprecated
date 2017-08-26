@@ -1,6 +1,5 @@
 from PyQt4.QtCore import QThread,pyqtSignal
 from time import sleep,asctime,strftime
-from BeautifulSoup import BeautifulSoup
 import threading
 from threading import Thread
 import Queue
@@ -8,6 +7,7 @@ from scapy.all import *
 import logging
 from plugins.analyzers import *
 from core.utility.collection import SettingsINI
+import core.utility.constants as C
 
 """
 Description:
@@ -37,7 +37,7 @@ class ThreadSniffingPackets(QThread):
         self.interface  = interface
         self.session    = session
         self.stopped    = False
-        self.config     = SettingsINI('core/config/app/tcpproxy.ini')
+        self.config     = SettingsINI(C.TCPPROXY_INI)
 
     def run(self):
         self.main()
