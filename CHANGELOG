@@ -32,6 +32,7 @@ Version 0.8.5
 - fixed Wireless Deauth module scan network with airodump-ng
 - added plugin PumpkinProxy: disable browser caching, cache-control in HTML
 - added constants into a separate module [more modular design]
+- fixed pumpking-proxy all plugins inject page #272
 
 Version 0.8.4
 -------------
