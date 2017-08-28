@@ -253,12 +253,11 @@ class Refactor:
     @staticmethod
     def get_interfaces():
         ''' get interfaces and check status connection '''
-        interfaces = {'activated':[None,None],'all':[],'gateway':None,'IPaddress':None}
+        interfaces = {'activated':[None,None],'all':[],'gateway':None}
         interfaces['all'] = netifaces.interfaces()
         try:
             interfaces['gateway'] = netifaces.gateways()['default'][netifaces.AF_INET][0]
             interfaces['activated'][0] = netifaces.gateways()['default'][netifaces.AF_INET][1]
-            interfaces['IPaddress'] = Refactor.get_Ipaddr(interfaces['activated'][0])
             # check type interfaces connected with internet
             itype = None
             iface = interfaces['activated'][0]

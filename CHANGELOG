@@ -33,6 +33,7 @@ Version 0.8.5
 - added plugin PumpkinProxy: disable browser caching, cache-control in HTML
 - added constants into a separate module [more modular design]
 - fixed pumpking-proxy all plugins inject page #272
+- fixed issue #273
 
 Version 0.8.4
 -------------
