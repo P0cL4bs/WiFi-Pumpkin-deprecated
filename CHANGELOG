@@ -34,6 +34,7 @@ Version 0.8.5
 - added constants into a separate module [more modular design]
 - fixed pumpking-proxy all plugins inject page #272
 - fixed issue #273
+- fixed function get ipaddress by interface
 
 Version 0.8.4
 -------------

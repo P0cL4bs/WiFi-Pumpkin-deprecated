@@ -58,7 +58,7 @@ class ServiceNotify(QtGui.QLabel):
         title = "<h5>%s<h5>" % title
         message = title + '{}'.format(message)
         if self.link != None:
-            message += "<a href='{}'>HERE</a>".format(self.link)
+            message += "<a href='{}'>DONATE</a>".format(self.link)
         return message
 
     def linkHandler(self, link):

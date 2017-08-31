@@ -21,8 +21,8 @@ NOTIFYSTYLE = "; ".join((
 
 
 #donation button
-DONATE = 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PUPJEGHLJPFQL'
-DONATE_TXT = 'Consider donating to support the development and maintenance of WiFi-Pumpkin. click '
+DONATE = 'https://github.com/P0cL4bs/WiFi-Pumpkin#donation'
+DONATE_TXT = 'Consider donating to support the development and maintenance of WiFi-Pumpkin. '
 
 #settings DHCP
 DHCPLEASES_PATH = '/var/lib/dhcp/dhcpd.leases'

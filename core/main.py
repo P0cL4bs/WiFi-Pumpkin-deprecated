@@ -409,9 +409,9 @@ class WifiPumpkin(QWidget):
         self.StatusApname.setMaximumWidth(130)
 
         # add widgets in status bar
-        self.StatusBar.addWidget(QLabel('Connected:'))
+        self.StatusBar.addWidget(QLabel('Connection:'))
         self.StatusBar.addWidget(self.connected_status)
-        self.StatusBar.addWidget(QLabel('Activate-Plugin:'))
+        self.StatusBar.addWidget(QLabel('Plugin:'))
         self.StatusBar.addWidget(self.status_plugin_proxy_name)
         self.StatusBar.addWidget(QLabel('SSID:'))
         self.StatusBar.addWidget(self.StatusApname)
