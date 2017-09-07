@@ -968,12 +968,14 @@ QTableView
     border: 1px solid #444;
     gridline-color: #6c6c6c;
     background-color: #201F1F;
+    border-radius: 2px;
+    border: 1px solid #ff6600;
 }
 
 
 QTableView, QHeaderView
 {
-    border-radius: 0px;
+    border-radius: 1px;
 }
 
 QTableView::item:pressed, QListView::item:pressed, QTreeView::item:pressed  {
@@ -1009,7 +1011,7 @@ QHeaderView::section  {
     background-color: #3A3939;
     padding: 4px;
     border: 1px solid #6c6c6c;
-    border-radius: 0px;
+    border-radius: 1px;
     text-align: center;
 }
 

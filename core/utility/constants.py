@@ -3,8 +3,8 @@ import os
 dir_of_executable = os.path.dirname(__file__)
 
 # window constants
-GEOMETRYH = 800
-GEOMETRYW = 450
+GEOMETRYH = 820
+GEOMETRYW = 460
 
 MENU_STYLE = 'QListWidget::item {border-style: solid; border-width:1px; ' \
              'border-color:#3A3939;}QListWidget::item:selected {border-style:' \

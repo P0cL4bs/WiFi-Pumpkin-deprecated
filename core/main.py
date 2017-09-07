@@ -449,7 +449,7 @@ class WifiPumpkin(QWidget):
         self.TabInfoAP.resizeRowsToContents()
         self.TabInfoAP.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.TabInfoAP.horizontalHeader().setStretchLastSection(True)
-        self.TabInfoAP.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.TabInfoAP.setSelectionMode(QAbstractItemView.NoSelection)
         self.TabInfoAP.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.TabInfoAP.verticalHeader().setVisible(False)
         self.TabInfoAP.setHorizontalHeaderLabels(self.THeaders.keys())
