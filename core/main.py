@@ -865,7 +865,7 @@ class WifiPumpkin(QWidget):
             self.StatusDhcp.setStyleSheet("QLabel {  color : green; }")
         else:
             self.StatusDhcp.setText("[OFF]")
-            self.StatusDhcp.setStyleSheet("QLabel {  color : red; }")
+            self.StatusDhcp.setStyleSheet("QLabel {  color : #df1f1f; }")
 
     def setAP_name_changer(self,string):
         ''' send text editAPname change to statusbar'''

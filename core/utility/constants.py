@@ -8,8 +8,9 @@ GEOMETRYW = 450
 
 MENU_STYLE = 'QListWidget::item {border-style: solid; border-width:1px; ' \
              'border-color:#3A3939;}QListWidget::item:selected {border-style:' \
-             ' solid;color:#FFFFFF; border-width:1px; border-color:#3A3939;}QListWidget ' \
-             '{background-color: #302F2F;border-width:1px;border-color:#201F1F;}'
+             ' solid;color:#ff6600;  background-color: #3A3939; border-width:1px; border-radius: 2px; border: 1px solid #ff6600;}QListWidget ' \
+             '{background-color: #302F2F; border-radius 2px; border-width:1px;border-color:#201F1F;} QListWidget:item:hover'\
+'{color: #ff6600;border-radius: 2px; }'
 GTKTHEME = 'Plastique'
 
 NOTIFYSTYLE = "; ".join((
