@@ -620,10 +620,10 @@ class PumpkinSettings(QVBoxLayout):
         self.layoutArea.addRow(self.CB_ActiveMode)
         self.gridArea.addWidget(self.CB_monitorURL,0,0,)
         self.gridArea.addWidget(self.CB_Cread,0,1)
+        self.gridArea.addWidget(self.CB_responder,0,2)
         self.gridArea.addWidget(self.CB_bdfproxy,1,0)
         self.gridArea.addWidget(self.CB_bdfproxy,1,0)
         self.gridArea.addWidget(self.CB_dns2proxy,1,1)
-        self.gridArea.addWidget(self.CB_responder,1,2)
         #self.gridArea.addWidget(self.CB_pumpkinPro,0,2) disable tab plugin
         self.layoutArea.addRow(self.gridArea)
         self.GroupArea.setTitle('Activity Monitor settings')

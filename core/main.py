@@ -465,7 +465,7 @@ class WifiPumpkin(QWidget):
         self.TabInfoAP.setSortingEnabled(True)
 
         #edits
-        self.mConfigure()
+        self.initial_settings()
         self.FormGroup2 = QFormLayout()
         self.FormGroup3 = QGridLayout()
 
@@ -985,7 +985,7 @@ class WifiPumpkin(QWidget):
                     d_vendor = EUI(mac)
                     d_vendor = d_vendor.oui.registration().org
                 except:
-                    d_vendor = 'unknown device'
+                    d_vendor = 'unknown mac'
                 self.THeaders['Mac Address'].append(mac)
                 self.THeaders['IP Address'].append(APclients[mac]['IP'])
                 self.THeaders['Devices'].append(APclients[mac]['device'])
@@ -1031,13 +1031,9 @@ class WifiPumpkin(QWidget):
         'Failed to initiate Access Point, '
         'check output process hostapd.\n\nOutput::\n{}'.format(data))
 
-    def mConfigure(self):
+    def initial_settings(self):
         ''' settings edits default and check tools '''
         self.get_interfaces = Refactor.get_interfaces()
-        try:
-            self.EditGateway.setText( # get gateway interface connected with internet
-            [self.get_interfaces[x] for x in self.get_interfaces.keys() if x == 'gateway'][0])
-        except Exception :pass
         self.EditApName.setText(self.FSettings.Settings.get_setting('accesspoint','ssid'))
         self.EditBSSID.setText(self.FSettings.Settings.get_setting('accesspoint','bssid'))
         self.EditChannel.setValue(self.FSettings.Settings.get_setting('accesspoint','channel',format=int))
@@ -1082,70 +1078,6 @@ class WifiPumpkin(QWidget):
             if search('wl', item):
                 self.selectCard.addItem(ifaces[index])
         return self.btrn_refresh.setEnabled(True)
-
-    def Stop_PumpAP(self):
-        ''' stop all thread :Access point attack and restore all settings  '''
-        if self.Apthreads['RougeAP'] == []: return
-        print('-------------------------------')
-        self.ProxyPluginsTAB.GroupSettings.setEnabled(True)
-        self.FSettings.Settings.set_setting('accesspoint','statusAP',False)
-        self.FSettings.Settings.set_setting('accesspoint','bssid',str(self.EditBSSID.text()))
-        self.SessionsAP[self.currentSessionID]['stoped'] = asctime()
-        self.FSettings.Settings.set_setting('accesspoint','sessions',dumps(self.SessionsAP))
-        # check if dockArea activated and stop dock Area
-        self.PumpSettingsTAB.GroupArea.setEnabled(True)
-        # stop all Thread in create for Access Point
-        try:
-            for thread in self.Apthreads['RougeAP']:
-                thread.stop()
-                if hasattr(thread, 'wait'):
-                    if not thread.wait(msecs=500):
-                        thread.terminate()
-        except Exception: pass
-        # remove iptables commands and stop dhcpd if pesist in process
-        for kill in self.SettingsAP['kill']:
-            Popen(split(kill), stdout=PIPE,shell=False,stderr=PIPE)
-        #disabled options
-        # check if persistent option in Settigs is enable
-        #if not self.FSettings.Settings.get_setting('accesspoint','persistNetwokManager',format=bool):
-        #    Refactor.settingsNetworkManager(self.SettingsEnable['AP_iface'],Remove=True)
-
-        set_monitor_mode(self.SettingsEnable['AP_iface']).setDisable()
-        self.Started(False)
-        self.progress.setValue(1)
-        self.progress.change_color('')
-        self.connectedCount.setText('0')
-        self.Apthreads['RougeAP'] = []
-        self.APclients = {}
-        lines = []
-        # save logger in ProxyPlugins request
-        if self.ProxyPluginsTAB.log_inject.count()>0:
-            with open('logs/AccessPoint/injectionPage.log','w') as injectionlog:
-                for index in xrange(self.ProxyPluginsTAB.log_inject.count()):
-                    lines.append(str(self.ProxyPluginsTAB.log_inject.item(index).text()))
-                for log in lines: injectionlog.write(log+'\n')
-                injectionlog.close()
-        # clear dhcpd.leases
-        with open(C.DHCPLEASES_PATH,'w') as dhcpLease:
-            dhcpLease.write(''),dhcpLease.close()
-        self.btn_start_attack.setDisabled(False)
-        # disable IP Forwarding in Linux
-        Refactor.set_ip_forward(0)
-        self.TabInfoAP.clearContents()
-        self.THeaders  = OrderedDict([ ('Devices',[]), # restore headers table widet
-        ('Mac Address',[]),('IP Address',[]),('Vendors',[])])
-        if hasattr(self.FormPopup,'Ftemplates'):
-            self.FormPopup.Ftemplates.killThread()
-            self.FormPopup.StatusServer(False)
-
-        self.GroupAP.setEnabled(True)
-        self.GroupApPassphrase.setEnabled(True)
-        self.GroupAdapter.setEnabled(True)
-        self.PumpSettingsTAB.GroupDHCP.setEnabled(True)
-        self.PopUpPlugins.tableplugins.setEnabled(True)
-        self.PopUpPlugins.tableplugincheckbox.setEnabled(True)
-        self.btn_cancelar.setEnabled(False)
-        self.progress.showProcessBar()
 
     def delete_logger(self):
         ''' delete all logger file in logs/ '''
@@ -1379,17 +1311,6 @@ class WifiPumpkin(QWidget):
         #        return QMessageBox.warning(self,'Network Manager',
         #        'Not found file NetworkManager.conf in folder /etc/NetworkManager/')
 
-        # create dhcpd.leases and set permission for acesss DHCPD
-        leases = C.DHCPLEASES_PATH
-        if not path.exists(leases[:-12]):
-            mkdir(leases[:-12])
-        if not path.isfile(leases):
-            with open(leases,'wb') as leaconf:
-                leaconf.close()
-        uid = getpwnam('root').pw_uid
-        gid = getgrnam('root').gr_gid
-        chown(leases, uid, gid)
-
         # get Tab-Hostapd conf and configure hostapd
         self.CoreSettings()
         self.checkWirelessSecurity() # check if user set wireless password
@@ -1422,6 +1343,17 @@ class WifiPumpkin(QWidget):
         # create thread dhcpd and connect fuction GetDHCPRequests
         print('[*] Configuring dhcpd...')
         if  self.FSettings.Settings.get_setting('accesspoint','dhcpd_server',format=bool):
+            # create dhcpd.leases and set permission for acesss DHCPD
+            leases = C.DHCPLEASES_PATH
+            if not path.exists(leases[:-12]):
+                mkdir(leases[:-12])
+            if not path.isfile(leases):
+                with open(leases, 'wb') as leaconf:
+                    leaconf.close()
+            uid = getpwnam('root').pw_uid
+            gid = getgrnam('root').gr_gid
+            chown(leases, uid, gid)
+
             self.Thread_dhcp = ThRunDhcp(['dhcpd','-d','-f','-lf',C.DHCPLEASES_PATH,'-cf',
             C.DHCPCONF_PATH,self.SettingsEnable['AP_iface']],self.currentSessionID)
             self.Thread_dhcp.sendRequest.connect(self.GetDHCPRequests)
@@ -1562,6 +1494,70 @@ class WifiPumpkin(QWidget):
         self.selectCard.currentText()),self.EditChannel.value()))
         self.FSettings.Settings.set_setting('accesspoint','ssid',str(self.EditApName.text()))
         self.FSettings.Settings.set_setting('accesspoint','channel',str(self.EditChannel.value()))
+
+    def Stop_PumpAP(self):
+        ''' stop all thread :Access point attack and restore all settings  '''
+        if self.Apthreads['RougeAP'] == []: return
+        print('-------------------------------')
+        self.ProxyPluginsTAB.GroupSettings.setEnabled(True)
+        self.FSettings.Settings.set_setting('accesspoint','statusAP',False)
+        self.FSettings.Settings.set_setting('accesspoint','bssid',str(self.EditBSSID.text()))
+        self.SessionsAP[self.currentSessionID]['stoped'] = asctime()
+        self.FSettings.Settings.set_setting('accesspoint','sessions',dumps(self.SessionsAP))
+        # check if dockArea activated and stop dock Area
+        self.PumpSettingsTAB.GroupArea.setEnabled(True)
+        # stop all Thread in create for Access Point
+        try:
+            for thread in self.Apthreads['RougeAP']:
+                thread.stop()
+                if hasattr(thread, 'wait'):
+                    if not thread.wait(msecs=500):
+                        thread.terminate()
+        except Exception: pass
+        # remove iptables commands and stop dhcpd if pesist in process
+        for kill in self.SettingsAP['kill']:
+            Popen(split(kill), stdout=PIPE,shell=False,stderr=PIPE)
+        #disabled options
+        # check if persistent option in Settigs is enable
+        #if not self.FSettings.Settings.get_setting('accesspoint','persistNetwokManager',format=bool):
+        #    Refactor.settingsNetworkManager(self.SettingsEnable['AP_iface'],Remove=True)
+
+        set_monitor_mode(self.SettingsEnable['AP_iface']).setDisable()
+        self.Started(False)
+        self.progress.setValue(1)
+        self.progress.change_color('')
+        self.connectedCount.setText('0')
+        self.Apthreads['RougeAP'] = []
+        self.APclients = {}
+        lines = []
+        # save logger in ProxyPlugins request
+        if self.ProxyPluginsTAB.log_inject.count()>0:
+            with open('logs/AccessPoint/injectionPage.log','w') as injectionlog:
+                for index in xrange(self.ProxyPluginsTAB.log_inject.count()):
+                    lines.append(str(self.ProxyPluginsTAB.log_inject.item(index).text()))
+                for log in lines: injectionlog.write(log+'\n')
+                injectionlog.close()
+        # clear dhcpd.leases
+        with open(C.DHCPLEASES_PATH,'w') as dhcpLease:
+            dhcpLease.write(''),dhcpLease.close()
+        self.btn_start_attack.setDisabled(False)
+        # disable IP Forwarding in Linux
+        Refactor.set_ip_forward(0)
+        self.TabInfoAP.clearContents()
+        self.THeaders  = OrderedDict([ ('Devices',[]), # restore headers table widet
+        ('Mac Address',[]),('IP Address',[]),('Vendors',[])])
+        if hasattr(self.FormPopup,'Ftemplates'):
+            self.FormPopup.Ftemplates.killThread()
+            self.FormPopup.StatusServer(False)
+
+        self.GroupAP.setEnabled(True)
+        self.GroupApPassphrase.setEnabled(True)
+        self.GroupAdapter.setEnabled(True)
+        self.PumpSettingsTAB.GroupDHCP.setEnabled(True)
+        self.PopUpPlugins.tableplugins.setEnabled(True)
+        self.PopUpPlugins.tableplugincheckbox.setEnabled(True)
+        self.btn_cancelar.setEnabled(False)
+        self.progress.showProcessBar()
 
     def get_dns2proxy_output(self,data):
         ''' get std_ouput the thread dns2proxy and add in DockArea '''

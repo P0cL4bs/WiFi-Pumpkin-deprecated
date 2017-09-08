@@ -422,6 +422,12 @@ class DHCPServer(QThread):
                     })
                 except OutOfLeasesError:
                     pass
+                except Exception:
+                    self.sendConnetedClient.emit({
+                        'ip_addr': self.leases[client_mac]['ip'],
+                        'host_name': 'unknown',
+                        'mac_addr': self.get_mac([client_mac][0]).lower(),
+                    })
             elif type == 3 and address[0] == '0.0.0.0' and not self.mode_proxy:
                 self.dhcp_ack(message)
             elif type == 3 and address[0] != '0.0.0.0' and self.mode_proxy:
