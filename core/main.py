@@ -521,29 +521,32 @@ class WifiPumpkin(QWidget):
         self.GroupApPassphrase = QGroupBox()
         self.GroupApPassphrase.setTitle('Enable Wireless Security')
         self.GroupApPassphrase.setCheckable(True)
-        self.GroupApPassphrase.setChecked(
-            self.FSettings.Settings.get_setting('accesspoint','enable_Security',format=bool))
+        self.GroupApPassphrase.setChecked(self.FSettings.Settings.get_setting('accesspoint','enable_Security',format=bool))
         self.GroupApPassphrase.clicked.connect(self.CheckStatusWPASecurity)
-        self.layoutNetworkPass  = QFormLayout()
+        self.layoutNetworkPass  = QGridLayout()
         self.editPasswordAP     = QLineEdit(self.FSettings.Settings.get_setting('accesspoint','WPA_SharedKey'))
         self.WPAtype_spinbox    = QSpinBox()
         self.wpa_pairwiseCB     = QComboBox()
+        self.lb_type_security   = QLabel()
         wpa_algotims = self.FSettings.Settings.get_setting('accesspoint','WPA_Algorithms')
         self.wpa_pairwiseCB.addItems(C.ALGORITMS)
         self.wpa_pairwiseCB.setCurrentIndex(C.ALGORITMS.index(wpa_algotims))
         self.WPAtype_spinbox.setMaximum(2)
         self.WPAtype_spinbox.setMinimum(0)
-        self.WPAtype_spinbox.setValue(
-            self.FSettings.Settings.get_setting('accesspoint','WPA_type',format=int))
+        self.WPAtype_spinbox.setValue(self.FSettings.Settings.get_setting('accesspoint','WPA_type',format=int))
         self.editPasswordAP.setFixedWidth(150)
         self.editPasswordAP.textChanged.connect(self.update_settings)
         self.WPAtype_spinbox.valueChanged.connect(self.update_settings)
         self.update_settings()
 
         # add widgets on layout Group
-        self.layoutNetworkPass.addRow('Security type:',self.WPAtype_spinbox)
-        self.layoutNetworkPass.addRow('WPA Algorithms:',self.wpa_pairwiseCB)
-        self.layoutNetworkPass.addRow('Security Key:',self.editPasswordAP)
+        self.layoutNetworkPass.addWidget(QLabel('Security type:'),0,0)
+        self.layoutNetworkPass.addWidget(self.WPAtype_spinbox, 0, 1)
+        self.layoutNetworkPass.addWidget(self.lb_type_security, 0, 2)
+        self.layoutNetworkPass.addWidget(QLabel('WPA Algorithms:'), 1, 0)
+        self.layoutNetworkPass.addWidget(self.wpa_pairwiseCB, 1, 1)
+        self.layoutNetworkPass.addWidget(QLabel('Security Key:'), 2, 0)
+        self.layoutNetworkPass.addWidget(self.editPasswordAP, 2, 1)
         self.GroupApPassphrase.setLayout(self.layoutNetworkPass)
 
         self.btn_start_attack = QPushButton('Start', self)
@@ -726,14 +729,26 @@ class WifiPumpkin(QWidget):
         else:
             return True
 
+
+    def set_security_type_text(self,string=str):
+        self.lb_type_security.setText(string)
+        self.lb_type_security.setFixedWidth(60)
+        self.lb_type_security.setStyleSheet("QLabel {border-radius: 2px;"
+        "padding-left: 10px; background-color: #3A3939; color : silver; } "
+        "QWidget:disabled{ color: #404040;background-color: #302F2F; } ")
+
     def update_settings(self):
         if 1 <= self.WPAtype_spinbox.value() <= 2:
+            self.set_security_type_text('WPA')
             if 8 <= len(self.editPasswordAP.text()) <= 63 and self.is_ascii(str(self.editPasswordAP.text())):
                 self.editPasswordAP.setStyleSheet("QLineEdit { border: 1px solid green;}")
             else:
                 self.editPasswordAP.setStyleSheet("QLineEdit { border: 1px solid red;}")
             self.wpa_pairwiseCB.setEnabled(True)
+            if self.WPAtype_spinbox.value() == 2:
+                self.set_security_type_text('WPA2')
         if self.WPAtype_spinbox.value() == 0:
+            self.set_security_type_text('WEP')
             if (len(self.editPasswordAP.text()) == 5 or len(self.editPasswordAP.text()) == 13) and \
                     self.is_ascii(str(self.editPasswordAP.text())) or (len(self.editPasswordAP.text()) == 10 or len(self.editPasswordAP.text()) == 26) and \
                     self.is_hexadecimal(str(self.editPasswordAP.text())):
@@ -1122,7 +1137,7 @@ class WifiPumpkin(QWidget):
         if hasattr(self.FormPopup,'Ftemplates'):
             self.FormPopup.Ftemplates.killThread()
             self.FormPopup.StatusServer(False)
-        self.selectCard.setEnabled(True)
+
         self.GroupAP.setEnabled(True)
         self.GroupApPassphrase.setEnabled(True)
         self.GroupAdapter.setEnabled(True)
@@ -1396,7 +1411,6 @@ class WifiPumpkin(QWidget):
 
         # disable options when started AP
         self.btn_start_attack.setDisabled(True)
-        self.EditChannel.setEnabled(False)
         self.GroupAP.setEnabled(False)
         self.GroupApPassphrase.setEnabled(False)
         self.GroupAdapter.setEnabled(False)

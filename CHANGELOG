@@ -38,6 +38,7 @@ Version 0.8.5
 - added new  colorQListWidget [hover, selection]
 - added new design Qtableview for default theme
 - added hostapd option BSSID configuration [Settings TAB]
+- added show security password type option [Settings TAB]
 
 Version 0.8.4
 -------------
