@@ -37,6 +37,7 @@ Version 0.8.5
 - fixed function get ipaddress by interface
 - added new  colorQListWidget [hover, selection]
 - added new design Qtableview for default theme
+- added hostapd option BSSID configuration [Settings TAB]
 
 Version 0.8.4
 -------------

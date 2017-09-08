@@ -198,10 +198,10 @@ class Refactor:
                     config.add_section('keyfile')
                 except configparser.DuplicateSectionError, e:
                     config.set('keyfile','unmanaged-devices','{}'.format(
-                        exclude['MAC'] if MAC != None else exclude['interface']))
+                        exclude['interface'] if MAC != None else exclude['MAC']))
                 else:
                     config.set('keyfile','unmanaged-devices','{}'.format(
-                        exclude['MAC'] if MAC != None else exclude['interface']))
+                        exclude['interface'] if MAC != None else exclude['MAC']))
                 finally:
                     with open(networkmanager, 'wb') as configfile:
                         config.write(configfile)
@@ -318,9 +318,9 @@ class Refactor:
     @staticmethod
     def randomMacAddress(prefix):
         '''generate random mac for prefix '''
-        for _ in xrange(6-len(prefix)):
+        for ount in xrange(6-len(prefix)):
             prefix.append(randint(0x00, 0x7f))
-        return ':'.join('%02x' % x for x in prefix)
+        return ':'.join(map(lambda x: "%02x" % x, prefix))
 
 
     @staticmethod

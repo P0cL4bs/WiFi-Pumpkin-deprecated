@@ -433,6 +433,8 @@ class WifiPumpkin(QWidget):
         self.StatusBar.addWidget(self.connectedCount)
         self.EditGateway = QLineEdit(self)
         self.EditApName = QLineEdit(self)
+        self.EditBSSID  = QLineEdit(self)
+        self.btn_random_essid = QPushButton(self)
         self.EditChannel =QSpinBox(self)
         self.EditChannel.setMinimum(1)
         self.EditChannel.setMaximum(13)
@@ -442,6 +444,8 @@ class WifiPumpkin(QWidget):
         self.selectCard = QComboBox(self)
         self.EditApName.textChanged.connect(self.setAP_name_changer)
         self.EditChannel.valueChanged.connect(self.setAP_channel_changer)
+        self.btn_random_essid.clicked.connect(self.setAP_essid_random)
+        self.btn_random_essid.setIcon(QIcon('icons/refresh.png'))
 
         # table information AP connected
         self.TabInfoAP = QTableWidget(5,4)
@@ -463,7 +467,7 @@ class WifiPumpkin(QWidget):
         #edits
         self.mConfigure()
         self.FormGroup2 = QFormLayout()
-        self.FormGroup3 = QVBoxLayout()
+        self.FormGroup3 = QGridLayout()
 
         # popupMenu HTTP server quick start
         self.btnHttpServer = QToolButton(self)
@@ -503,10 +507,13 @@ class WifiPumpkin(QWidget):
         # settings info access point
         self.GroupAP = QGroupBox()
         self.GroupAP.setTitle('Access Point')
-        self.FormGroup3.addWidget(QLabel("SSID:"))
-        self.FormGroup3.addWidget(self.EditApName)
-        self.FormGroup3.addWidget(QLabel("Channel:"))
-        self.FormGroup3.addWidget(self.EditChannel)
+        self.FormGroup3.addWidget(QLabel("SSID:"),0,0)
+        self.FormGroup3.addWidget(self.EditApName,0,1)
+        self.FormGroup3.addWidget(QLabel("BSSID:"), 1, 0)
+        self.FormGroup3.addWidget(self.EditBSSID, 1, 1)
+        self.FormGroup3.addWidget(self.btn_random_essid, 1, 2)
+        self.FormGroup3.addWidget(QLabel("Channel:"),2,0)
+        self.FormGroup3.addWidget(self.EditChannel,2,1)
         self.GroupAP.setLayout(self.FormGroup3)
         self.GroupAP.setFixedWidth(260)
 
@@ -559,7 +566,7 @@ class WifiPumpkin(QWidget):
 
         self.donatelink = C.DONATE
         self.donateLabel = ServiceNotify(C.DONATE_TXT,title='Support development',
-        link=self.donatelink,timeout=30000)
+        link=self.donatelink,timeout=100000)
         # set main page Tool
         self.widget = QWidget()
         self.layout = QVBoxLayout(self.widget)
@@ -877,6 +884,13 @@ class WifiPumpkin(QWidget):
         self.StatusApchannel.setText(str(value))
         self.StatusApchannel.setStyleSheet("QLabel {border-radius: 2px; background-color: grey; color : #000; }")
 
+    def setAP_essid_random(self):
+        ''' set random mac 3 last digits  '''
+        prefix = []
+        for item in [x for x in str(self.EditBSSID.text()).split(':')]:
+            prefix.append(int(item,16))
+        self.EditBSSID.setText(Refactor.randomMacAddress([prefix[0],prefix[1],prefix[2]]).upper())
+
     def set_proxy_statusbar(self,name,disabled=False):
         if not disabled:
             self.status_plugin_proxy_name.setText('[ {} ]'.format(name))
@@ -1010,6 +1024,7 @@ class WifiPumpkin(QWidget):
             [self.get_interfaces[x] for x in self.get_interfaces.keys() if x == 'gateway'][0])
         except Exception :pass
         self.EditApName.setText(self.FSettings.Settings.get_setting('accesspoint','ssid'))
+        self.EditBSSID.setText(self.FSettings.Settings.get_setting('accesspoint','bssid'))
         self.EditChannel.setValue(self.FSettings.Settings.get_setting('accesspoint','channel',format=int))
         self.SettingsEnable['PortRedirect'] = self.FSettings.redirectport.text()
 
@@ -1059,6 +1074,7 @@ class WifiPumpkin(QWidget):
         print('-------------------------------')
         self.ProxyPluginsTAB.GroupSettings.setEnabled(True)
         self.FSettings.Settings.set_setting('accesspoint','statusAP',False)
+        self.FSettings.Settings.set_setting('accesspoint','bssid',str(self.EditBSSID.text()))
         self.SessionsAP[self.currentSessionID]['stoped'] = asctime()
         self.FSettings.Settings.set_setting('accesspoint','sessions',dumps(self.SessionsAP))
         # check if dockArea activated and stop dock Area
@@ -1106,10 +1122,10 @@ class WifiPumpkin(QWidget):
         if hasattr(self.FormPopup,'Ftemplates'):
             self.FormPopup.Ftemplates.killThread()
             self.FormPopup.StatusServer(False)
-        self.EditApName.setEnabled(True)
         self.selectCard.setEnabled(True)
-        self.EditChannel.setEnabled(True)
+        self.GroupAP.setEnabled(True)
         self.GroupApPassphrase.setEnabled(True)
+        self.GroupAdapter.setEnabled(True)
         self.PumpSettingsTAB.GroupDHCP.setEnabled(True)
         self.PopUpPlugins.tableplugins.setEnabled(True)
         self.PopUpPlugins.tableplugincheckbox.setEnabled(True)
@@ -1176,6 +1192,7 @@ class WifiPumpkin(QWidget):
                 'interface={}\n'.format(str(self.selectCard.currentText())),
                 'ssid={}\n'.format(str(self.EditApName.text())),
                 'channel={}\n'.format(str(self.EditChannel.value())),
+                'bssid={}\n'.format(str(self.EditBSSID.text())),
             ],
         'dhcp-server':
             [
@@ -1361,7 +1378,7 @@ class WifiPumpkin(QWidget):
         # get Tab-Hostapd conf and configure hostapd
         self.CoreSettings()
         self.checkWirelessSecurity() # check if user set wireless password
-        ignore = ('interface=','ssid=','channel=')
+        ignore = ('interface=','ssid=','channel=','essid=')
         with open(C.HOSTAPDCONF_PATH,'w') as apconf:
             for i in self.SettingsAP['hostapd']:apconf.write(i)
             for config in str(self.FSettings.ListHostapd.toPlainText()).split('\n'):
@@ -1379,10 +1396,10 @@ class WifiPumpkin(QWidget):
 
         # disable options when started AP
         self.btn_start_attack.setDisabled(True)
-        self.EditApName.setEnabled(False)
-        self.selectCard.setEnabled(False)
         self.EditChannel.setEnabled(False)
+        self.GroupAP.setEnabled(False)
         self.GroupApPassphrase.setEnabled(False)
+        self.GroupAdapter.setEnabled(False)
         self.PumpSettingsTAB.GroupDHCP.setEnabled(False)
         self.PopUpPlugins.tableplugins.setEnabled(False)
         self.PopUpPlugins.tableplugincheckbox.setEnabled(False)
