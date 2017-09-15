@@ -463,6 +463,7 @@ class WifiPumpkin(QWidget):
         self.TabInfoAP.horizontalHeader().resizeSection(2,120)
         self.TabInfoAP.horizontalHeader().resizeSection(1,120)
         self.TabInfoAP.setSortingEnabled(True)
+        self.TabInfoAP.setObjectName('table_clients')
 
         #edits
         self.initial_settings()

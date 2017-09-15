@@ -963,13 +963,21 @@ QPushButton::menu-indicator  {
     left: 8px;
 }
 
-QTableView
+QTableView#table_clients
 {
     border: 1px solid #444;
     gridline-color: #6c6c6c;
     background-color: #201F1F;
     border-radius: 2px;
     border: 1px solid #ff6600;
+}
+
+QTableView
+{
+    border: 1px solid #444;
+    gridline-color: #6c6c6c;
+    background-color: #201F1F;
+    border-radius: 2px;
 }
 
 

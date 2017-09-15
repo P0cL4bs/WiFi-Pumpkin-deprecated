@@ -40,6 +40,7 @@ Version 0.8.5
 - added hostapd option BSSID configuration [Settings TAB]
 - added show security password type option [Settings TAB]
 - fixed dhcpserver exception try get hostname device #277
+- fixed set border just table home in default theme
 
 Version 0.8.4
 -------------
