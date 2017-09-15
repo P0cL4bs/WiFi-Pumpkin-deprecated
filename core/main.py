@@ -1,11 +1,7 @@
 from logging import getLogger,ERROR
 getLogger('scapy.runtime').setLevel(ERROR)
-try:
-    from sys import exit
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
-except ImportError:
-    exit('WiFi-Pumpkin need PyQt4 :(')
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
 from json import dumps,loads
 from pwd import getpwnam
 from grp import getgrnam

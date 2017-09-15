@@ -30,42 +30,43 @@ import core.utility.constants as C
 if version_info.major != 2:
     exit('[!] WiFi-Pumpkin need Python 2 :(')
 
-def checkAppQTDesigner(style):
-    global main
-    if 'gtk+' in str(style).lower():
-        main.setStyle(QStyleFactory.create(C.GTKTHEME))
 
 if __name__ == '__main__':
     from core.loaders.checker.depedences import check_dep_pumpkin
-    from core.loaders.checker.networkmanager import CLI_NetworkManager,UI_NetworkManager
-    from core.utility.collection import SettingsINI
-    from core.main import Initialize
+    try:
+        from core.loaders.checker.networkmanager import CLI_NetworkManager,UI_NetworkManager
+        from core.utility.collection import SettingsINI
+        from core.utility.application import ApplicationLoop,QtGui
+        from core.main import Initialize
+    except ImportError:
+        exit('WiFi-Pumpkin need PyQt4 :(')
 
     check_dep_pumpkin()
     from os import getuid
     if not getuid() == 0:
         exit('[{}!{}] WiFi-Pumpkin must be run as root.'.format(C.RED,C.ENDC))
 
-    from PyQt4.QtGui import QApplication,QIcon,QStyleFactory
-    main = QApplication(argv)
-    checkAppQTDesigner(main.style().objectName())
+    app = ApplicationLoop(argv)
+    if app.isRunning():
+        QtGui.QMessageBox.warning(None,'Already Running','the wifi-pumpkin is already running')
+        exit('WiFi-Pumpkin Already Running.')
 
     print('Loading GUI...')
-    app = Initialize()
-    app.setWindowIcon(QIcon('icons/icon.ico'))
-    app.center()
+    main = Initialize()
+    main.setWindowIcon(QtGui.QIcon('icons/icon.ico'))
+    main.center()
     # check if Wireless connection
     conf = SettingsINI(C.CONFIG_INI)
     if  conf.get_setting('accesspoint','checkConnectionWifi',format=bool):
         networkcontrol = CLI_NetworkManager() # add all interface avaliable for exclude
-        app.networkcontrol = networkcontrol
+        main.networkcontrol = networkcontrol
         if networkcontrol.run():
             if  networkcontrol.isWiFiConnected() and len(networkcontrol.ifaceAvaliable) > 0:
-                settings = UI_NetworkManager(app)
-                settings.setWindowIcon(QIcon('icons/icon.ico'))
+                settings = UI_NetworkManager(main)
+                settings.setWindowIcon(QtGui.QIcon('icons/icon.ico'))
                 settings.show()
-                exit(main.exec_())
-    app.show()
+                exit(app.exec_())
+    main.show()
 
     print('WiFi-Pumpkin Running!')
-    exit(main.exec_())
+    exit(app.exec_())

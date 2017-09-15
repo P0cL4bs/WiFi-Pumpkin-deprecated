@@ -41,6 +41,7 @@ Version 0.8.5
 - added show security password type option [Settings TAB]
 - fixed dhcpserver exception try get hostname device #277
 - fixed set border just table home in default theme
+- added Qapplication: allow only one instance of WP to run
 
 Version 0.8.4
 -------------
