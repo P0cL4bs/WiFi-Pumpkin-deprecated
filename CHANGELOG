@@ -42,6 +42,7 @@ Version 0.8.5
 - fixed dhcpserver exception try get hostname device #277
 - fixed set border just table home in default theme
 - added Qapplication: allow only one instance of WP to run
+- fixed dhcpd server error can't read file or directory
 
 Version 0.8.4
 -------------

@@ -1352,7 +1352,7 @@ class WifiPumpkin(QWidget):
             chown(leases, uid, gid)
 
             self.Thread_dhcp = ThRunDhcp(['dhcpd','-d','-f','-lf',C.DHCPLEASES_PATH,'-cf',
-            C.DHCPCONF_PATH,self.SettingsEnable['AP_iface']],self.currentSessionID)
+            '/etc/dhcp/dhcpd_wp.conf',self.SettingsEnable['AP_iface']],self.currentSessionID)
             self.Thread_dhcp.sendRequest.connect(self.GetDHCPRequests)
             self.Thread_dhcp.setObjectName('DHCP')
             self.Apthreads['RougeAP'].append(self.Thread_dhcp)
