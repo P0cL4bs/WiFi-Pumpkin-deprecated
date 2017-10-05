@@ -15,6 +15,8 @@ from plugins.extension import *
 from functools import partial
 from plugins.analyzers import *
 import core.utility.constants as C
+from core.widgets.customiseds import AutoGridLayout
+
 """
 Description:
     This program is a core for wifi-pumpkin.py. file which includes functionality
@@ -35,6 +37,117 @@ Copyright:
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
+
+class StatusAccessPoint(QVBoxLayout):
+    ''' dashboard  infor Acccess Point '''
+    def __init__(self,mainWindow ):
+        QVBoxLayout.__init__(self)
+        self.mainLayout     = QFormLayout()
+        self.main_method    = mainWindow
+
+        self.scrollwidget = QWidget()
+        self.scrollwidget.setLayout(self.mainLayout)
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(self.scrollwidget)
+        self.split_window = QHBoxLayout()
+
+        guageWindow = QGridLayout()
+        self.currentThreadLabel = QLabel('0')
+        currentthread = self.create_info_box('CURRENT THREADS', 'infor',
+            self.currentThreadLabel)
+
+        self.sectionTimeLabel = QLabel('00:00')
+        currentTime = self.create_info_box('UPTIME', 'infor', self.sectionTimeLabel)
+        guageWindow.addLayout(currentthread, 1, 1)
+        guageWindow.addLayout(currentTime, 0, 1)
+
+        self.AP_name = QLabel(self.main_method.EditApName.text())
+        self.AP_BSSID = QLabel(self.main_method.EditBSSID.text())
+        self.AP_Channel = QLabel(self.main_method.EditChannel.text())
+        self.AP_NetworkApdater = QLabel(self.main_method.selectCard.currentText())
+        self.AP_ROUTER = QLabel(self.main_method.DHCP['router'])
+        self.AP_DHCP_range = QLabel(self.main_method.DHCP['range'])
+        self.AP_Security  = QLabel('')
+        self.update_security_label(self.main_method.GroupApPassphrase.isChecked())
+
+        self.group_AccessPoint  = QGroupBox()
+        self.form_window        = AutoGridLayout()
+        self.form_window.setSpacing(10)
+        self.group_AccessPoint.setTitle('Access Point')
+        self.form_window.addNextWidget(QLabel('AP Name:'))
+        self.form_window.addNextWidget(self.AP_name)
+        self.form_window.addNextWidget(QLabel('BSSID:'))
+        self.form_window.addNextWidget(self.AP_BSSID)
+        self.form_window.addNextWidget(QLabel('Channel:'))
+        self.form_window.addNextWidget(self.AP_Channel)
+        self.form_window.addNextWidget(QLabel('Network Adapter:'))
+        self.form_window.addNextWidget(self.AP_NetworkApdater)
+        self.form_window.addNextWidget(QLabel('Router:'))
+        self.form_window.addNextWidget(self.AP_ROUTER)
+        self.form_window.addNextWidget(QLabel('DHCP:'))
+        self.form_window.addNextWidget(self.AP_DHCP_range)
+        self.form_window.addNextWidget(QLabel('Security Password:'))
+        self.form_window.addNextWidget(self.AP_Security)
+        self.form_window.addItem(QSpacerItem(40, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        self.group_AccessPoint.setLayout(self.form_window)
+
+        self.split_window.addWidget(self.group_AccessPoint)
+        self.split_window.addLayout(guageWindow)
+
+        self.mainLayout.addRow(self.split_window)
+        self.layout = QHBoxLayout()
+        self.layout.addWidget(self.scroll)
+        self.addLayout(self.layout)
+
+    def update_labels(self):
+        self.AP_name.setText(self.main_method.EditApName.text())
+        self.AP_BSSID.setText(self.main_method.EditBSSID.text())
+        self.AP_Channel.setText(self.main_method.EditChannel.text())
+        self.AP_NetworkApdater.setText(self.main_method.selectCard.currentText())
+        self.AP_ROUTER.setText(self.main_method.DHCP['router'])
+        self.AP_DHCP_range.setText(self.main_method.DHCP['range'])
+        self.update_security_label(self.main_method.GroupApPassphrase.isChecked())
+
+    def start_timer(self):
+        self.timer = QTimer()
+        self.now = 0
+        self.update_timer()
+        self.timer.timeout.connect(self.tick_timer)
+        self.timer.start(1000)
+
+    def update_timer(self):
+        self.runtime = ('%d:%02d' % (self.now / 60, self.now % 60))
+        self.sectionTimeLabel.setText(self.runtime)
+        self.currentThreadLabel.setText(str(len(self.main_method.Apthreads['RougeAP'])-1))
+
+    def tick_timer(self):
+        self.now += 1
+        self.update_timer()
+
+    def stop_timer(self):
+        self.timer.stop()
+        self.sectionTimeLabel.setText('00:00')
+        self.currentThreadLabel.setText('0')
+
+    def update_security_label(self, bool):
+        if bool:
+            self.AP_Security.setText('[ON]')
+            self.AP_Security.setStyleSheet('QLabel {  color : green; }')
+        else:
+            self.AP_Security.setText('[OFF]')
+            self.AP_Security.setStyleSheet('QLabel {  color : #df1f1f; }')
+
+    def create_info_box(self, labelText, objectName, valueLabel):
+        infoBox = QVBoxLayout()
+        infoBox.setSpacing(0)
+        label = QLabel(labelText)
+        label.setObjectName('label')
+        valueLabel.setAlignment(Qt.AlignCenter)
+        valueLabel.setObjectName(objectName)
+        infoBox.addWidget(label)
+        infoBox.addWidget(valueLabel)
+        return infoBox
 
 class PacketsSniffer(QVBoxLayout):
     ''' settings  Transparent Proxy '''
@@ -190,12 +303,12 @@ class ImageCapture(QVBoxLayout):
 class PumpkinMitmproxy(QVBoxLayout):
     ''' settings  Transparent Proxy '''
     sendError = pyqtSignal(str)
-    def __init__(self,main_method,parent = None):
-        super(PumpkinMitmproxy, self).__init__(parent)
+    def __init__(self,mainWindow ):
+        QVBoxLayout.__init__(self)
         self.mainLayout     = QVBoxLayout()
         self.config         = SettingsINI(C.PUMPPROXY_INI)
         self.plugins        = []
-        self.main_method    = main_method
+        self.main_method    = mainWindow
         self.bt_SettingsDict    = {}
         self.check_PluginDict   = {}
         self.search_all_ProxyPlugins()

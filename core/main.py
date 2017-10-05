@@ -23,11 +23,11 @@ from subprocess import (
 
 from core.utils import (
     Refactor,set_monitor_mode,waiterSleepThread,
-    setup_logger
+    setup_logger,is_ascii,is_hexadecimal
 )
 from core.widgets.tabmodels import (
     ProxySSLstrip,PumpkinMitmproxy,PumpkinMonitor,
-    PumpkinSettings,PacketsSniffer,ImageCapture
+    PumpkinSettings,PacketsSniffer,ImageCapture,StatusAccessPoint
 )
 
 from core.widgets.popupmodels import (
@@ -40,6 +40,7 @@ from core.utility.threads import  (
     ThreadReactor,ThreadPopen,ThreadPumpkinProxy
 )
 
+from core.widgets.customiseds import AutoTableWidget
 from plugins.external.scripts import *
 import modules as GUIModules
 from core.helpers.about import frmAbout
@@ -177,6 +178,7 @@ class WifiPumpkin(QWidget):
         self.Tab_Injector   = QWidget()
         self.Tab_PumpkinPro = QWidget()
         self.Tab_Packetsniffer = QWidget()
+        self.Tab_statusAP   = QWidget()
         self.Tab_imageCap   = QWidget()
         self.Tab_Settings   = QWidget()
         self.Tab_ApMonitor  = QWidget()
@@ -265,6 +267,7 @@ class WifiPumpkin(QWidget):
         self.ContentImageCap   = QHBoxLayout(self.Tab_imageCap)
         self.ContentTabMonitor = QVBoxLayout(self.Tab_ApMonitor)
         self.ContentTabPlugins = QVBoxLayout(self.Tab_Plugins)
+        self.ContentTabStatus  = QVBoxLayout(self.Tab_statusAP)
         self.Stack.addWidget(self.Tab_Settings)
         self.Stack.addWidget(self.Tab_Plugins)
         self.Stack.addWidget(self.Tab_Injector)
@@ -305,7 +308,7 @@ class WifiPumpkin(QWidget):
         }
         self.SettingsEnable     = {
         'ProgCheck':[],'AP_iface': None,'PortRedirect': None, 'interface':'None'}
-        self.THeaders  = OrderedDict([ ('Devices',[]),('Mac Address',[]),('IP Address',[]),('Vendors',[])])
+        self.THeaders  = OrderedDict([ ('Devices',[]),('IP Address',[]),('Mac Address',[]),('Vendors',[])])
         # load all session saved in file ctg
         self.status_plugin_proxy_name = QLabel('') # status name proxy activated
         self.SessionsAP     = loads(str(self.FSettings.Settings.get_setting('accesspoint','sessions')))
@@ -349,17 +352,22 @@ class WifiPumpkin(QWidget):
 
     def PumpkinProxyTABContent(self):
         ''' add Layout page PumpkinProxy in dashboard '''
-        self.PumpkinProxyTAB = PumpkinMitmproxy(main_method=self)
+        self.PumpkinProxyTAB = PumpkinMitmproxy(self)
         self.ContentTabPumpPro.addLayout(self.PumpkinProxyTAB)
+
+    def StatusAPTABContent(self):
+        ''' add Layout page PumpkinProxy in dashboard '''
+        self.StatusAPTAB = StatusAccessPoint(self)
+        #self.ContentTabStatus.addLayout(self.StatusAPTAB)
 
     def TCPproxyTABContent(self):
         ''' add Layout page PumpkinProxy in dashboard '''
-        self.PacketSnifferTAB = PacketsSniffer(main_method=self)
+        self.PacketSnifferTAB = PacketsSniffer(self)
         self.ContentTabPackets.addLayout(self.PacketSnifferTAB)
 
     def ImageCaptureTABContent(self):
         ''' add Layout page PumpkinProxy in dashboard '''
-        self.ImageCapTAB = ImageCapture(main_method=self)
+        self.ImageCapTAB = ImageCapture(self)
         self.ContentImageCap.addLayout(self.ImageCapTAB)
 
     def getContentTabDock(self,docklist):
@@ -369,6 +377,7 @@ class WifiPumpkin(QWidget):
     def GetErrorInjector(self,data):
         ''' get error when ssslstrip or plugin args is not exist '''
         QMessageBox.warning(self,'Error Module::Proxy',data)
+
     def GetmessageSave(self,data):
         ''' get message dhcp configuration '''
         QMessageBox.information(self,'settings DHCP',data)
@@ -385,7 +394,9 @@ class WifiPumpkin(QWidget):
         self.PumpSettingsTAB = PumpkinSettings(None,widgets)
         self.PumpSettingsTAB.checkDockArea.connect(self.getContentTabDock)
         self.PumpSettingsTAB.sendMensage.connect(self.GetmessageSave)
+        self.DHCP = self.PumpSettingsTAB.getPumpkinSettings()
         self.ContentTabsettings.addLayout(self.PumpSettingsTAB)
+        self.deleteObject(widgets)
 
     def PluginsTABContent(self):
         ''' add Layout page Pump-plugins in dashboard '''
@@ -395,27 +406,17 @@ class WifiPumpkin(QWidget):
         ''' configure all widget in home page '''
         self.StatusBar = QStatusBar()
         self.StatusBar.setFixedHeight(23)
-        self.StatusDhcp = QLabel("")
         self.connectedCount = QLabel('')
-        self.StatusDhcp = QLabel('')
-        self.StatusApname = QLabel('')
-        self.StatusApchannel = QLabel('')
-        self.proxy_lstatus = QLabel('[OFF]')
+        self.status_ap_runing = QLabel('')
         self.connected_status = QLabel('')
-        self.StatusApname.setMaximumWidth(130)
 
         # add widgets in status bar
         self.StatusBar.addWidget(QLabel('Connection:'))
         self.StatusBar.addWidget(self.connected_status)
         self.StatusBar.addWidget(QLabel('Plugin:'))
         self.StatusBar.addWidget(self.status_plugin_proxy_name)
-        self.StatusBar.addWidget(QLabel('SSID:'))
-        self.StatusBar.addWidget(self.StatusApname)
-        self.StatusBar.addWidget(QLabel('Channel:'))
-        self.StatusBar.addWidget(self.StatusApchannel)
         self.StatusBar.addWidget(QLabel("Status-AP:"))
-        self.StatusBar.addWidget(self.StatusDhcp)
-        self.set_proxy_scripts(False)
+        self.StatusBar.addWidget(self.status_ap_runing)
 
         self.Started(False)
         self.progress = ProgressBarWid(total=101)
@@ -438,13 +439,11 @@ class WifiPumpkin(QWidget):
         self.EditGateway.setFixedWidth(120)
         self.EditGateway.setHidden(True) # disable Gateway
         self.selectCard = QComboBox(self)
-        self.EditApName.textChanged.connect(self.setAP_name_changer)
-        self.EditChannel.valueChanged.connect(self.setAP_channel_changer)
         self.btn_random_essid.clicked.connect(self.setAP_essid_random)
         self.btn_random_essid.setIcon(QIcon('icons/refresh.png'))
 
         # table information AP connected
-        self.TabInfoAP = QTableWidget(5,4)
+        self.TabInfoAP = AutoTableWidget()
         self.TabInfoAP.setRowCount(50)
         self.TabInfoAP.resizeRowsToContents()
         self.TabInfoAP.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -467,17 +466,7 @@ class WifiPumpkin(QWidget):
         self.FormGroup3 = QGridLayout()
 
         # popupMenu HTTP server quick start
-        self.btnHttpServer = QToolButton(self)
-        self.btnHttpServer.setFixedHeight(25)
-        self.btnHttpServer.setIcon(QIcon('icons/phishing.png'))
-        self.btnHttpServer.setToolTip('HTTP Server settings')
         self.FormPopup = PopUpServer(self.FSettings)
-        self.btnHttpServer.setPopupMode(QToolButton.MenuButtonPopup)
-        self.btnHttpServer.setMenu(QMenu(self.btnHttpServer))
-        action = QWidgetAction(self.btnHttpServer)
-        action.setDefaultWidget(self.FormPopup)
-        self.btnHttpServer.menu().addAction(action)
-        self.btnHttpServer.setHidden(True)
 
         # grid network adapter fix
         self.btrn_refresh = QPushButton('Refresh')
@@ -566,7 +555,7 @@ class WifiPumpkin(QWidget):
 
         self.donatelink = C.DONATE
         self.donateLabel = ServiceNotify(C.DONATE_TXT,title='Support development',
-        link=self.donatelink,timeout=100000)
+        link=self.donatelink,timeout=10000)
         # set main page Tool
         self.widget = QWidget()
         self.layout = QVBoxLayout(self.widget)
@@ -585,10 +574,13 @@ class WifiPumpkin(QWidget):
         self.SettingsTABContent()
         self.ApMonitorTabContent()
         self.PluginsTABContent()
+        self.StatusAPTABContent()
+
+        self.layout.addLayout(self.StatusAPTAB)  # add info tab in home page
+        self.StatusAPTAB.scroll.setFixedHeight(210)
         self.checkPlugins() # check plugins activated
 
         self.myQMenuBar = QMenuBar(self)
-        self.myQMenuBar.setFixedWidth(400)
         Menu_file = self.myQMenuBar.addMenu('&File')
         exportAction = QAction('Report Logger...', self)
         deleteAction = QAction('Clear Logger', self)
@@ -602,49 +594,46 @@ class WifiPumpkin(QWidget):
         Menu_file.addAction(action_settings)
 
         Menu_View = self.myQMenuBar.addMenu('&View')
-        phishinglog = QAction('Phishing Logger', self)
-        netcredslog = QAction('MonitorCap Logger', self)
-        dns2proxylog = QAction('Dns2proxy Logger', self)
+        self.statusap_action = QAction('Status Dashboard', self.myQMenuBar, checkable=True)
+        self.statusap_action.setChecked(self.FSettings.Settings.get_setting('settings',
+        'show_dashboard_info', format=bool))
+        self.check_status_ap_dashboard()
         #connect
-        phishinglog.triggered.connect(self.credentials)
-        netcredslog.triggered.connect(self.logsnetcreds)
-        dns2proxylog.triggered.connect(self.logdns2proxy)
-        #icons
-        phishinglog.setIcon(QIcon('icons/password.png'))
-        netcredslog.setIcon(QIcon('icons/logger.png'))
-        dns2proxylog.setIcon(QIcon('icons/proxy.png'))
-        Menu_View.addAction(phishinglog)
-        Menu_View.addAction(netcredslog)
-        Menu_View.addAction(dns2proxylog)
+        self.statusap_action.triggered.connect(self.check_status_ap_dashboard)
+
+        Menu_View.addAction(self.statusap_action)
 
         #tools Menu
         Menu_tools = self.myQMenuBar.addMenu('&Tools')
         btn_drift = QAction('Active DriftNet', self)
         btn_drift.setShortcut('Ctrl+Y')
         btn_drift.triggered.connect(self.start_dift)
-
-        # icons tools
         btn_drift.setIcon(QIcon('icons/capture.png'))
         Menu_tools.addAction(btn_drift)
+
+        # server Menu
+        Menu_Server = self.myQMenuBar.addMenu('&Server')
+        btn_phishing = QAction('Phishing Manager',self)
+        btn_winup = QAction('Windows Update',self)
+        btn_winup.setShortcut('Ctrl+N')
+        btn_phishing.setShortcut('ctrl+Z')
+        Menu_Server.addAction(btn_phishing)
+        Menu_Server.addAction(btn_winup)
 
         #menu module
         Menu_module = self.myQMenuBar.addMenu('&Modules')
         btn_deauth = QAction('Wi-Fi deauthentication', self)
         btn_probe = QAction('Wi-Fi Probe Request',self)
         btn_dhcpStar = QAction('DHCP Starvation',self)
-        btn_winup = QAction('Windows Update',self)
         btn_arp = QAction('ARP Poisoner ',self)
         btn_dns = QAction('DNS Spoofer ',self)
-        btn_phishing = QAction('Phishing Manager',self)
 
         # Shortcut modules
         btn_deauth.setShortcut('Ctrl+W')
         btn_probe.setShortcut('Ctrl+K')
         btn_dhcpStar.setShortcut('Ctrl+H')
-        btn_winup.setShortcut('Ctrl+N')
         btn_dns.setShortcut('ctrl+D')
         btn_arp.setShortcut('ctrl+Q')
-        btn_phishing.setShortcut('ctrl+Z')
         action_settings.setShortcut('Ctrl+X')
 
         #connect buttons
@@ -671,10 +660,8 @@ class WifiPumpkin(QWidget):
         Menu_module.addAction(btn_deauth)
         Menu_module.addAction(btn_probe)
         Menu_module.addAction(btn_dhcpStar)
-        Menu_module.addAction(btn_winup)
         Menu_module.addAction(btn_arp)
         Menu_module.addAction(btn_dns)
-        Menu_module.addAction(btn_phishing)
 
         #menu extra
         Menu_extra= self.myQMenuBar.addMenu('&Help')
@@ -710,23 +697,6 @@ class WifiPumpkin(QWidget):
         self.TabListWidget_Menu.setCurrentRow(0)
         self.setLayout(self.boxHome)
 
-    def is_hexadecimal(self, text):
-        try:
-            int(text, 16)
-        except ValueError:
-            return False
-        else:
-            return True
-
-    def is_ascii(self, text):
-        try:
-            text.decode('ascii')
-        except UnicodeDecodeError:
-            return False
-        else:
-            return True
-
-
     def set_security_type_text(self,string=str):
         self.lb_type_security.setText(string)
         self.lb_type_security.setFixedWidth(60)
@@ -737,7 +707,7 @@ class WifiPumpkin(QWidget):
     def update_settings(self):
         if 1 <= self.WPAtype_spinbox.value() <= 2:
             self.set_security_type_text('WPA')
-            if 8 <= len(self.editPasswordAP.text()) <= 63 and self.is_ascii(str(self.editPasswordAP.text())):
+            if 8 <= len(self.editPasswordAP.text()) <= 63 and is_ascii(str(self.editPasswordAP.text())):
                 self.editPasswordAP.setStyleSheet("QLineEdit { border: 1px solid green;}")
             else:
                 self.editPasswordAP.setStyleSheet("QLineEdit { border: 1px solid red;}")
@@ -747,8 +717,8 @@ class WifiPumpkin(QWidget):
         if self.WPAtype_spinbox.value() == 0:
             self.set_security_type_text('WEP')
             if (len(self.editPasswordAP.text()) == 5 or len(self.editPasswordAP.text()) == 13) and \
-                    self.is_ascii(str(self.editPasswordAP.text())) or (len(self.editPasswordAP.text()) == 10 or len(self.editPasswordAP.text()) == 26) and \
-                    self.is_hexadecimal(str(self.editPasswordAP.text())):
+                    is_ascii(str(self.editPasswordAP.text())) or (len(self.editPasswordAP.text()) == 10 or len(self.editPasswordAP.text()) == 26) and \
+                    is_hexadecimal(str(self.editPasswordAP.text())):
                 self.editPasswordAP.setStyleSheet("QLineEdit { border: 1px solid green;}")
             else:
                 self.editPasswordAP.setStyleSheet("QLineEdit { border: 1px solid red;}")
@@ -818,23 +788,13 @@ class WifiPumpkin(QWidget):
         self.FPhishingManager.txt_redirect.setText('0.0.0.0')
         self.FPhishingManager.show()
 
-    def credentials(self):
-        ''' call GUI phishing monitor logger '''
-        self.Fcredentials = GUIModules.frm_get_credentials()
-        self.Fcredentials.setWindowTitle('Phishing Logger')
-        self.Fcredentials.show()
-
-    def logsnetcreds(self):
-        ''' call GUI netcreds monitor logger '''
-        self.FnetCreds = GUIModules.frm_MonitorCapLogger()
-        self.FnetCreds.setWindowTitle('MonitorCap Logger')
-        self.FnetCreds.show()
-
-    def logdns2proxy(self):
-        ''' call GUI dns2proxy monitor logger '''
-        self.Fdns2proxy = GUIModules.frm_dns2proxy()
-        self.Fdns2proxy.setWindowTitle('Dns2proxy Logger')
-        self.Fdns2proxy.show()
+    def check_status_ap_dashboard(self):
+        ''' show/hide dashboard infor '''
+        if self.statusap_action.isChecked():
+            self.StatusAPTAB.scroll.setHidden(False)
+            return self.FSettings.Settings.set_setting('settings', 'show_dashboard_info', True)
+        self.FSettings.Settings.set_setting('settings', 'show_dashboard_info', False)
+        self.StatusAPTAB.scroll.setHidden(True)
 
     def CheckStatusWPASecurity(self):
         '''simple connect for get status security wireless click'''
@@ -842,12 +802,14 @@ class WifiPumpkin(QWidget):
         'enable_security',self.GroupApPassphrase.isChecked())
 
     def checkNetworkConnection(self):
+        ''' update inferfaces '''
         self.btrn_find_Inet.setEnabled(False)
         interfaces = Refactor.get_interfaces()
         self.set_StatusConnected_Iface(False,'checking...',check=True)
         QTimer.singleShot(3000, lambda: self.backgroudCheckNetwork(interfaces))
 
     def backgroudCheckNetwork(self,get_interfaces):
+        ''' check interfaces on background '''
         if get_interfaces['activated'][0] != None:
             self.InternetShareWiFi = True
             self.btrn_find_Inet.setEnabled(True)
@@ -880,21 +842,11 @@ class WifiPumpkin(QWidget):
 
     def Started(self,bool):
         if bool:
-            self.StatusDhcp.setText("[ON]")
-            self.StatusDhcp.setStyleSheet("QLabel {  color : green; }")
+            self.status_ap_runing.setText("[ON]")
+            self.status_ap_runing.setStyleSheet("QLabel {  color : green; }")
         else:
-            self.StatusDhcp.setText("[OFF]")
-            self.StatusDhcp.setStyleSheet("QLabel {  color : #df1f1f; }")
-
-    def setAP_name_changer(self,string):
-        ''' send text editAPname change to statusbar'''
-        self.StatusApname.setText(string)
-        self.StatusApname.setStyleSheet("QLabel {border-radius: 2px; background-color: grey; color : #000; }")
-
-    def setAP_channel_changer(self,value):
-        ''' send text editAPname change to statusbar'''
-        self.StatusApchannel.setText(str(value))
-        self.StatusApchannel.setStyleSheet("QLabel {border-radius: 2px; background-color: grey; color : #000; }")
+            self.status_ap_runing.setText("[OFF]")
+            self.status_ap_runing.setStyleSheet("QLabel {  color : #df1f1f; }")
 
     def setAP_essid_random(self):
         ''' set random mac 3 last digits  '''
@@ -910,14 +862,6 @@ class WifiPumpkin(QWidget):
         else:
             self.status_plugin_proxy_name.setText('[ Disabled ]')
             self.status_plugin_proxy_name.setStyleSheet("QLabel {  background-color: #808080; color : #000000; }")
-
-    def set_proxy_scripts(self,bool):
-        if bool:
-            self.proxy_lstatus.setText("[ON]")
-            self.proxy_lstatus.setStyleSheet("QLabel {  color : green; }")
-        else:
-            self.proxy_lstatus.setText("[OFF]")
-            self.proxy_lstatus.setStyleSheet("QLabel {  color : red; }")
 
     def set_StatusConnected_Iface(self,bool,txt='',check=False):
         if bool:
@@ -936,25 +880,26 @@ class WifiPumpkin(QWidget):
 
     def GetDHCPRequests(self,data):
         ''' filter: data info sended DHCPD request '''
+        self.APclients = {}
         if len(data) == 8:
             device = sub(r'[)|(]',r'',data[5])
             if len(device) == 0: device = 'unknown'
             if Refactor.check_is_mac(data[4]):
-                if data[4] not in self.APclients.keys():
+                if data[4] not in self.TabInfoAP.APclients.keys():
                     self.APclients[data[4]] = {'IP': data[2],
-                    'device': device,'in_tables': False,}
+                    'device': device,'MAC': data[4],'Vendors' : self.get_mac_vendor(data[4])}
                     self.StatusDHCPRequests(data[4],self.APclients[data[4]])
         elif len(data) == 9:
             device = sub(r'[)|(]',r'',data[6])
             if len(device) == 0: device = 'unknown'
             if Refactor.check_is_mac(data[5]):
-                if data[5] not in self.APclients.keys():
+                if data[5] not in self.TabInfoAP.APclients.keys():
                     self.APclients[data[5]] = {'IP': data[2],
-                    'device': device,'in_tables': False,}
+                    'device': device,'MAC': data[5],'Vendors' : self.get_mac_vendor(data[5])}
                     self.StatusDHCPRequests(data[5],self.APclients[data[5]])
         elif len(data) == 7:
             if Refactor.check_is_mac(data[4]):
-                if data[4] not in self.APclients.keys():
+                if data[4] not in self.TabInfoAP.APclients.keys():
                     leases = IscDhcpLeases(C.DHCPLEASES_PATH)
                     hostname = None
                     try:
@@ -968,58 +913,45 @@ class WifiPumpkin(QWidget):
                         hostname = 'unknown'
                     if hostname == None or len(hostname) == 0:hostname = 'unknown'
                     self.APclients[data[4]] = {'IP': data[2],'device': hostname,
-                    'in_tables': False,}
+                                               'MAC': data[4], 'Vendors': self.get_mac_vendor(data[4])}
                     self.StatusDHCPRequests(data[4],self.APclients[data[4]])
-        self.Add_data_into_QTableWidget(self.APclients)
+        if self.APclients != {}:
+            self.Add_data_into_QTableWidget(self.APclients)
+            self.connectedCount.setText(str(len(self.TabInfoAP.APclients.keys())))
 
-    def Add_data_into_QTableWidget(self,APclients):
-        ''' add clients infors in  tablewidget  '''
-        Headers = []
-        for mac in APclients.keys():
-            if not self.APclients[mac]['in_tables']:
-                self.APclients[mac]['in_tables'] = True
-                try:
-                    d_vendor = EUI(mac)
-                    d_vendor = d_vendor.oui.registration().org
-                except:
-                    d_vendor = 'unknown mac'
-                self.THeaders['Mac Address'].append(mac)
-                self.THeaders['IP Address'].append(APclients[mac]['IP'])
-                self.THeaders['Devices'].append(APclients[mac]['device'])
-                self.THeaders['Vendors'].append(d_vendor)
-                for n, key in enumerate(self.THeaders.keys()):
-                    Headers.append(key)
-                    for m, item in enumerate(self.THeaders[key]):
-                        item = QTableWidgetItem(item)
-                        item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
-                        self.TabInfoAP.setItem(m, n, item)
-                self.TabInfoAP.setHorizontalHeaderLabels(self.THeaders.keys())
-        self.connectedCount.setText(str(len(APclients.keys())))
+    def Add_data_into_QTableWidget(self,client):
+        self.TabInfoAP.addNextWidget(client)
 
+    def get_mac_vendor(self,mac):
+        ''' discovery mac vendor by mac address '''
+        try:
+            d_vendor = EUI(mac)
+            d_vendor = d_vendor.oui.registration().org
+        except:
+            d_vendor = 'unknown mac'
+        return d_vendor
 
     def GetDHCPDiscoverInfo(self,message):
         '''get infor client connected with AP '''
-        if message['mac_addr'] not in self.APclients.keys():
+        self.APclients = {}
+        if message['mac_addr'] not in self.TabInfoAP.APclients.keys():
             self.APclients[message['mac_addr']] = \
             {'IP': message['ip_addr'],
-            'device': message['host_name'],'in_tables': False}
+            'device': message['host_name'],
+             'MAC': message['mac_addr'],
+             'Vendors' : self.get_mac_vendor(message['mac_addr'])}
+
             self.StatusDHCPRequests(message['mac_addr'],self.APclients[message['mac_addr']])
             self.Add_data_into_QTableWidget(self.APclients)
+            self.connectedCount.setText(str(len(self.TabInfoAP.APclients.keys())))
 
     def GetHostapdStatus(self,data):
         ''' get inactivity client from hostapd response'''
-        if self.APclients != {}:
-            if data in self.APclients.keys():
-                self.PumpMonitorTAB.addRequests(data,self.APclients[data],False)
-        for row in xrange(0,self.TabInfoAP.rowCount()):
-            if self.TabInfoAP.item(row,1) != None:
-                if self.TabInfoAP.item(row,1).text() == data:
-                    self.TabInfoAP.removeRow(row)
-                    if data in self.APclients.keys():
-                        del self.APclients[data]
-        for mac_tables in self.APclients.keys():self.APclients[mac_tables]['in_tables'] = False
-        self.THeaders  = OrderedDict([ ('Devices',[]),('Mac Address',[]),('IP Address',[]),('Vendors',[])])
-        self.connectedCount.setText(str(len(self.APclients.keys())))
+        if self.TabInfoAP.APclients != {}:
+            if data in self.TabInfoAP.APclients.keys():
+                self.PumpMonitorTAB.addRequests(data,self.TabInfoAP.APclients[data],False)
+            self.TabInfoAP.delete_item(data)
+            self.connectedCount.setText(str(len(self.TabInfoAP.APclients.keys())))
 
     def GetErrorhostapdServices(self,data):
         '''check error hostapd on mount AP '''
@@ -1055,13 +987,17 @@ class WifiPumpkin(QWidget):
             self.selectCard.setCurrentIndex(wireless.index(interface))
 
         # check if a program is installed
-        driftnet = popen('which driftnet').read().split('\n')
-        dhcpd = popen('which dhcpd').read().split("\n")
-        hostapd = popen('which hostapd').read().split("\n")
-        xterm = popen('which xterm').read().split("\n")
-        lista = [ '', '',driftnet[0],dhcpd[0],'',hostapd[0],xterm[0]]
+        lista = [ '', '',popen('which driftnet').read().split('\n')[0],
+        popen('which dhcpd').read().split("\n")[0],'',popen('which hostapd').read().split("\n")[0],
+        popen('which xterm').read().split("\n")[0]]
         for i in lista:self.SettingsEnable['ProgCheck'].append(path.isfile(i))
+        # delete obj
+        self.deleteObject(lista)
+        self.deleteObject(wireless)
 
+    def deleteObject(self,obj):
+        ''' reclaim memory '''
+        del obj
 
     def refrash_interface(self):
         ''' get all wireless interface available '''
@@ -1069,6 +1005,7 @@ class WifiPumpkin(QWidget):
         self.btrn_refresh.setEnabled(False)
         ifaces = Refactor.get_interfaces()['all']
         QTimer.singleShot(3000, lambda : self.add_avaliableIterfaces(ifaces))
+        self.deleteObject(ifaces)
 
     def add_avaliableIterfaces(self,ifaces):
         for index,item in enumerate(ifaces):
@@ -1092,6 +1029,8 @@ class WifiPumpkin(QWidget):
                     f.write(''),f.close()
             self.FSettings.Settings.set_setting('accesspoint','sessions',dumps({}))
             QMessageBox.information(self,'Logger','All Looger::Output has been Removed...')
+        self.deleteObject(content)
+        self.deleteObject(resp)
 
 
     def start_dift(self):
@@ -1152,13 +1091,6 @@ class WifiPumpkin(QWidget):
                 'range {};\n'.format(self.DHCP['range'].replace('/',' ')),
                 '}',
             ],
-        'dnsmasq':
-            [
-                'interface=%s\n'%(self.SettingsEnable['AP_iface']),
-                'dhcp-range=10.0.0.1,10.0.0.50,12h\n',
-                'dhcp-option=3, 10.0.0.1\n',
-                'dhcp-option=6, 10.0.0.1\n',
-            ]
         }
         print('[*] Enable forwarding in iptables...')
         Refactor.set_ip_forward(1)
@@ -1261,11 +1193,11 @@ class WifiPumpkin(QWidget):
         # Check the key
         if self.GroupApPassphrase.isChecked():
             if 1 <= self.WPAtype_spinbox.value() <= 2:
-                if not (8 <= len(self.editPasswordAP.text()) <= 63 and self.is_ascii(str(self.editPasswordAP.text()))):
+                if not (8 <= len(self.editPasswordAP.text()) <= 63 and is_ascii(str(self.editPasswordAP.text()))):
                     return self.show_key_warning()
             if self.WPAtype_spinbox.value() == 0:
-                if not (len(self.editPasswordAP.text()) == 5 or len(self.editPasswordAP.text()) == 13) and self.is_ascii(str(self.editPasswordAP.text()))\
-                        and not ((len(self.editPasswordAP.text()) == 10 or len(self.editPasswordAP.text()) == 24) and self.is_hexadecimal(str(self.editPasswordAP.text()))):
+                if not (len(self.editPasswordAP.text()) == 5 or len(self.editPasswordAP.text()) == 13) and is_ascii(str(self.editPasswordAP.text()))\
+                        and not ((len(self.editPasswordAP.text()) == 10 or len(self.editPasswordAP.text()) == 24) and is_hexadecimal(str(self.editPasswordAP.text()))):
                     return self.show_key_warning()
 
         print('\n[*] Loading debugging mode')
@@ -1336,6 +1268,10 @@ class WifiPumpkin(QWidget):
         self.PopUpPlugins.tableplugins.setEnabled(False)
         self.PopUpPlugins.tableplugincheckbox.setEnabled(False)
         self.btn_cancelar.setEnabled(True)
+
+        # start section time
+        self.StatusAPTAB.update_labels()
+        self.StatusAPTAB.start_timer()
 
         # create thread dhcpd and connect fuction GetDHCPRequests
         print('[*] Configuring dhcpd...')
@@ -1514,6 +1450,8 @@ class WifiPumpkin(QWidget):
         # remove iptables commands and stop dhcpd if pesist in process
         for kill in self.SettingsAP['kill']:
             Popen(split(kill), stdout=PIPE,shell=False,stderr=PIPE)
+        # stop time count
+        self.StatusAPTAB.stop_timer()
         #disabled options
         # check if persistent option in Settigs is enable
         #if not self.FSettings.Settings.get_setting('accesspoint','persistNetwokManager',format=bool):

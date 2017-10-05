@@ -270,7 +270,7 @@ class Refactor:
                 itype = 'ethernet'
             interfaces['activated'][1] = itype
         except KeyError:
-            print('Error: find network interface ')
+            pass
         return interfaces
 
     @staticmethod
@@ -358,3 +358,19 @@ class waiterSleepThread(QThread):
         super(waiterSleepThread, self).__init__(self,parent)
     def run(self):
         sleep(10),self.quit.emit(True)
+
+def is_hexadecimal(text):
+    try:
+        int(text, 16)
+    except ValueError:
+        return False
+    else:
+        return True
+
+def is_ascii( text):
+    try:
+        text.decode('ascii')
+    except UnicodeDecodeError:
+        return False
+    else:
+        return True

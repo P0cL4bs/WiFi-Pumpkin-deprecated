@@ -47,7 +47,8 @@ class frm_PMonitor(PumpkinModule):
         self.StartedProbe(False)
         self.StatusBar.setFixedHeight(15)
         # create table widget
-        self.tables = QTableWidget(50,3)
+        self.tables = QTableWidget(5,3)
+        self.tables.setRowCount(50)
         self.tables.setMinimumHeight(180)
         self.tables.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.tables.horizontalHeader().setStretchLastSection(True)

@@ -22,6 +22,30 @@
  * THE SOFTWARE.
  */
 
+QLabel#label {
+    border-radius: 5px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    background-color: #535252;
+    color: #2F2D2D;
+    font-family: "Asap";
+    text-align: center;
+    font-size: 10px;
+    font: bold;
+    padding: 12px;
+}
+
+QLabel#infor {
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    background-color: #23252b;
+    color: #996633;
+    font-size: 25px;
+    font-family: "Asap";
+    font: bold;
+    padding: 10px;
+}
+
 QProgressBar:horizontal {
     border: 1px solid #3A3939;
     text-align: center;
@@ -171,6 +195,11 @@ QGroupBox {
     border:1px solid #3A3939;
     border-radius: 2px;
     margin-top: 25px;
+}
+
+QGroupBox::indicator {
+    width: 13px;
+    height: 13px;
 }
 
 QGroupBox::title {

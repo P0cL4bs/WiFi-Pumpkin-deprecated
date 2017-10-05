@@ -121,8 +121,7 @@ class frm_githubUpdate(PumpkinModule):
 
     def Get_ContentUrl(self,data):
         if data == 'URLError':
-            self.btnCheck.setEnabled(True)
-            return QMessageBox.warning(self,'Update Warning','Checking internet connection failed.')
+            return self.btnCheck.setEnabled(True)
         self.git = GithubUpdate(self.version,data,self.PathUrlLcommits,self.PathUrlRcommits)
         self.connect(self.git,SIGNAL('Activated ( QString ) '), self.RcheckCommits)
         self.git.start()
