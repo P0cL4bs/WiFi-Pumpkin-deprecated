@@ -2,8 +2,8 @@ from struct import pack
 from time import sleep,asctime
 from random import randint
 from base64 import b64encode
-from os import popen,path,walk,stat,kill
-from subprocess import check_output,Popen,PIPE,STDOUT,CalledProcessError
+from os import popen,path,walk,stat,kill,remove
+from subprocess import check_output,Popen,PIPE,STDOUT,CalledProcessError,call
 from re import search,compile,VERBOSE,IGNORECASE
 import netifaces
 from scapy.all import *
@@ -13,6 +13,8 @@ import logging
 import signal
 import configparser
 import core.utility.constants as C
+from shlex import split
+from glob import glob
 
 """
 Description:
@@ -374,3 +376,15 @@ def is_ascii( text):
         return False
     else:
         return True
+
+def exec_bash(command):
+    ''' run command on background hide output'''
+    call(split(command),stdout=PIPE,stderr=PIPE)
+
+def del_item_folder(directorys):
+    ''' delete all items in folder '''
+    for folder in directorys:
+        files = glob(folder)
+        for file in files:
+            if path.isfile(file) and not '.py' in file:
+                remove(file)

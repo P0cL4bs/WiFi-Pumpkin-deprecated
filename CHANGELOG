@@ -45,6 +45,7 @@ Version 0.8.5
 - fixed dhcpd server error can't read file or directory
 - removed monitors views [dns2proxy,urlcreds,credentials]
 - added dashboard infor [uptime,threads,AP info] in tab home
+- added more code organization in file main.py
 
 Version 0.8.4
 -------------
