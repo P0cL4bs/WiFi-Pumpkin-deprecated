@@ -8,6 +8,8 @@ Framework for Rogue Wi-Fi Access Point Attack
 ### Description
 WiFi-Pumpkin is a very complete framework for auditing Wi-Fi security. The main feature is the ability to create a fake AP and make Man In The Middle attack, but the list of features is quite broad.
 
+![screenshot](https://i.imgur.com/bNTOHLq.png)
+
 ### Installation
 
 - Python 2.7
@@ -56,10 +58,10 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 ### Plugins
 | Plugin | Description | 
 |:-----------|:------------|
-[dns2proxy](https://github.com/LeonardoNve/dns2proxy) | This tools offer a different features for post-explotation once you change the DNS server to a Victim.
-[sslstrip2](https://github.com/LeonardoNve/sslstrip2) | Sslstrip is a MITM tool that implements Moxie Marlinspike's SSL stripping attacks based version fork @LeonardoNve/@xtr4nge.
-[sergio-proxy](https://github.com/supernothing/sergio-proxy) | Sergio Proxy (a Super Effective Recorder of Gathered Inputs and Outputs) is an HTTP proxy that was written in Python for the Twisted framework.
-[BDFProxy-ng](https://github.com/davinerd/BDFProxy-ng) | Patch Binaries via MITM: BackdoorFactory + mitmProxy, bdfproxy-ng is a fork and review of the original BDFProxy @secretsquirrel.
+[Dns2proxy](https://github.com/LeonardoNve/dns2proxy) | This tools offer a different features for post-explotation once you change the DNS server to a Victim.
+[Sstrip2](https://github.com/LeonardoNve/sslstrip2) | Sslstrip is a MITM tool that implements Moxie Marlinspike's SSL stripping attacks based version fork @LeonardoNve/@xtr4nge.
+[Sergio_proxy](https://github.com/supernothing/sergio-proxy) | Sergio Proxy (a Super Effective Recorder of Gathered Inputs and Outputs) is an HTTP proxy that was written in Python for the Twisted framework.
+[BDFProxy](https://github.com/davinerd/BDFProxy-ng) | Patch Binaries via MITM: BackdoorFactory + mitmProxy, bdfproxy-ng is a fork and review of the original BDFProxy @secretsquirrel.
 [Responder](https://github.com/lgandx/Responder) | Responder an LLMNR, NBT-NS and MDNS poisoner. Author: Laurent Gaffie
 
 ### Transparent Proxy
