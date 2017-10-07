@@ -379,7 +379,7 @@ def is_ascii( text):
 
 def exec_bash(command):
     ''' run command on background hide output'''
-    call(split(command),stdout=PIPE,stderr=PIPE)
+    call(split(command),stdout=PIPE,stderr=PIPE, shell=True)
 
 def del_item_folder(directorys):
     ''' delete all items in folder '''

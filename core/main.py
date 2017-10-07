@@ -1194,9 +1194,9 @@ class WifiPumpkin(QWidget):
         print('[*] Enable forwarding in iptables...')
         Refactor.set_ip_forward(1)
         # clean iptables settings
-        for line in self.SettingsAP['kill']: Popen(split(line), stdout=PIPE,shell=False,stderr=PIPE)
+        for line in self.SettingsAP['kill']: exec_bash(line)
         # set interface using ifconfig
-        for line in self.SettingsAP['interface']: Popen(split(line), stdout=PIPE,shell=False,stderr=PIPE)
+        for line in self.SettingsAP['interface']: exec_bash(line)
         # check if dhcp option is enabled.
         if self.FSettings.Settings.get_setting('accesspoint','dhcp_server',format=bool):
             with open(C.DHCPCONF_PATH,'w') as dhcp:

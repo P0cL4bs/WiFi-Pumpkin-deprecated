@@ -46,6 +46,7 @@ Version 0.8.5
 - removed monitors views [dns2proxy,urlcreds,credentials]
 - added dashboard infor [uptime,threads,AP info] in tab home
 - added more code organization in file main.py
+- fixed bug not working as expected #279
 
 Version 0.8.4
 -------------
