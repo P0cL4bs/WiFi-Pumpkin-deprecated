@@ -1167,7 +1167,7 @@ class WifiPumpkin(QWidget):
                 'iptables --delete-chain',
                 'iptables --table nat --delete-chain',
                 'ifconfig %s 0'%(self.SettingsEnable['AP_iface']),
-                'killall dhpcd',
+                'killall dhpcd 2>/dev/null',
             ],
         'hostapd':
             [
