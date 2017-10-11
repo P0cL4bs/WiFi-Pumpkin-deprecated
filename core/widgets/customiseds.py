@@ -76,7 +76,7 @@ class AutoTableWidget(QtGui.QTableWidget):
 
     def inc_auto(self):
         self.column += 1
-        if self.column > self.max_column:
+        if self.column >= self.max_column:
             self.row     += 1
             self.column   = 0
 
