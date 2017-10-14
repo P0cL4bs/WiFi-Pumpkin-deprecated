@@ -1,7 +1,6 @@
-from PyQt4.QtGui import *
 from subprocess import Popen
 from core.utils import Refactor
-from core.main import Initialize
+from core.main import Initialize,QtGui
 from core.utility.settings import frm_Settings
 import core.utility.constants as C
 from core.widgets.notifications import ServiceNotify
@@ -26,16 +25,16 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-class UI_NetworkManager(QWidget):
+class UI_NetworkManager(QtGui.QWidget):
     def __init__(self, app,parent = None):
         super(UI_NetworkManager, self).__init__(parent)
-        self.label = QLabel()
+        self.label = QtGui.QLabel()
         self.app   = app
-        self.Main  = QVBoxLayout()
+        self.Main  = QtGui.QVBoxLayout()
         self.config = frm_Settings()
         self.setGeometry(0, 0, 300, 120)
         self.setWindowTitle('Checking Connection')
-        self.loadtheme(self.config.XmlThemeSelected())
+        self.loadtheme(self.config.get_theme_qss())
         self.center()
         self.UI()
 
@@ -53,7 +52,7 @@ class UI_NetworkManager(QWidget):
 
     def center(self):
         frameGm = self.frameGeometry()
-        centerPoint = QDesktopWidget().availableGeometry().center()
+        centerPoint = QtGui.QDesktopWidget().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
@@ -83,30 +82,30 @@ class UI_NetworkManager(QWidget):
         self.close()
 
     def UI(self):
-        self.widget     = QWidget()
-        self.statusBar  = QStatusBar()
-        self.layout     = QVBoxLayout(self.widget)
-        self.statusLabel = QLabel()
+        self.widget     = QtGui.QWidget()
+        self.statusBar  = QtGui.QStatusBar()
+        self.layout     = QtGui.QVBoxLayout(self.widget)
+        self.statusLabel = QtGui.QLabel()
         self.statusInetrnet(False)
         self.statusBar.setFixedHeight(20)
-        self.statusBar.addWidget(QLabel('Status Connection::'))
+        self.statusBar.addWidget(QtGui.QLabel('Status Connection::'))
         self.statusBar.addWidget(self.statusLabel)
 
-        self.groupBoxIface = QGroupBox()
-        self.components  = QHBoxLayout()
-        self.compostart  = QHBoxLayout()
-        self.checkboxlayout = QFormLayout()
-        self.btn_refrash = QPushButton('Refresh')
-        self.btn_start   = QPushButton('Start GUI..')
-        self.cb_ifaces   = QComboBox()
-        self.check_no_internet = QCheckBox('Start without connection.')
+        self.groupBoxIface = QtGui.QGroupBox()
+        self.components  = QtGui.QHBoxLayout()
+        self.compostart  = QtGui.QHBoxLayout()
+        self.checkboxlayout = QtGui.QFormLayout()
+        self.btn_refrash = QtGui.QPushButton('Refresh')
+        self.btn_start   = QtGui.QPushButton('Start GUI..')
+        self.cb_ifaces   = QtGui.QComboBox()
+        self.check_no_internet = QtGui.QCheckBox('Start without connection.')
 
         self.check_no_internet.clicked.connect(self.getstatus_checkbox)
         self.btn_refrash.clicked.connect(self.get_interfaceConnected)
         self.btn_start.clicked.connect(self.startGUI)
         self.groupBoxIface.setTitle('Interface/Wireless')
-        self.btn_refrash.setIcon(QIcon('icons/refresh.png'))
-        self.btn_start.setIcon(QIcon('icons/start.png'))
+        self.btn_refrash.setIcon(QtGui.QIcon('icons/refresh.png'))
+        self.btn_start.setIcon(QtGui.QIcon('icons/start.png'))
         self.btn_start.setEnabled(False)
         self.compostart.addStretch(1)
         self.compostart.addWidget(self.btn_start)
