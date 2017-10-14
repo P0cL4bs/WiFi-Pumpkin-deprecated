@@ -1,6 +1,6 @@
 from core.loaders.models.PackagesUI import *
 
-class License(QTextEdit):
+class License(QtGui.QTextEdit):
     def __init__(self,parent = None):
         super(License,self).__init__(parent)
         self.setReadOnly(True)
@@ -10,11 +10,11 @@ class License(QTextEdit):
         self.setText(open('LICENSE','r').read())
     def center(self):
         frameGm = self.frameGeometry()
-        centerPoint = QDesktopWidget().availableGeometry().center()
+        centerPoint = QtGui.QDesktopWidget().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
-class ChangeLog(QTextEdit):
+class ChangeLog(QtGui.QTextEdit):
     def __init__(self,parent = None):
         super(ChangeLog,self).__init__(parent)
         self.setMinimumHeight(240)
@@ -24,41 +24,41 @@ class ChangeLog(QTextEdit):
         self.setReadOnly(True)
 
 
-class SettingsTranks(QVBoxLayout):
+class SettingsTranks(QtGui.QVBoxLayout):
     def __init__(self,parent = None):
         super(SettingsTranks, self).__init__(parent)
-        self.mainLayout    = QFormLayout()
-        self.scrollwidget = QWidget()
+        self.mainLayout    = QtGui.QFormLayout()
+        self.scrollwidget = QtGui.QWidget()
         self.scrollwidget.setLayout(self.mainLayout)
-        self.scroll = QScrollArea()
+        self.scroll = QtGui.QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.scroll.setWidget(self.scrollwidget)
 
-        self.formMode = QFormLayout()
-        self.formMode.addRow(QLabel('<a href="https://github.com/mitmproxy/mitmproxy"><strong>@mitmproxy</strong></a>'))
-        self.formMode.addRow(QLabel('ProxyServer tranparent HTTP proxy <br>'))
-        self.formMode.addRow(QLabel('<a href="https://github.com/TimSchumi"><strong>@TimSchumi</strong></a>'))
-        self.formMode.addRow(QLabel('Debian package build and password improvements <br>'))
-        self.formMode.addRow(QLabel('<a href="https://github.com/psychomario"><strong>@psychomario</strong></a>'))
-        self.formMode.addRow(QLabel('<a href="https://github.com/psychomario/PyPXE">PyPXE</a> class implements a DHCP Server<br>'))
-        self.formMode.addRow(QLabel('<a href="https://github.com/xtr4nge"><strong>@xtr4nge</strong></a>'))
-        self.formMode.addRow(QLabel('PLugin <a href="https://github.com/xtr4nge/sslstrip">Sslstrip</a> fork inject code<br>'))
-        self.formMode.addRow(QLabel('<a href="https://github.com/LeonardoNve"><strong>@LeonardoNve</strong></a>'))
-        self.formMode.addRow(QLabel('Plugin <a href="https://github.com/LeonardoNve/sslstrip2">SSLstrip2</a> version fork'))
-        self.formMode.addRow(QLabel('Plugin <a href="https://github.com/LeonardoNve/dns2proxy">Dns2proxy</a> Offensive DNS server <br>'))
-        self.formMode.addRow(QLabel('<a href="https://github.com/davinerd"><strong>@davinerd</strong></a>'))
-        self.formMode.addRow(QLabel('Plugin <a href="https://github.com/davinerd/BDFProxy-ng"> BDFProxy-ng</a> version fork <br>'))
-        self.formMode.addRow(QLabel('<a href="https://github.com/lgandx"><strong> Laurent Gaffie @lgandx</strong></a>'))
-        self.formMode.addRow(QLabel('Plugin <a href="https://github.com/lgandx/Responder"> Responder</a><br>'))
-        self.formMode.addRow(QLabel('<a href="https://github.com/supernothing"><strong>Ben Schmidt @supernothing</strong></a>'))
-        self.formMode.addRow(QLabel('Plugin <a href="https://github.com/supernothing/sergio-proxy">SergioProxy</a> - bypass HSTS<br>'))
-        self.formMode.addRow(QLabel('<a href="http://www.yasinuludag.com/darkorange.stylesheet"><strong>Yasin Uludag</strong></a>'))
-        self.formMode.addRow(QLabel('theme1.qss - Qt dark orange stylesheet<br>'))
-        self.formMode.addRow(QLabel('<a href="https://github.com/ColinDuquesnoy/QDarkStyleSheet"><strong>Colin Duquesnoy @ColinDuquesnoy</strong></a>'))
-        self.formMode.addRow(QLabel('theme2.qss - Qt dark blue stylesheet<br>'))
+        self.formMode = QtGui.QFormLayout()
+        self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/mitmproxy/mitmproxy"><strong>@mitmproxy</strong></a>'))
+        self.formMode.addRow(QtGui.QLabel('ProxyServer tranparent HTTP proxy <br>'))
+        self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/TimSchumi"><strong>@TimSchumi</strong></a>'))
+        self.formMode.addRow(QtGui.QLabel('Debian package build and password improvements <br>'))
+        self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/psychomario"><strong>@psychomario</strong></a>'))
+        self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/psychomario/PyPXE">PyPXE</a> class implements a DHCP Server<br>'))
+        self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/xtr4nge"><strong>@xtr4nge</strong></a>'))
+        self.formMode.addRow(QtGui.QLabel('PLugin <a href="https://github.com/xtr4nge/sslstrip">Sslstrip</a> fork inject code<br>'))
+        self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/LeonardoNve"><strong>@LeonardoNve</strong></a>'))
+        self.formMode.addRow(QtGui.QLabel('Plugin <a href="https://github.com/LeonardoNve/sslstrip2">SSLstrip2</a> version fork'))
+        self.formMode.addRow(QtGui.QLabel('Plugin <a href="https://github.com/LeonardoNve/dns2proxy">Dns2proxy</a> Offensive DNS server <br>'))
+        self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/davinerd"><strong>@davinerd</strong></a>'))
+        self.formMode.addRow(QtGui.QLabel('Plugin <a href="https://github.com/davinerd/BDFProxy-ng"> BDFProxy-ng</a> version fork <br>'))
+        self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/lgandx"><strong> Laurent Gaffie @lgandx</strong></a>'))
+        self.formMode.addRow(QtGui.QLabel('Plugin <a href="https://github.com/lgandx/Responder"> Responder</a><br>'))
+        self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/supernothing"><strong>Ben Schmidt @supernothing</strong></a>'))
+        self.formMode.addRow(QtGui.QLabel('Plugin <a href="https://github.com/supernothing/sergio-proxy">SergioProxy</a> - bypass HSTS<br>'))
+        self.formMode.addRow(QtGui.QLabel('<a href="http://www.yasinuludag.com/darkorange.stylesheet"><strong>Yasin Uludag</strong></a>'))
+        self.formMode.addRow(QtGui.QLabel('theme1.qss - Qt dark orange stylesheet<br>'))
+        self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/ColinDuquesnoy/QDarkStyleSheet"><strong>Colin Duquesnoy @ColinDuquesnoy</strong></a>'))
+        self.formMode.addRow(QtGui.QLabel('theme2.qss - Qt dark blue stylesheet<br>'))
         self.mainLayout.addRow(self.formMode)
 
-        self.layout = QHBoxLayout()
+        self.layout = QtGui.QHBoxLayout()
         self.layout.addWidget(self.scroll)
         self.addLayout(self.layout)
 
@@ -70,88 +70,87 @@ class frmAbout(PumpkinModule):
         self.emails      = emails
         self.version     = version
         self.update      = update
-        self.desc        = QLabel(desc[0]+'<br>')
+        self.desc        = QtGui.QLabel(desc[0]+'<br>')
         self.setWindowTitle("About WiFi-Pumpkin")
-        self.Main = QVBoxLayout()
-        self.frm = QFormLayout()
+        self.Main = QtGui.QVBoxLayout()
+        self.frm = QtGui.QFormLayout()
         self.setGeometry(0, 0, 350, 400)
         self.center()
-        self.loadtheme(self.configure.XmlThemeSelected())
         self.Qui_update()
 
     def center(self):
         frameGm = self.frameGeometry()
-        centerPoint = QDesktopWidget().availableGeometry().center()
+        centerPoint = QtGui.QDesktopWidget().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
     def Qui_update(self):
-        self.logoapp = QLabel('')
-        self.logoapp.setPixmap(QPixmap('icons/icon.ico').scaled(96,96))
-        self.form = QFormLayout()
-        self.form2 = QHBoxLayout()
-        self.form.addRow(self.logoapp,QLabel(
-        QString('<h2>WiFi-Pumpkin {}</h2>'.format(self.version))))
-        self.tabwid = QTabWidget(self)
-        self.TabAbout = QWidget(self)
-        self.TabVersion = QWidget(self)
-        self.TabTranks  = QWidget(self)
-        self.TabChangelog = QWidget(self)
-        self.TabDonate   = QWidget(self)
-        self.btn_exit = QPushButton("Close")
+        self.logoapp = QtGui.QLabel('')
+        self.logoapp.setPixmap(QtGui.QPixmap('icons/icon.png').scaled(64,64))
+        self.form = QtGui.QFormLayout()
+        self.form2 = QtGui.QHBoxLayout()
+        self.form.addRow(self.logoapp,QtGui.QLabel(
+            QtCore.QString('<h2>WiFi-Pumpkin {}</h2>'.format(self.version))))
+        self.tabwid = QtGui.QTabWidget(self)
+        self.TabAbout = QtGui.QWidget(self)
+        self.TabVersion = QtGui.QWidget(self)
+        self.TabTranks  = QtGui.QWidget(self)
+        self.TabChangelog = QtGui.QWidget(self)
+        self.TabDonate   = QtGui.QWidget(self)
+        self.btn_exit = QtGui.QPushButton("Close")
         self.btn_exit.setFixedWidth(90)
-        self.btn_exit.setIcon(QIcon('icons/cancel.png'))
+        self.btn_exit.setIcon(QtGui.QIcon('icons/cancel.png'))
         self.btn_exit.clicked.connect(self.close)
 
-        self.formAbout = QFormLayout()
-        self.formVersion = QFormLayout()
-        self.formTranks = QFormLayout()
-        self.formChange = QFormLayout()
-        self.formDonate = QFormLayout()
+        self.formAbout = QtGui.QFormLayout()
+        self.formVersion = QtGui.QFormLayout()
+        self.formTranks = QtGui.QFormLayout()
+        self.formChange = QtGui.QFormLayout()
+        self.formDonate = QtGui.QFormLayout()
 
         # About section
         self.formAbout.addRow(self.desc)
-        self.formAbout.addRow(QLabel('Last Update:'))
-        self.formAbout.addRow(QLabel(self.update+'<br>'))
-        self.formAbout.addRow(QLabel('Feedback:'))
-        self.formAbout.addRow(QLabel(self.emails[0]))
-        self.formAbout.addRow(QLabel(self.emails[1]+'<br>'))
-        self.formAbout.addRow(QLabel('Copyright 2015-2017, '+self.author[:-14]))
-        self.gnu = QLabel('<a href="link">License: GNU General Public License Version</a><br>')
+        self.formAbout.addRow(QtGui.QLabel('Last Update:'))
+        self.formAbout.addRow(QtGui.QLabel(self.update+'<br>'))
+        self.formAbout.addRow(QtGui.QLabel('Feedback:'))
+        self.formAbout.addRow(QtGui.QLabel(self.emails[0]))
+        self.formAbout.addRow(QtGui.QLabel(self.emails[1]+'<br>'))
+        self.formAbout.addRow(QtGui.QLabel('Copyright 2015-2017, '+self.author[:-14]))
+        self.gnu = QtGui.QLabel('<a href="link">License: GNU General Public License Version</a><br>')
         self.gnu.linkActivated.connect(self.link)
         self.formAbout.addRow(self.gnu)
-        self.formAbout.addRow(QLabel('<center>{}</center>'.format(self.author[-14:])))
+        self.formAbout.addRow(QtGui.QLabel('<center>{}</center>'.format(self.author[-14:])))
         self.TabAbout.setLayout(self.formAbout)
 
         #Donate section
-        self.formDonate.addRow(QLabel('Open source project require developer time.<br>'
+        self.formDonate.addRow(QtGui.QLabel('Open source project require developer time.<br>'
         ' You need dev time to fix bugs, you need dev time<br> to add features,'
         " thank you for your contribution! "))
-        self.imagePay =  QLabel()
-        self.imagePay.setPixmap(QPixmap('icons/donatepay.gif'))
-        self.formDonate.addRow(QLabel(''))
-        self.formDonate.addRow(QLabel('Support Donations:'))
+        self.imagePay =  QtGui.QLabel()
+        self.imagePay.setPixmap(QtGui.QPixmap('icons/donatepay.gif'))
+        self.formDonate.addRow(QtGui.QLabel(''))
+        self.formDonate.addRow(QtGui.QLabel('Support Donations:'))
         self.formDonate.addRow(self.imagePay)
-        self.formDonate.addRow(QLabel('Paypal:'),QLabel('<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick'
+        self.formDonate.addRow(QtGui.QLabel('Paypal:'),QtGui.QLabel('<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick'
         '&hosted_button_id=PUPJEGHLJPFQL">WiFi-Pumpkin project - Paypal Donataion </a>'))
-        self.formDonate.addRow(QLabel('BTC:'),QLabel('<a href="1HBXz6XX3LcHqUnaca5HRqq6rPUmA3pf6f">1HBXz6XX3LcHqUnaca5HRqq6rPUmA3pf6f</a>'))
-        self.formDonate.addRow(QLabel('Patreon:'),QLabel('<a href="https://www.patreon.com/wifipumpkin">https://www.patreon.com/wifipumpkin</a>'))
+        self.formDonate.addRow(QtGui.QLabel('BTC:'),QtGui.QLabel('<a href="1HBXz6XX3LcHqUnaca5HRqq6rPUmA3pf6f">1HBXz6XX3LcHqUnaca5HRqq6rPUmA3pf6f</a>'))
+        self.formDonate.addRow(QtGui.QLabel('Patreon:'),QtGui.QLabel('<a href="https://www.patreon.com/wifipumpkin">https://www.patreon.com/wifipumpkin</a>'))
         self.TabDonate.setLayout(self.formDonate)
 
         # Version Section
-        self.formVersion.addRow(QLabel('<strong>Version: {}</strong><br>'.format(self.version)))
-        self.formVersion.addRow(QLabel('Using:'))
+        self.formVersion.addRow(QtGui.QLabel('<strong>Version: {}</strong><br>'.format(self.version)))
+        self.formVersion.addRow(QtGui.QLabel('Using:'))
         import platform
         python_version = platform.python_version()
-        self.formVersion.addRow(QLabel('''
+        self.formVersion.addRow(QtGui.QLabel('''
         <ul>
           <li>QTVersion: {}</li>
           <li>Python: {}</li>
-        </ul>'''.format(QT_VERSION_STR,python_version)))
+        </ul>'''.format(QtCore.QT_VERSION_STR,python_version)))
         self.TabVersion.setLayout(self.formVersion)
 
         # Tranks Section
-        self.TabpageTranks = QVBoxLayout(self.TabTranks)
+        self.TabpageTranks = QtGui.QVBoxLayout(self.TabTranks)
         self.formTE = SettingsTranks()
         self.TabpageTranks.addLayout(self.formTE)
 

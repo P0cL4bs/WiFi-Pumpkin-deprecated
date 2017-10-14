@@ -1,7 +1,7 @@
 from logging import getLogger,ERROR
 getLogger('scapy.runtime').setLevel(ERROR)
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt4 import QtGui
+from PyQt4 import QtCore
 from json import dumps,loads
 from pwd import getpwnam
 from grp import getgrnam
@@ -31,7 +31,7 @@ from core.widgets.tabmodels import (
 )
 
 from core.widgets.popupmodels import (
-    PopUpPlugins,PopUpServer
+    PopUpPlugins
 )
 
 from core.utility.threads import  (
@@ -84,27 +84,27 @@ version     = '0.8.5'
 update      = '04/05/2017' # This is Brasil :D
 desc        = ['Framework for Rogue Wi-Fi Access Point Attacks']
 
-class Initialize(QMainWindow):
+class Initialize(QtGui.QMainWindow):
     ''' Main window settings multi-window opened'''
     def __init__(self, parent=None):
         super(Initialize, self).__init__(parent)
         self.FSettings      = frm_Settings()
-        self.form_widget    = WifiPumpkin(self,self,self.FSettings)
+        self.form_widget    = WifiPumpkin(self)
 
         #for exclude USB adapter if the option is checked in settings tab
         self.networkcontrol = None
         # create advanced mode support
-        dock = QDockWidget()
-        dock.setTitleBarWidget(QWidget())
+        dock = QtGui.QDockWidget()
+        dock.setTitleBarWidget(QtGui.QWidget())
         dock.setWidget(self.form_widget)
-        dock.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        dock.setFeatures(QDockWidget.NoDockWidgetFeatures)
-        dock.setAllowedAreas(Qt.AllDockWidgetAreas)
-        self.addDockWidget(Qt.LeftDockWidgetArea, dock)
+        dock.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
+        dock.setAllowedAreas(QtCore.Qt.AllDockWidgetAreas)
+        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
         # set window title
         self.setWindowTitle('WiFi-Pumpkin v' + version)
         self.setGeometry(0, 0, C.GEOMETRYH, C.GEOMETRYW) # set geometry window
-        self.loadtheme(self.FSettings.XmlThemeSelected())
+        self.loadtheme(self.FSettings.get_theme_qss())
 
     def loadtheme(self,theme):
         ''' load Theme from file .qss '''
@@ -115,7 +115,7 @@ class Initialize(QMainWindow):
     def center(self):
         ''' set Window center desktop '''
         frameGm = self.frameGeometry()
-        centerPoint = QDesktopWidget().availableGeometry().center()
+        centerPoint = QtGui.QDesktopWidget().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
@@ -134,31 +134,31 @@ class Initialize(QMainWindow):
         iwconfig = Popen(['iwconfig'], stdout=PIPE,shell=False,stderr=PIPE)
         for i in iwconfig.stdout.readlines():
             if search('Mode:Monitor',i):
-                self.reply = QMessageBox.question(self,
-                'About Exit','Are you sure to quit?', QMessageBox.Yes |
-                QMessageBox.No, QMessageBox.No)
-                if self.reply == QMessageBox.Yes:
+                self.reply = QtGui.QMessageBox.question(self,
+                'About Exit','Are you sure to quit?', QtGui.QMessageBox.Yes |
+                QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+                if self.reply == QtGui.QMessageBox.Yes:
                     set_monitor_mode(i.split()[0]).setDisable()
                     return event.accept()
                 return event.ignore()
 
         # check is Rouge AP is running
         if self.form_widget.Apthreads['RougeAP'] != []:
-            self.reply = QMessageBox.question(self,
-            'About Access Point','Are you sure to stop all threads AP ?', QMessageBox.Yes |
-            QMessageBox.No, QMessageBox.No)
-            if self.reply == QMessageBox.Yes:
+            self.reply = QtGui.QMessageBox.question(self,
+            'About Access Point','Are you sure to stop all threads AP ?', QtGui.QMessageBox.Yes |
+            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            if self.reply == QtGui.QMessageBox.Yes:
                 print('killing all threads...')
                 self.form_widget.stop_access_point()
                 return event.accept()
             return event.ignore()
         return event.accept()
 
-class WifiPumpkin(QWidget):
+class WifiPumpkin(QtGui.QWidget):
     ''' load main window class'''
-    def __init__(self, parent = None,window=None,Fsettings=None):
-        self.InitialMehtod = window
-        super(WifiPumpkin, self).__init__(parent)
+    def __init__(self, mainWindow):
+        QtGui.QWidget.__init__(self)
+        self.mainWindow = mainWindow
         self.InternetShareWiFi = True # share internet options
 
         # check update from github repository
@@ -172,86 +172,86 @@ class WifiPumpkin(QWidget):
         self.Timer.start()
 
         # define all Widget TABs
-        self.MainControl    = QVBoxLayout()
-        self.TabControl     = QTabWidget()
-        self.Tab_Default    = QWidget()
-        self.Tab_Injector   = QWidget()
-        self.Tab_PumpkinPro = QWidget()
-        self.Tab_Packetsniffer = QWidget()
-        self.Tab_statusAP   = QWidget()
-        self.Tab_imageCap   = QWidget()
-        self.Tab_Settings   = QWidget()
-        self.Tab_ApMonitor  = QWidget()
-        self.Tab_Plugins    = QWidget()
-        self.Tab_dock       = QMainWindow() # for dockarea
-        self.FSettings      = Fsettings
+        self.MainControl    = QtGui.QVBoxLayout()
+        self.TabControl     = QtGui.QTabWidget()
+        self.Tab_Default    = QtGui.QWidget()
+        self.Tab_Injector   = QtGui.QWidget()
+        self.Tab_PumpkinPro = QtGui.QWidget()
+        self.Tab_Packetsniffer = QtGui.QWidget()
+        self.Tab_statusAP   = QtGui.QWidget()
+        self.Tab_imageCap   = QtGui.QWidget()
+        self.Tab_Settings   = QtGui.QWidget()
+        self.Tab_ApMonitor  = QtGui.QWidget()
+        self.Tab_Plugins    = QtGui.QWidget()
+        self.Tab_dock       = QtGui.QMainWindow() # for dockarea
+        self.FSettings      = self.mainWindow.FSettings
 
         # create dockarea in Widget class
-        self.dock = QDockWidget()
-        self.dock.setTitleBarWidget(QWidget())
-        self.dock.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        self.dock.setFeatures(QDockWidget.NoDockWidgetFeatures)
-        self.dock.setAllowedAreas(Qt.AllDockWidgetAreas)
+        self.dock = QtGui.QDockWidget()
+        self.dock.setTitleBarWidget(QtGui.QWidget())
+        self.dock.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        self.dock.setFeatures(QtGui.QDockWidget.NoDockWidgetFeatures)
+        self.dock.setAllowedAreas(QtCore.Qt.AllDockWidgetAreas)
 
         # icons menus left widgets
-        self.TabListWidget_Menu = QListWidget()
-        self.item_home = QListWidgetItem()
+        self.TabListWidget_Menu = QtGui.QListWidget()
+        self.item_home = QtGui.QListWidgetItem()
         self.item_home.setText('Home')
-        self.item_home.setSizeHint(QSize(30,30))
-        self.item_home.setIcon(QIcon('icons/home.png'))
+        self.item_home.setSizeHint(QtCore.QSize(30,30))
+        self.item_home.setIcon(QtGui.QIcon('icons/home.png'))
         self.TabListWidget_Menu.addItem(self.item_home)
 
-        self.item_settings = QListWidgetItem()
+        self.item_settings = QtGui.QListWidgetItem()
         self.item_settings.setText('Settings')
-        self.item_settings.setSizeHint(QSize(30,30))
-        self.item_settings.setIcon(QIcon('icons/settings-AP.png'))
+        self.item_settings.setSizeHint(QtCore.QSize(30,30))
+        self.item_settings.setIcon(QtGui.QIcon('icons/settings-AP.png'))
         self.TabListWidget_Menu.addItem(self.item_settings)
 
-        self.item_plugins = QListWidgetItem()
+        self.item_plugins =QtGui.QListWidgetItem()
         self.item_plugins.setText('Plugins')
-        self.item_plugins.setSizeHint(QSize(30,30))
-        self.item_plugins.setIcon(QIcon('icons/plugins-new.png'))
+        self.item_plugins.setSizeHint(QtCore.QSize(30,30))
+        self.item_plugins.setIcon(QtGui.QIcon('icons/plugins-new.png'))
         self.TabListWidget_Menu.addItem(self.item_plugins)
 
-        self.item_injector = QListWidgetItem()
+        self.item_injector = QtGui.QListWidgetItem()
         self.item_injector.setText('SSLstrip-Proxy')
-        self.item_injector.setSizeHint(QSize(30,30))
-        self.item_injector.setIcon(QIcon('icons/mac.png'))
+        self.item_injector.setSizeHint(QtCore.QSize(30,30))
+        self.item_injector.setIcon(QtGui.QIcon('icons/mac.png'))
         self.TabListWidget_Menu.addItem(self.item_injector)
 
-        self.item_pumpkinProxy = QListWidgetItem()
+        self.item_pumpkinProxy = QtGui.QListWidgetItem()
         self.item_pumpkinProxy.setText('Pumpkin-Proxy')
-        self.item_pumpkinProxy.setSizeHint(QSize(30,30))
-        self.item_pumpkinProxy.setIcon(QIcon('icons/pumpkinproxy.png'))
+        self.item_pumpkinProxy.setSizeHint(QtCore.QSize(30,30))
+        self.item_pumpkinProxy.setIcon(QtGui.QIcon('icons/pumpkinproxy.png'))
         self.TabListWidget_Menu.addItem(self.item_pumpkinProxy)
 
-        self.item_packetsniffer = QListWidgetItem()
+        self.item_packetsniffer = QtGui.QListWidgetItem()
         self.item_packetsniffer.setText('TCP-Proxy')
-        self.item_packetsniffer.setSizeHint(QSize(30,30))
-        self.item_packetsniffer.setIcon(QIcon('icons/tcpproxy.png'))
+        self.item_packetsniffer.setSizeHint(QtCore.QSize(30,30))
+        self.item_packetsniffer.setIcon(QtGui.QIcon('icons/tcpproxy.png'))
         self.TabListWidget_Menu.addItem(self.item_packetsniffer)
 
-        self.item_imageCapture = QListWidgetItem()
+        self.item_imageCapture = QtGui.QListWidgetItem()
         self.item_imageCapture.setText('Images-Cap')
-        self.item_imageCapture.setSizeHint(QSize(30,30))
-        self.item_imageCapture.setIcon(QIcon('icons/image.png'))
+        self.item_imageCapture.setSizeHint(QtCore.QSize(30,30))
+        self.item_imageCapture.setIcon(QtGui.QIcon('icons/image.png'))
         self.TabListWidget_Menu.addItem(self.item_imageCapture)
 
-        self.item_dock = QListWidgetItem()
+        self.item_dock = QtGui.QListWidgetItem()
         self.item_dock.setText('Activity-Monitor')
-        self.item_dock.setSizeHint(QSize(30,30))
-        self.item_dock.setIcon(QIcon('icons/activity-monitor.png'))
+        self.item_dock.setSizeHint(QtCore.QSize(30,30))
+        self.item_dock.setIcon(QtGui.QIcon('icons/activity-monitor.png'))
         self.TabListWidget_Menu.addItem(self.item_dock)
 
-        self.item_monitor = QListWidgetItem()
+        self.item_monitor = QtGui.QListWidgetItem()
         self.item_monitor.setText('Stations')
-        self.item_monitor.setSizeHint(QSize(30,30))
-        self.item_monitor.setIcon(QIcon('icons/stations.png'))
+        self.item_monitor.setSizeHint(QtCore.QSize(30,30))
+        self.item_monitor.setIcon(QtGui.QIcon('icons/stations.png'))
         self.TabListWidget_Menu.addItem(self.item_monitor)
 
-        self.Stack = QStackedWidget(self)
-        self.Stack.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        self.Tab_Default.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.Stack = QtGui.QStackedWidget(self)
+        self.Stack.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        self.Tab_Default.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         self.Stack.addWidget(self.Tab_Default)
         self.TabListWidget_Menu.currentRowChanged.connect(self.set_index_leftMenu)
         self.TabListWidget_Menu.setFixedWidth(140)
@@ -259,15 +259,15 @@ class WifiPumpkin(QWidget):
         # add in Tab default widget TABs
 
         # create Layout for add contents widgets TABs
-        self.ContentTabHome    = QVBoxLayout(self.Tab_Default)
-        self.ContentTabsettings= QVBoxLayout(self.Tab_Settings)
-        self.ContentTabInject  = QVBoxLayout(self.Tab_Injector)
-        self.ContentTabPumpPro = QVBoxLayout(self.Tab_PumpkinPro)
-        self.ContentTabPackets = QVBoxLayout(self.Tab_Packetsniffer)
-        self.ContentImageCap   = QHBoxLayout(self.Tab_imageCap)
-        self.ContentTabMonitor = QVBoxLayout(self.Tab_ApMonitor)
-        self.ContentTabPlugins = QVBoxLayout(self.Tab_Plugins)
-        self.ContentTabStatus  = QVBoxLayout(self.Tab_statusAP)
+        self.ContentTabHome    = QtGui.QVBoxLayout(self.Tab_Default)
+        self.ContentTabsettings= QtGui.QVBoxLayout(self.Tab_Settings)
+        self.ContentTabInject  = QtGui.QVBoxLayout(self.Tab_Injector)
+        self.ContentTabPumpPro = QtGui.QVBoxLayout(self.Tab_PumpkinPro)
+        self.ContentTabPackets = QtGui.QVBoxLayout(self.Tab_Packetsniffer)
+        self.ContentImageCap   = QtGui.QHBoxLayout(self.Tab_imageCap)
+        self.ContentTabMonitor = QtGui.QVBoxLayout(self.Tab_ApMonitor)
+        self.ContentTabPlugins = QtGui.QVBoxLayout(self.Tab_Plugins)
+        self.ContentTabStatus  = QtGui.QVBoxLayout(self.Tab_statusAP)
         self.Stack.addWidget(self.Tab_Settings)
         self.Stack.addWidget(self.Tab_Plugins)
         self.Stack.addWidget(self.Tab_Injector)
@@ -310,11 +310,12 @@ class WifiPumpkin(QWidget):
         'ProgCheck':[],'AP_iface': None,'PortRedirect': None, 'interface':'None'}
         self.THeaders  = OrderedDict([ ('Devices',[]),('IP Address',[]),('Mac Address',[]),('Vendors',[])])
         # load all session saved in file ctg
-        self.status_plugin_proxy_name = QLabel('') # status name proxy activated
+        self.status_plugin_proxy_name = QtGui.QLabel('') # status name proxy activated
         self.SessionsAP     = loads(str(self.FSettings.Settings.get_setting('accesspoint','sessions')))
         self.PopUpPlugins   = PopUpPlugins(self.FSettings,self) # create popupPlugins
         self.PopUpPlugins.sendSingal_disable.connect(self.get_disable_proxy_status)
         self.THReactor = ThreadReactor() # thread reactor for sslstrip
+        self.window_phishing = GUIModules.frm_PhishingManager()
         self.initial_GUI_loader()
 
     def initial_GUI_loader(self):
@@ -333,21 +334,21 @@ class WifiPumpkin(QWidget):
         self.StatusAPTAB.scroll.setFixedHeight(210)
         self.check_plugins_enable() # check plugins activated
 
-        self.myQMenuBar = QMenuBar(self)
+        self.myQMenuBar = QtGui.QMenuBar(self)
         Menu_file = self.myQMenuBar.addMenu('&File')
-        exportAction = QAction('Report Logger...', self)
-        deleteAction = QAction('Clear Logger', self)
-        deleteAction.setIcon(QIcon('icons/delete.png'))
-        exportAction.setIcon(QIcon('icons/export.png'))
+        exportAction = QtGui.QAction('Report Logger...', self)
+        deleteAction = QtGui.QAction('Clear Logger', self)
+        deleteAction.setIcon(QtGui.QIcon('icons/delete.png'))
+        exportAction.setIcon(QtGui.QIcon('icons/export.png'))
         Menu_file.addAction(exportAction)
         Menu_file.addAction(deleteAction)
         deleteAction.triggered.connect(self.clean_all_loggers)
         exportAction.triggered.connect(self.show_exportlogger)
-        action_settings = QAction('Settings...',self)
+        action_settings = QtGui.QAction('Settings...',self)
         Menu_file.addAction(action_settings)
 
         Menu_View = self.myQMenuBar.addMenu('&View')
-        self.statusap_action = QAction('Status Dashboard', self.myQMenuBar, checkable=True)
+        self.statusap_action = QtGui.QAction('Status Dashboard', self.myQMenuBar, checkable=True)
         self.statusap_action.setChecked(self.FSettings.Settings.get_setting('settings',
         'show_dashboard_info', format=bool))
         self.check_status_ap_dashboard()
@@ -358,16 +359,16 @@ class WifiPumpkin(QWidget):
 
         #tools Menu
         Menu_tools = self.myQMenuBar.addMenu('&Tools')
-        btn_drift = QAction('Active DriftNet', self)
+        btn_drift = QtGui.QAction('Active DriftNet', self)
         btn_drift.setShortcut('Ctrl+Y')
         btn_drift.triggered.connect(self.show_driftnet)
-        btn_drift.setIcon(QIcon('icons/capture.png'))
+        btn_drift.setIcon(QtGui.QIcon('icons/capture.png'))
         Menu_tools.addAction(btn_drift)
 
         # server Menu
         Menu_Server = self.myQMenuBar.addMenu('&Server')
-        btn_phishing = QAction('Phishing Manager',self)
-        btn_winup = QAction('Windows Update',self)
+        btn_phishing = QtGui.QAction('Phishing Manager',self)
+        btn_winup = QtGui.QAction('Windows Update',self)
         btn_winup.setShortcut('Ctrl+N')
         btn_phishing.setShortcut('ctrl+Z')
         Menu_Server.addAction(btn_phishing)
@@ -375,11 +376,11 @@ class WifiPumpkin(QWidget):
 
         #menu module
         Menu_module = self.myQMenuBar.addMenu('&Modules')
-        btn_deauth = QAction('Wi-Fi deauthentication', self)
-        btn_probe = QAction('Wi-Fi Probe Request',self)
-        btn_dhcpStar = QAction('DHCP Starvation',self)
-        btn_arp = QAction('ARP Poisoner ',self)
-        btn_dns = QAction('DNS Spoofer ',self)
+        btn_deauth = QtGui.QAction('Wi-Fi deauthentication', self)
+        btn_probe = QtGui.QAction('Wi-Fi Probe Request',self)
+        btn_dhcpStar = QtGui.QAction('DHCP Starvation',self)
+        btn_arp = QtGui.QAction('ARP Poisoner ',self)
+        btn_dns = QtGui.QAction('DNS Spoofer ',self)
 
         # Shortcut modules
         btn_deauth.setShortcut('Ctrl+W')
@@ -400,14 +401,14 @@ class WifiPumpkin(QWidget):
         action_settings.triggered.connect(self.show_settings)
 
         #icons modules
-        btn_arp.setIcon(QIcon('icons/arp_.png'))
-        btn_winup.setIcon(QIcon('icons/arp.png'))
-        btn_dhcpStar.setIcon(QIcon('icons/dhcp.png'))
-        btn_probe.setIcon(QIcon('icons/probe.png'))
-        btn_deauth.setIcon(QIcon('icons/deauth.png'))
-        btn_dns.setIcon(QIcon('icons/dns_spoof.png'))
-        btn_phishing.setIcon(QIcon('icons/page.png'))
-        action_settings.setIcon(QIcon('icons/setting.png'))
+        btn_arp.setIcon(QtGui.QIcon('icons/arp_.png'))
+        btn_winup.setIcon(QtGui.QIcon('icons/arp.png'))
+        btn_dhcpStar.setIcon(QtGui.QIcon('icons/dhcp.png'))
+        btn_probe.setIcon(QtGui.QIcon('icons/probe.png'))
+        btn_deauth.setIcon(QtGui.QIcon('icons/deauth.png'))
+        btn_dns.setIcon(QtGui.QIcon('icons/dns_spoof.png'))
+        btn_phishing.setIcon(QtGui.QIcon('icons/page.png'))
+        action_settings.setIcon(QtGui.QIcon('icons/setting.png'))
 
         # add modules menu
         Menu_module.addAction(btn_deauth)
@@ -418,14 +419,14 @@ class WifiPumpkin(QWidget):
 
         #menu extra
         Menu_extra= self.myQMenuBar.addMenu('&Help')
-        Menu_update = QAction('Check for Updates',self)
-        Menu_about = QAction('About WiFi-Pumpkin',self)
-        Menu_issue = QAction('Submit issue',self)
-        Menu_donate = QAction('Donate',self)
-        Menu_about.setIcon(QIcon('icons/about.png'))
-        Menu_issue.setIcon(QIcon('icons/report.png'))
-        Menu_update.setIcon(QIcon('icons/update.png'))
-        Menu_donate.setIcon(QIcon('icons/donate.png'))
+        Menu_update = QtGui.QAction('Check for Updates',self)
+        Menu_about = QtGui.QAction('About WiFi-Pumpkin',self)
+        Menu_issue = QtGui.QAction('Submit issue',self)
+        Menu_donate = QtGui.QAction('Donate',self)
+        Menu_about.setIcon(QtGui.QIcon('icons/about.png'))
+        Menu_issue.setIcon(QtGui.QIcon('icons/report.png'))
+        Menu_update.setIcon(QtGui.QIcon('icons/update.png'))
+        Menu_donate.setIcon(QtGui.QIcon('icons/donate.png'))
         Menu_about.triggered.connect(self.about)
         Menu_issue.triggered.connect(self.issue)
         Menu_donate.triggered.connect(self.donate)
@@ -435,11 +436,11 @@ class WifiPumpkin(QWidget):
         Menu_extra.addAction(Menu_update)
         Menu_extra.addAction(Menu_about)
         # create box default Form
-        self.boxHome = QVBoxLayout(self)
+        self.boxHome = QtGui.QVBoxLayout(self)
         self.boxHome.addWidget(self.myQMenuBar)
 
         # create Horizontal widgets
-        hbox = QHBoxLayout()
+        hbox = QtGui.QHBoxLayout()
         self.hBoxbutton.addWidget(self.TabListWidget_Menu)
         self.hBoxbutton.addWidget(self.progress)
         # add button start and stop
@@ -498,18 +499,18 @@ class WifiPumpkin(QWidget):
 
     def default_TAB_Content(self):
         ''' configure all widget in home page '''
-        self.StatusBar = QStatusBar()
+        self.StatusBar = QtGui.QStatusBar()
         self.StatusBar.setFixedHeight(23)
-        self.connectedCount = QLabel('')
-        self.status_ap_runing = QLabel('')
-        self.connected_status = QLabel('')
+        self.connectedCount = QtGui.QLabel('')
+        self.status_ap_runing = QtGui.QLabel('')
+        self.connected_status = QtGui.QLabel('')
 
         # add widgets in status bar
-        self.StatusBar.addWidget(QLabel('Connection:'))
+        self.StatusBar.addWidget(QtGui.QLabel('Connection:'))
         self.StatusBar.addWidget(self.connected_status)
-        self.StatusBar.addWidget(QLabel('Plugin:'))
+        self.StatusBar.addWidget(QtGui.QLabel('Plugin:'))
         self.StatusBar.addWidget(self.status_plugin_proxy_name)
-        self.StatusBar.addWidget(QLabel("Status-AP:"))
+        self.StatusBar.addWidget(QtGui.QLabel("Status-AP:"))
         self.StatusBar.addWidget(self.status_ap_runing)
 
         self.set_status_label_AP(False)
@@ -517,33 +518,33 @@ class WifiPumpkin(QWidget):
         self.progress.setFixedHeight(13)
         self.progress.setFixedWidth(140)
 
-        self.StatusBar.addWidget(QLabel(''),20)
-        self.StatusBar.addWidget(QLabel("Clients:"))
+        self.StatusBar.addWidget(QtGui.QLabel(''),20)
+        self.StatusBar.addWidget(QtGui.QLabel("Clients:"))
         self.connectedCount.setText("0")
         self.connectedCount.setStyleSheet("QLabel {  color : yellow; }")
         self.StatusBar.addWidget(self.connectedCount)
-        self.EditGateway = QLineEdit(self)
-        self.EditApName = QLineEdit(self)
-        self.EditBSSID  = QLineEdit(self)
-        self.btn_random_essid = QPushButton(self)
-        self.EditChannel =QSpinBox(self)
+        self.EditGateway = QtGui.QLineEdit(self)
+        self.EditApName = QtGui.QLineEdit(self)
+        self.EditBSSID  = QtGui.QLineEdit(self)
+        self.btn_random_essid = QtGui.QPushButton(self)
+        self.EditChannel =QtGui.QSpinBox(self)
         self.EditChannel.setMinimum(1)
         self.EditChannel.setMaximum(13)
         self.EditChannel.setFixedWidth(50)
         self.EditGateway.setFixedWidth(120)
         self.EditGateway.setHidden(True) # disable Gateway
-        self.selectCard = QComboBox(self)
+        self.selectCard = QtGui.QComboBox(self)
         self.btn_random_essid.clicked.connect(self.setAP_essid_random)
-        self.btn_random_essid.setIcon(QIcon('icons/refresh.png'))
+        self.btn_random_essid.setIcon(QtGui.QIcon('icons/refresh.png'))
 
         # table information AP connected
         self.TabInfoAP = AutoTableWidget()
         self.TabInfoAP.setRowCount(50)
         self.TabInfoAP.resizeRowsToContents()
-        self.TabInfoAP.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.TabInfoAP.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         self.TabInfoAP.horizontalHeader().setStretchLastSection(True)
-        self.TabInfoAP.setSelectionMode(QAbstractItemView.NoSelection)
-        self.TabInfoAP.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.TabInfoAP.setSelectionMode(QtGui.QAbstractItemView.NoSelection)
+        self.TabInfoAP.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.TabInfoAP.verticalHeader().setVisible(False)
         self.TabInfoAP.setHorizontalHeaderLabels(self.THeaders.keys())
         self.TabInfoAP.verticalHeader().setDefaultSectionSize(23)
@@ -556,28 +557,27 @@ class WifiPumpkin(QWidget):
 
         #edits
         self.set_initials_configsGUI()
-        self.FormGroup2 = QFormLayout()
-        self.FormGroup3 = QGridLayout()
+        self.FormGroup2 = QtGui.QFormLayout()
+        self.FormGroup3 = QtGui.QGridLayout()
 
         # popupMenu HTTP server quick start
-        self.FormPopup = PopUpServer(self.FSettings)
 
         # grid network adapter fix
-        self.btrn_refresh = QPushButton('Refresh')
-        self.btrn_refresh.setIcon(QIcon('icons/refresh.png'))
+        self.btrn_refresh = QtGui.QPushButton('Refresh')
+        self.btrn_refresh.setIcon(QtGui.QIcon('icons/refresh.png'))
         self.btrn_refresh.clicked.connect(self.set_interface_wireless)
         self.btrn_refresh.setFixedWidth(90)
         self.btrn_refresh.setFixedHeight(25)
 
-        self.btrn_find_Inet = QPushButton('Check Network Connection')
-        self.btrn_find_Inet.setIcon(QIcon('icons/router2.png'))
+        self.btrn_find_Inet = QtGui.QPushButton('Check Network Connection')
+        self.btrn_find_Inet.setIcon(QtGui.QIcon('icons/router2.png'))
         self.btrn_find_Inet.clicked.connect(self.check_NetworkConnection)
         self.btrn_find_Inet.setFixedHeight(25)
         self.btrn_find_Inet.setFixedWidth(220)
 
         # group for list network adapters
-        self.GroupAdapter = QGroupBox()
-        self.layoutNetworkAd = QHBoxLayout()
+        self.GroupAdapter = QtGui.QGroupBox()
+        self.layoutNetworkAd = QtGui.QHBoxLayout()
         self.GroupAdapter.setTitle('Network Adapter')
         self.layoutNetworkAd.addWidget(self.selectCard)
         self.layoutNetworkAd.addWidget(self.btrn_refresh)
@@ -585,29 +585,29 @@ class WifiPumpkin(QWidget):
         self.GroupAdapter.setLayout(self.layoutNetworkAd)
 
         # settings info access point
-        self.GroupAP = QGroupBox()
+        self.GroupAP = QtGui.QGroupBox()
         self.GroupAP.setTitle('Access Point')
-        self.FormGroup3.addWidget(QLabel("SSID:"),0,0)
+        self.FormGroup3.addWidget(QtGui.QLabel("SSID:"),0,0)
         self.FormGroup3.addWidget(self.EditApName,0,1)
-        self.FormGroup3.addWidget(QLabel("BSSID:"), 1, 0)
+        self.FormGroup3.addWidget(QtGui.QLabel("BSSID:"), 1, 0)
         self.FormGroup3.addWidget(self.EditBSSID, 1, 1)
         self.FormGroup3.addWidget(self.btn_random_essid, 1, 2)
-        self.FormGroup3.addWidget(QLabel("Channel:"),2,0)
+        self.FormGroup3.addWidget(QtGui.QLabel("Channel:"),2,0)
         self.FormGroup3.addWidget(self.EditChannel,2,1)
         self.GroupAP.setLayout(self.FormGroup3)
         self.GroupAP.setFixedWidth(260)
 
         # create widgets for Wireless Security options
-        self.GroupApPassphrase = QGroupBox()
+        self.GroupApPassphrase = QtGui.QGroupBox()
         self.GroupApPassphrase.setTitle('Enable Wireless Security')
         self.GroupApPassphrase.setCheckable(True)
         self.GroupApPassphrase.setChecked(self.FSettings.Settings.get_setting('accesspoint','enable_Security',format=bool))
         self.GroupApPassphrase.clicked.connect(self.check_StatusWPA_Security)
-        self.layoutNetworkPass  = QGridLayout()
-        self.editPasswordAP     = QLineEdit(self.FSettings.Settings.get_setting('accesspoint','WPA_SharedKey'))
-        self.WPAtype_spinbox    = QSpinBox()
-        self.wpa_pairwiseCB     = QComboBox()
-        self.lb_type_security   = QLabel()
+        self.layoutNetworkPass  = QtGui.QGridLayout()
+        self.editPasswordAP     = QtGui.QLineEdit(self.FSettings.Settings.get_setting('accesspoint','WPA_SharedKey'))
+        self.WPAtype_spinbox    = QtGui.QSpinBox()
+        self.wpa_pairwiseCB     = QtGui.QComboBox()
+        self.lb_type_security   = QtGui.QLabel()
         wpa_algotims = self.FSettings.Settings.get_setting('accesspoint','WPA_Algorithms')
         self.wpa_pairwiseCB.addItems(C.ALGORITMS)
         self.wpa_pairwiseCB.setCurrentIndex(C.ALGORITMS.index(wpa_algotims))
@@ -620,30 +620,30 @@ class WifiPumpkin(QWidget):
         self.update_security_settings()
 
         # add widgets on layout Group
-        self.layoutNetworkPass.addWidget(QLabel('Security type:'),0,0)
+        self.layoutNetworkPass.addWidget(QtGui.QLabel('Security type:'),0,0)
         self.layoutNetworkPass.addWidget(self.WPAtype_spinbox, 0, 1)
         self.layoutNetworkPass.addWidget(self.lb_type_security, 0, 2)
-        self.layoutNetworkPass.addWidget(QLabel('WPA Algorithms:'), 1, 0)
+        self.layoutNetworkPass.addWidget(QtGui.QLabel('WPA Algorithms:'), 1, 0)
         self.layoutNetworkPass.addWidget(self.wpa_pairwiseCB, 1, 1)
-        self.layoutNetworkPass.addWidget(QLabel('Security Key:'), 2, 0)
+        self.layoutNetworkPass.addWidget(QtGui.QLabel('Security Key:'), 2, 0)
         self.layoutNetworkPass.addWidget(self.editPasswordAP, 2, 1)
         self.GroupApPassphrase.setLayout(self.layoutNetworkPass)
 
-        self.btn_start_attack = QPushButton('Start', self)
-        self.btn_start_attack.setIcon(QIcon('icons/start.png'))
-        self.btn_cancelar = QPushButton('Stop', self)
-        self.btn_cancelar.setIcon(QIcon('icons/Stop.png'))
+        self.btn_start_attack = QtGui.QPushButton('Start', self)
+        self.btn_start_attack.setIcon(QtGui.QIcon('icons/start.png'))
+        self.btn_cancelar = QtGui.QPushButton('Stop', self)
+        self.btn_cancelar.setIcon(QtGui.QIcon('icons/Stop.png'))
         self.btn_cancelar.clicked.connect(self.stop_access_point)
         self.btn_start_attack.clicked.connect(self.start_access_point)
         self.btn_cancelar.setEnabled(False)
 
-        self.hBoxbutton = QVBoxLayout()
-        self.Formbuttons  = QFormLayout()
+        self.hBoxbutton =QtGui.QVBoxLayout()
+        self.Formbuttons  = QtGui.QFormLayout()
         self.Formbuttons.addRow(self.btn_start_attack,self.btn_cancelar)
         self.hBoxbutton.addLayout(self.Formbuttons)
 
-        self.Main_  = QVBoxLayout()
-        self.slipt = QHBoxLayout()
+        self.Main_  = QtGui.QVBoxLayout()
+        self.slipt = QtGui.QHBoxLayout()
         self.slipt.addWidget(self.GroupAP)
         self.slipt.addWidget(self.GroupApPassphrase)
 
@@ -651,8 +651,8 @@ class WifiPumpkin(QWidget):
         self.donateLabel = ServiceNotify(C.DONATE_TXT,title='Support development',
         link=self.donatelink,timeout=10000)
         # set main page Tool
-        self.widget = QWidget()
-        self.layout = QVBoxLayout(self.widget)
+        self.widget = QtGui.QWidget()
+        self.layout = QtGui.QVBoxLayout(self.widget)
         self.layout.addWidget(self.donateLabel)
         self.layout.addWidget(self.TabInfoAP)
         self.Main_.addWidget(self.widget)
@@ -661,10 +661,10 @@ class WifiPumpkin(QWidget):
     def show_arp_posion(self):
         ''' call GUI Arp Poison module '''
         if not self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
-            self.Farp_posion = GUIModules.frm_Arp_Poison(self.FormPopup.Ftemplates)
+            self.Farp_posion = GUIModules.frm_Arp_Poison(self.window_phishing)
             self.Farp_posion.setGeometry(0, 0, 450, 300)
             return self.Farp_posion.show()
-        QMessageBox.information(self,'ARP Poison Attack','this module not work with AP mode enabled. ')
+            QtGui.QMessageBox.information(self,'ARP Poison Attack','this module not work with AP mode enabled. ')
     def show_update(self):
         ''' call GUI software Update '''
         self.FUpdate = self.UpdateSoftware
@@ -679,12 +679,12 @@ class WifiPumpkin(QWidget):
     def show_windows_update(self):
         ''' call GUI Windows Phishing Page module '''
         self.FWinUpdate = GUIModules.frm_update_attack()
-        self.FWinUpdate.setGeometry(QRect(100, 100, 300, 300))
+        self.FWinUpdate.setGeometry(QtCore.QRect(100, 100, 300, 300))
         self.FWinUpdate.show()
     def show_dhcpDOS(self):
         ''' call GUI DHCP attack module '''
         self.Fstar = GUIModules.frm_dhcp_Attack()
-        self.Fstar.setGeometry(QRect(100, 100, 450, 200))
+        self.Fstar.setGeometry(QtCore.QRect(100, 100, 450, 200))
         self.Fstar.show()
     def showProbe(self):
         ''' call GUI Probe Request monitor module '''
@@ -693,22 +693,22 @@ class WifiPumpkin(QWidget):
     def showDauth(self):
         ''' call GUI deauth module '''
         self.Fdeauth =GUIModules.frm_deauth()
-        self.Fdeauth.setGeometry(QRect(100, 100, 200, 200))
+        self.Fdeauth.setGeometry(QtCore.QRect(100, 100, 200, 200))
         self.Fdeauth.show()
     def show_dns_spoof(self):
         ''' call GUI DnsSpoof module '''
         if  self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):
             if self.PopUpPlugins.GroupPluginsProxy.isChecked():
-                return QMessageBox.information(self,'DnsSpoof with AP','if you want to use the module'
+                return QtGui.QMessageBox.information(self,'DnsSpoof with AP','if you want to use the module'
                 ' Dns Spoof Attack with AP started, you need to disable Proxy Server. You can change this in plugins tab'
                 ' and only it necessary that the option "Enable Proxy Server"  be unmarked and '
                 'restart the AP(Access Point).')
-        self.Fdns = GUIModules.frm_DnsSpoof(self.FormPopup.Ftemplates)
-        self.Fdns.setGeometry(QRect(100, 100, 450, 500))
+        self.Fdns = GUIModules.frm_DnsSpoof(self.window_phishing)
+        self.Fdns.setGeometry(QtCore.QRect(100, 100, 450, 500))
         self.Fdns.show()
     def show_PhishingManager(self):
         ''' call GUI phishing attack  '''
-        self.FPhishingManager = self.FormPopup.Ftemplates
+        self.FPhishingManager = self.window_phishing
         self.FPhishingManager.txt_redirect.setText('0.0.0.0')
         self.FPhishingManager.show()
     def show_driftnet(self):
@@ -721,10 +721,10 @@ class WifiPumpkin(QWidget):
                     Thread_driftnet.setObjectName('Tool::Driftnet')
                     self.Apthreads['RougeAP'].append(Thread_driftnet)
                     return Thread_driftnet.start()
-                return QMessageBox.information(self,'Accesspoint is not running',
+                return QtGui.QMessageBox.information(self,'Accesspoint is not running',
                 'The access point is not configured, this option require AP is running...')
-            return QMessageBox.information(self,'xterm','xterm is not installed.')
-        return QMessageBox.information(self,'driftnet','driftnet is not found.')
+            return QtGui.QMessageBox.information(self,'xterm','xterm is not installed.')
+        return QtGui.QMessageBox.information(self,'driftnet','driftnet is not found.')
 
 
     def check_status_ap_dashboard(self):
@@ -745,7 +745,7 @@ class WifiPumpkin(QWidget):
         self.btrn_find_Inet.setEnabled(False)
         interfaces = Refactor.get_interfaces()
         self.set_StatusConnected_Iface(False,'checking...',check=True)
-        QTimer.singleShot(3000, lambda: self.set_backgroud_Network(interfaces))
+        QtCore.QTimer.singleShot(3000, lambda: self.set_backgroud_Network(interfaces))
 
     def check_plugins_enable(self):
         ''' check plugin options saved in file ctg '''
@@ -770,7 +770,7 @@ class WifiPumpkin(QWidget):
         self.PopUpPlugins.checkGeneralOptions()
 
     def check_key_security_invalid(self):
-        return QMessageBox.warning(self, 'Security Key',
+        return QtGui.QMessageBox.warning(self, 'Security Key',
                                    'This Key can not be used.\n'
                                    'The requirements for a valid key are:\n\n'
                                    'WPA:\n'
@@ -822,7 +822,7 @@ class WifiPumpkin(QWidget):
 
     def set_dhcp_setings_ap(self,data):
         ''' get message dhcp configuration '''
-        QMessageBox.information(self,'settings DHCP',data)
+        QtGui.QMessageBox.information(self,'settings DHCP',data)
 
     def set_index_leftMenu(self,i):
         ''' show content tab index TabMenuListWidget '''
@@ -912,7 +912,7 @@ class WifiPumpkin(QWidget):
         self.selectCard.clear()
         self.btrn_refresh.setEnabled(False)
         ifaces = Refactor.get_interfaces()['all']
-        QTimer.singleShot(3000, lambda : self.add_avaliableIterfaces(ifaces))
+        QtCore.QTimer.singleShot(3000, lambda : self.add_avaliableIterfaces(ifaces))
         self.deleteObject(ifaces)
 
     def set_security_type_text(self,string=str):
@@ -948,7 +948,7 @@ class WifiPumpkin(QWidget):
         session_id = Refactor.generateSessionID()
         while session_id in self.SessionsAP.keys():
             session_id = Refactor.generateSessionID()
-        self.FormPopup.Ftemplates.session = session_id
+        self.window_phishing.session = session_id
         return session_id
 
     def get_disable_proxy_status(self,status):
@@ -962,15 +962,15 @@ class WifiPumpkin(QWidget):
 
     def get_Error_Injector_tab(self,data):
         ''' get error when ssslstrip or plugin args is not exist '''
-        QMessageBox.warning(self,'Error Module::Proxy',data)
+        QtGui.QMessageBox.warning(self,'Error Module::Proxy',data)
 
     def get_status_new_commits(self,flag):
         ''' checks for commits in repository on Github '''
         if flag and self.UpdateSoftware.checkHasCommits:
-            reply = QMessageBox.question(self, 'Update WiFi-Pumpkin',
-                'would you like to update commits from (github)??', QMessageBox.Yes |
-                QMessageBox.No, QMessageBox.No)
-            if reply == QMessageBox.Yes:
+            reply = QtGui.QMessageBox.question(self, 'Update WiFi-Pumpkin',
+                'would you like to update commits from (github)??', QtGui.QMessageBox.Yes |
+                                               QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            if reply == QtGui.QMessageBox.Yes:
                 self.UpdateSoftware.show()
         self.Timer.terminate()
 
@@ -1049,7 +1049,7 @@ class WifiPumpkin(QWidget):
     def get_error_hostapdServices(self,data):
         '''check error hostapd on mount AP '''
         self.stop_access_point()
-        return QMessageBox.warning(self,'[ERROR] Hostpad',
+        return QtGui.QMessageBox.warning(self,'[ERROR] Hostpad',
         'Failed to initiate Access Point, '
         'check output process hostapd.\n\nOutput::\n{}'.format(data))
 
@@ -1057,10 +1057,10 @@ class WifiPumpkin(QWidget):
         ''' check if Hostapd, isc-dhcp-server is installed '''
         self.hostapd_path = self.FSettings.Settings.get_setting('accesspoint','hostapd_path')
         if not path.isfile(self.hostapd_path):
-            return QMessageBox.information(self,'Error Hostapd','hostapd is not installed')
+            return QtGui.QMessageBox.information(self,'Error Hostapd','hostapd is not installed')
         if self.FSettings.Settings.get_setting('accesspoint','dhcpd_server',format=bool):
             if not self.SettingsEnable['ProgCheck'][3]:
-                return QMessageBox.warning(self,'Error dhcpd','isc-dhcp-server (dhcpd) is not installed')
+                return QtGui.QMessageBox.warning(self,'Error dhcpd','isc-dhcp-server (dhcpd) is not installed')
         return True
 
     def get_dns2proxy_output(self,data):
@@ -1134,16 +1134,16 @@ class WifiPumpkin(QWidget):
     def clean_all_loggers(self):
         ''' delete all logger file in logs/ '''
         content = Refactor.exportHtml()
-        resp = QMessageBox.question(self, 'About Delete Logger',
-            'do you want to delete logs?',QMessageBox.Yes |
-                QMessageBox.No, QMessageBox.No)
-        if resp == QMessageBox.Yes:
+        resp = QtGui.QMessageBox.question(self, 'About Delete Logger',
+            'do you want to delete logs?',QtGui.QMessageBox.Yes |
+                                          QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        if resp == QtGui.QMessageBox.Yes:
             del_item_folder(['logs/Caplog/*','logs/ImagesCap/*'])
             for keyFile in content['Files']:
                 with open(keyFile,'w') as f:
                     f.write(''),f.close()
             self.FSettings.Settings.set_setting('accesspoint','sessions',dumps({}))
-            QMessageBox.information(self,'Logger','All Looger::Output has been Removed...')
+            QtGui.QMessageBox.information(self,'Logger','All Looger::Output has been Removed...')
         self.deleteObject(content)
         self.deleteObject(resp)
 
@@ -1208,13 +1208,13 @@ class WifiPumpkin(QWidget):
     def start_access_point(self):
         ''' start Access Point and settings plugins  '''
         if len(self.selectCard.currentText()) == 0:
-            return QMessageBox.warning(self,'Error interface ','Network interface is not found')
+            return QtGui.QMessageBox.warning(self,'Error interface ','Network interface is not found')
         if not type(self.get_soft_dependencies()) is bool: return
 
         # check if interface has been support AP mode (necessary for hostapd)
         if self.FSettings.Settings.get_setting('accesspoint','check_support_ap_mode',format=bool):
             if not 'AP' in Refactor.get_supported_interface(self.selectCard.currentText())['Supported']:
-                return QMessageBox.warning(self,'No Network Supported failed',
+                return QtGui.QMessageBox.warning(self,'No Network Supported failed',
                 "<strong>failed AP mode: warning interface </strong>, the feature "
                 "Access Point Mode is Not Supported By This Device -><strong>({})</strong>.<br><br>"
                 "Your adapter does not support for create Access Point Network."
@@ -1228,7 +1228,7 @@ class WifiPumpkin(QWidget):
             iwconfig = Popen(['iwconfig'], stdout=PIPE,shell=False,stderr=PIPE)
             for line in iwconfig.stdout.readlines():
                 if str(self.selectCard.currentText()) in line:
-                    return QMessageBox.warning(self,'Wireless interface is busy',
+                    return QtGui.QMessageBox.warning(self,'Wireless interface is busy',
                     'Connection has been detected, this {} is joined the correct Wi-Fi network'
                     ' : Device or resource busy\n{}\nYou may need to another Wi-Fi USB Adapter'
                     ' for create AP or try use with local connetion(Ethernet).'.format(
@@ -1237,7 +1237,7 @@ class WifiPumpkin(QWidget):
         # check if range ip class is same
         dh, gateway = self.PumpSettingsTAB.getPumpkinSettings()['router'],str(self.EditGateway.text())
         if dh[:len(dh)-len(dh.split('.').pop())] == gateway[:len(gateway)-len(gateway.split('.').pop())]:
-            return QMessageBox.warning(self,'DHCP Server settings',
+            return QtGui.QMessageBox.warning(self,'DHCP Server settings',
                 'The DHCP server check if range ip class is same.'
                 'it works, but not share internet connection in some case.\n'
                 'for fix this, You need change on tab (settings -> Class Ranges)'
@@ -1283,7 +1283,7 @@ class WifiPumpkin(QWidget):
                 try:
                     check_output(['nmcli','nm','wifi',"off"]) # new version
                 except Exception as error:
-                    return QMessageBox.warning(self,'Error nmcli',str(error))
+                    return QtGui.QMessageBox.warning(self,'Error nmcli',str(error))
             finally:
                 call(['rfkill', 'unblock' ,'wifi'])
 
@@ -1466,7 +1466,7 @@ class WifiPumpkin(QWidget):
         # start all Thread in sessions
         for thread in self.Apthreads['RougeAP']:
             self.progress.update_bar_simple(20)
-            QThread.sleep(1)
+            QtCore.QThread.sleep(1)
             thread.start()
         self.progress.setValue(100)
         self.progress.hideProcessbar()
@@ -1531,11 +1531,7 @@ class WifiPumpkin(QWidget):
         # disable IP Forwarding in Linux
         Refactor.set_ip_forward(0)
         self.TabInfoAP.clearContents()
-        self.THeaders  = OrderedDict([ ('Devices',[]), # restore headers table widet
-        ('Mac Address',[]),('IP Address',[]),('Vendors',[])])
-        if hasattr(self.FormPopup,'Ftemplates'):
-            self.FormPopup.Ftemplates.killThread()
-            self.FormPopup.StatusServer(False)
+        self.window_phishing.killThread()
 
         self.GroupAP.setEnabled(True)
         self.GroupApPassphrase.setEnabled(True)
@@ -1553,9 +1549,9 @@ class WifiPumpkin(QWidget):
         self.Fabout.show()
     def issue(self):
         ''' open issue in github page the project '''
-        url = QUrl('https://github.com/P0cL4bs/WiFi-Pumpkin/issues/new')
-        if not QDesktopServices.openUrl(url):
-            QMessageBox.warning(self, 'Open Url', 'Could not open url: {}'.format(url))
+        url = QtCore.QUrl('https://github.com/P0cL4bs/WiFi-Pumpkin/issues/new')
+        if not QtGui.QDesktopServices.openUrl(url):
+            QtGui.QMessageBox.warning(self, 'Open Url', 'Could not open url: {}'.format(url))
     def donate(self):
         ''' open page donation the project '''
         self.Fabout = frmAbout(author,emails,version,update,license,desc)

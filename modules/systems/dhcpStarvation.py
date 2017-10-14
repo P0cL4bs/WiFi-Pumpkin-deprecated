@@ -24,26 +24,25 @@ Copyright:
 class frm_dhcp_Attack(PumpkinModule):
     def __init__(self, parent=None):
         super(frm_dhcp_Attack, self).__init__(parent)
-        self.loadtheme(self.configure.XmlThemeSelected())
         self.setWindowTitle("Dhcp Starvation Attack")
-        self.Main       = QVBoxLayout()
+        self.Main       = QtGui.QVBoxLayout()
         self.control    = None
         self.GUI()
 
     def GUI(self):
-        self.form       = QFormLayout()
-        self.list_log   = QListWidget()
-        self.check      = QLabel("")
-        self.btn_Start_attack   = QPushButton("Start Attack",self)
-        self.btn_Stop_attack    = QPushButton("Stop Attack",self)
+        self.form       = QtGui.QFormLayout()
+        self.list_log   = QtGui.QListWidget()
+        self.check      = QtGui.QLabel("")
+        self.btn_Start_attack   = QtGui.QPushButton("Start Attack",self)
+        self.btn_Stop_attack    = QtGui.QPushButton("Stop Attack",self)
         self.check.setText("[ OFF ]")
         self.check.setStyleSheet("QLabel {  color : red; }")
 
         self.btn_Start_attack.clicked.connect(self.D_attack)
         self.btn_Stop_attack.clicked.connect(self.kill_thread)
 
-        self.btn_Start_attack.setIcon(QIcon("icons/start.png"))
-        self.btn_Stop_attack.setIcon(QIcon("icons/Stop.png"))
+        self.btn_Start_attack.setIcon(QtGui.QIcon("icons/start.png"))
+        self.btn_Stop_attack.setIcon(QtGui.QIcon("icons/Stop.png"))
 
         self.form.addRow(self.list_log)
         self.form.addRow("Status Attack:",self.check)
@@ -61,11 +60,11 @@ class frm_dhcp_Attack(PumpkinModule):
             self.check.setText("[ ON ]")
             self.check.setStyleSheet("QLabel {  color : green; }")
             self.threadstar = ThreadAttackStar(interface)
-            self.connect(self.threadstar,SIGNAL("Activated ( QString )"),self.getloggerAttack)
+            self.connect(self.threadstar,QtCore.SIGNAL("Activated ( QString )"),self.getloggerAttack)
             self.threadstar.setObjectName("DHCP Starvation")
             self.threadstar.start()
             return
-        QMessageBox.information(self, 'Interface No found', 'No Network Adapters were detected.')
+            QtGui.QMessageBox.information(self, 'Interface No found', 'No Network Adapters were detected.')
 
     def attack_OFF(self):
         self.check.setStyleSheet("QLabel {  color : red; }")

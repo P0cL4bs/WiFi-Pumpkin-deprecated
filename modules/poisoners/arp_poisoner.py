@@ -1,7 +1,7 @@
 import threading
 from os import chdir,getcwd, devnull
 from multiprocessing import Process,Manager
-from modules.spreads.UpdateFake import frm_update_attack
+from modules.spreads.update_fake_attack import frm_update_attack
 from core.packets.network import ThARP_posion,ThSpoofAttack
 from core.loaders.models.PackagesUI import *
 from scapy.all import get_if_hwaddr
@@ -33,20 +33,19 @@ class frm_Arp_Poison(PumpkinModule):
     def __init__(self,PhishingManager ,parent=None):
         super(frm_Arp_Poison, self).__init__(parent)
         self.setWindowTitle('ARP Poisoner ')
-        self.Main           = QVBoxLayout()
+        self.Main           = QtGui.QVBoxLayout()
         self.owd            = getcwd()
         self.Ftemplates     = PhishingManager
-        self.loadtheme(self.configure.XmlThemeSelected())
         self.data = {'IPaddress':[], 'Hostname':[], 'MacAddress':[]}
         self.ThreadDirc = {'Arp_posion':[]}
         global threadloading
         self.GUI()
 
     def closeEvent(self, event):
-        reply = QMessageBox.question(self, 'About Exit',
-        'Are you sure that you want to close ARP Posion?', QMessageBox.Yes |
-            QMessageBox.No, QMessageBox.No)
-        if reply == QMessageBox.Yes:
+        reply = QtGui.QMessageBox.question(self, 'About Exit',
+        'Are you sure that you want to close ARP Posion?', QtGui.QMessageBox.Yes |
+                                           QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        if reply == QtGui.QMessageBox.Yes:
             event.accept()
             if (len(self.ThreadDirc['Arp_posion']) != 0):
                 try:
@@ -60,14 +59,14 @@ class frm_Arp_Poison(PumpkinModule):
         event.ignore()
 
     def GUI(self):
-        self.form =QFormLayout()
-        self.tables = QTableWidget(5,3)
+        self.form =QtGui.QFormLayout()
+        self.tables = QtGui.QTableWidget(5,3)
         self.tables.setRowCount(100)
         self.tables.setFixedHeight(200)
-        self.tables.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.tables.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.tables.horizontalHeader().setStretchLastSection(True)
-        self.tables.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tables.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tables.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.tables.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.tables.clicked.connect(self.list_clicked_scan)
         self.tables.resizeColumnsToContents()
         self.tables.resizeRowsToContents()
@@ -82,21 +81,21 @@ class frm_Arp_Poison(PumpkinModule):
         self.tables.setHorizontalHeaderLabels(Headers)
         self.tables.verticalHeader().setDefaultSectionSize(23)
 
-        self.txt_target = QLineEdit(self)
-        self.txt_gateway = QLineEdit(self)
-        self.txt_redirect = QLineEdit(self)
-        self.txt_mac = QLineEdit(self)
-        self.ip_range = QLineEdit(self)
-        self.txt_status_scan = QLabel('')
-        self.txt_statusarp = QLabel('')
-        self.txt_status_phishing = QLabel('')
+        self.txt_target = QtGui.QLineEdit(self)
+        self.txt_gateway = QtGui.QLineEdit(self)
+        self.txt_redirect = QtGui.QLineEdit(self)
+        self.txt_mac = QtGui.QLineEdit(self)
+        self.ip_range = QtGui.QLineEdit(self)
+        self.txt_status_scan = QtGui.QLabel('')
+        self.txt_statusarp = QtGui.QLabel('')
+        self.txt_status_phishing = QtGui.QLabel('')
 
-        self.btn_start_scanner = QPushButton('Scan')
-        self.btn_stop_scanner = QPushButton('Stop')
-        self.btn_Attack_Posion = QPushButton('Start Attack')
-        self.btn_Stop_Posion = QPushButton('Stop Attack')
-        self.btn_server = QPushButton('Phishing M.')
-        self.btn_windows_update = QPushButton('Fake Update')
+        self.btn_start_scanner = QtGui.QPushButton('Scan')
+        self.btn_stop_scanner = QtGui.QPushButton('Stop')
+        self.btn_Attack_Posion = QtGui.QPushButton('Start Attack')
+        self.btn_Stop_Posion = QtGui.QPushButton('Stop Attack')
+        self.btn_server = QtGui.QPushButton('Phishing M.')
+        self.btn_windows_update = QtGui.QPushButton('Fake Update')
         self.btn_server.setFixedHeight(22)
         self.btn_stop_scanner.setFixedWidth(100)
         self.btn_start_scanner.setFixedWidth(100)
@@ -113,39 +112,39 @@ class frm_Arp_Poison(PumpkinModule):
         self.btn_windows_update.clicked.connect(self.show_frm_fake)
 
         #icons
-        self.btn_start_scanner.setIcon(QIcon('icons/network.png'))
-        self.btn_Attack_Posion.setIcon(QIcon('icons/start.png'))
-        self.btn_Stop_Posion.setIcon(QIcon('icons/Stop.png'))
-        self.btn_stop_scanner.setIcon(QIcon('icons/network_off.png'))
-        self.btn_server.setIcon(QIcon('icons/page.png'))
-        self.btn_windows_update.setIcon(QIcon('icons/winUp.png'))
+        self.btn_start_scanner.setIcon(QtGui.QIcon('icons/network.png'))
+        self.btn_Attack_Posion.setIcon(QtGui.QIcon('icons/start.png'))
+        self.btn_Stop_Posion.setIcon(QtGui.QIcon('icons/Stop.png'))
+        self.btn_stop_scanner.setIcon(QtGui.QIcon('icons/network_off.png'))
+        self.btn_server.setIcon(QtGui.QIcon('icons/page.png'))
+        self.btn_windows_update.setIcon(QtGui.QIcon('icons/winUp.png'))
 
-        self.grid0 = QGridLayout()
+        self.grid0 = QtGui.QGridLayout()
         self.grid0.minimumSize()
-        self.grid0.addWidget(QLabel('ArpPosion:'),0,2)
-        self.grid0.addWidget(QLabel('Phishing:'),0,4)
-        self.grid0.addWidget(QLabel('Scanner:'),0,0)
+        self.grid0.addWidget(QtGui.QLabel('ArpPosion:'),0,2)
+        self.grid0.addWidget(QtGui.QLabel('Phishing:'),0,4)
+        self.grid0.addWidget(QtGui.QLabel('Scanner:'),0,0)
         self.grid0.addWidget(self.txt_status_scan,0,1)
         self.grid0.addWidget(self.txt_statusarp,0,3)
         self.grid0.addWidget(self.txt_status_phishing,0,5)
 
 
         # grid options
-        self.grid1 = QGridLayout()
+        self.grid1 = QtGui.QGridLayout()
         self.grid1.addWidget(self.btn_start_scanner,0,0)
         self.grid1.addWidget(self.btn_stop_scanner,0,1)
         self.grid1.addWidget(self.btn_server,0,2)
         self.grid1.addWidget(self.btn_windows_update, 0,3)
 
         #btn
-        self.grid2 = QGridLayout()
+        self.grid2 = QtGui.QGridLayout()
         self.grid2.addWidget(self.btn_Attack_Posion,1,0)
         self.grid2.addWidget(self.btn_Stop_Posion,1,5)
 
-        self.ComboIface = QComboBox(self)
+        self.ComboIface = QtGui.QComboBox(self)
         self.ConfigureEdits()
 
-        self.form0  = QGridLayout()
+        self.form0  = QtGui.QGridLayout()
         self.form0.addWidget(self.tables,0,0)
 
         self.form.addRow(self.form0)
@@ -173,7 +172,7 @@ class frm_Arp_Poison(PumpkinModule):
             self.txt_gateway.setText(x['gateway'])
             self.txt_redirect.setText(x['IPaddress'])
             self.txt_mac.setText(Refactor.getHwAddr(x['activated'][0]))
-        self.connect(self.ComboIface, SIGNAL("currentIndexChanged(QString)"), self.discoveryIface)
+        self.connect(self.ComboIface, QtCore.SIGNAL("currentIndexChanged(QString)"), self.discoveryIface)
         n = self.interfaces['all']
         for i,j in enumerate(n):
             if n[i] != '':
@@ -194,15 +193,15 @@ class frm_Arp_Poison(PumpkinModule):
         for n, key in enumerate(reversed(self.data.keys())):
             Headers.append(key)
             for m, item in enumerate(self.data[key]):
-                item = QTableWidgetItem(item)
-                item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+                item = QtGui.QTableWidgetItem(item)
+                item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
                 self.tables.setItem(m, n, item)
         Headers = []
         for key in reversed(self.data.keys()):
             Headers.append(key)
         self.tables.setHorizontalHeaderLabels(Headers)
 
-    @pyqtSlot(QModelIndex)
+    @QtCore.pyqtSlot(QtCore.QModelIndex)
     def discoveryIface(self,iface):
         if self.configure.Settings.get_setting('accesspoint','interfaceAP') == str(iface):
             if self.configure.Settings.get_setting('accesspoint','statusAP',format=bool):
@@ -212,7 +211,7 @@ class frm_Arp_Poison(PumpkinModule):
 
     def show_frm_fake(self):
         self.n = frm_update_attack()
-        self.n.setGeometry(QRect(100, 100, 300, 300))
+        self.n.setGeometry(QtCore.QRect(100, 100, 300, 300))
         self.n.show()
 
     def emit_template(self,log):
@@ -220,7 +219,7 @@ class frm_Arp_Poison(PumpkinModule):
             self.StatusMonitor(True,'stas_phishing')
 
     def show_template_dialog(self):
-        self.connect(self.Ftemplates,SIGNAL('Activated ( QString ) '), self.emit_template)
+        self.connect(self.Ftemplates,QtCore.SIGNAL('Activated ( QString ) '), self.emit_template)
         self.Ftemplates.txt_redirect.setText(self.txt_redirect.text())
         self.Ftemplates.show()
 
@@ -235,7 +234,7 @@ class frm_Arp_Poison(PumpkinModule):
         self.StatusMonitor(False,'stas_phishing')
         chdir(self.owd)
 
-    @pyqtSlot(QModelIndex)
+    @QtCore.pyqtSlot(QtCore.QModelIndex)
     def check_options(self,index):
         if self.check_face.isChecked():
             self.check_route.setChecked(False)
@@ -252,7 +251,7 @@ class frm_Arp_Poison(PumpkinModule):
         self.StatusMonitor(False,'stas_arp')
     def Start_Attack(self):
         if  (len(self.txt_target.text()) and len(self.txt_mac.text()) and len(self.txt_gateway.text())) == 0:
-            QMessageBox.information(self, 'Error Arp Attacker', 'you need set the input correctly')
+            QtGui.QMessageBox.information(self, 'Error Arp Attacker', 'you need set the input correctly')
         else:
             chdir(self.owd)
             if (len(self.txt_target.text()) and len(self.txt_gateway.text())) and len(self.txt_mac.text()) != 0:
@@ -267,19 +266,19 @@ class frm_Arp_Poison(PumpkinModule):
 
                     arp_target = ThARP_posion(str(self.txt_target.text()),str(self.txt_gateway.text()),
                     str(self.txt_mac.text()))
-                    self.connect(arp_target,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
+                    self.connect(arp_target,QtCore.SIGNAL('Activated ( QString ) '), self.StopArpAttack)
                     arp_target.setObjectName('Arp::Poison => [target]')
                     self.ThreadDirc['Arp_posion'].append(arp_target)
                     arp_target.start()
 
                     redirectPackets = ThSpoofAttack('',
                     str(self.ComboIface.currentText()),'udp port 53',True,str(self.txt_redirect.text()))
-                    self.connect(redirectPackets,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
+                    self.connect(redirectPackets,QtCore.SIGNAL('Activated ( QString ) '), self.StopArpAttack)
                     redirectPackets.setObjectName('Packets Spoof')
                     self.ThreadDirc['Arp_posion'].append(redirectPackets)
                     redirectPackets.start()
                     return
-                QMessageBox.information(self,'Error Redirect IP','Redirect IP is not found')
+                QtGui.QMessageBox.information(self,'Error Redirect IP','Redirect IP is not found')
 
     def Start_scan(self):
         Headers = []
@@ -295,7 +294,7 @@ class frm_Arp_Poison(PumpkinModule):
             for key in reversed(self.data.keys()):
                 Headers.append(key)
             return self.tables.setHorizontalHeaderLabels(Headers)
-        return QMessageBox.information(self,'Error in gateway','gateway is not found.')
+        return QtGui.QMessageBox.information(self,'Error in gateway','gateway is not found.')
 
     def get_result_scanner_ip(self,data):
         Headers = []
@@ -307,8 +306,8 @@ class frm_Arp_Poison(PumpkinModule):
             for n, key in enumerate(reversed(self.data.keys())):
                 Headers.append(key)
                 for m, item in enumerate(self.data[key]):
-                    item = QTableWidgetItem(item)
-                    item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+                    item = QtGui.QTableWidgetItem(item)
+                    item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
                     self.tables.setItem(m, n, item)
         Headers = []
         for key in reversed(self.data.keys()):
@@ -350,7 +349,7 @@ class frm_Arp_Poison(PumpkinModule):
             self.txt_status_phishing.setStyleSheet('QLabel {  color : red; }')
 
 
-    @pyqtSlot(QModelIndex)
+    @QtCore.pyqtSlot(QtCore.QModelIndex)
     def list_clicked_scan(self, index):
         item = self.tables.selectedItems()
         if item != []:

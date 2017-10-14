@@ -1,8 +1,8 @@
-from os import path,remove
 from datetime import date
+from os import path, remove
 from shutil import copyfile
 from core.loaders.models.PackagesUI import *
-from modules.servers.ServerHTTP import ThreadHTTPServerPhishing
+from core.servers.http_handler.ServerHTTP import ThreadHTTPServerPhishing
 
 """
 Description:
@@ -30,16 +30,15 @@ class frm_update_attack(PumpkinModule):
     def __init__(self, parent=None):
         super(frm_update_attack, self).__init__(parent)
         self.setWindowTitle('Windows Update Attack Generator ')
-        self.setWindowIcon(QIcon('icons/icon.ico'))
-        self.loadtheme(self.configure.XmlThemeSelected())
-        self.Main       = QVBoxLayout()
+        self.setWindowIcon(QtGui.QIcon('icons/icon.ico'))
+        self.Main       = QtGui.QVBoxLayout()
         self.path_file  = None
         self.GUI()
 
     def closeEvent(self, event):
-        reply = QMessageBox.question(self, 'About Exit',"Are you sure that you want to quit?", QMessageBox.Yes |
-            QMessageBox.No, QMessageBox.No)
-        if reply == QMessageBox.Yes:
+        reply = QtGui.QMessageBox.question(self, 'About Exit',"Are you sure that you want to quit?", QtGui.QMessageBox.Yes |
+            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        if reply == QtGui.QMessageBox.Yes:
             event.accept()
             global threadloading
             for i in threadloading['server']:i.stop()
@@ -48,51 +47,51 @@ class frm_update_attack(PumpkinModule):
         event.ignore()
 
     def GUI(self):
-        self.form   = QFormLayout()
-        self.formfinal = QFormLayout()
-        self.grid1  = QGridLayout()
-        self.path   = QLineEdit(self)
-        self.logBox = QListWidget(self)
-        self.status = QStatusBar()
+        self.form   = QtGui.QFormLayout()
+        self.formfinal = QtGui.QFormLayout()
+        self.grid1  = QtGui.QGridLayout()
+        self.path   = QtGui.QLineEdit(self)
+        self.logBox = QtGui.QListWidget(self)
+        self.status = QtGui.QStatusBar()
         self.status.setFixedHeight(15)
         self.path.setFixedHeight(28)
         self.path.setFixedWidth(300)
         #combobox
-        self.cb_interface = QComboBox(self)
+        self.cb_interface = QtGui.QComboBox(self)
         self.refresh_interface(self.cb_interface)
 
 
         #group box
-        self.layoutPage = QFormLayout()
-        self.GroupPages = QGroupBox(self)
+        self.layoutPage = QtGui.QFormLayout()
+        self.GroupPages = QtGui.QGroupBox(self)
         self.GroupPages.setTitle('Phishing Page:')
         self.GroupPages.setLayout(self.layoutPage)
 
-        self.layoutAdpter = QFormLayout()
-        self.GroupAdpter = QGroupBox(self)
+        self.layoutAdpter = QtGui.QFormLayout()
+        self.GroupAdpter = QtGui.QGroupBox(self)
         self.GroupAdpter.setTitle('Network Adapter:')
         self.GroupAdpter.setLayout(self.layoutAdpter)
 
-        self.layoutLogBox = QFormLayout()
-        self.GroupLogger = QGroupBox(self)
+        self.layoutLogBox = QtGui.QFormLayout()
+        self.GroupLogger = QtGui.QGroupBox(self)
         self.GroupLogger.setTitle('Log::Requests:')
         self.GroupLogger.setLayout(self.layoutLogBox)
 
         # buttons
-        self.btn_open         = QPushButton("...")
-        self.btn_stop         = QPushButton("Stop Server")
-        self.btn_reload       = QPushButton("Refresh")
-        self.btn_start_server = QPushButton("Start Server")
+        self.btn_open         = QtGui.QPushButton("...")
+        self.btn_stop         = QtGui.QPushButton("Stop Server")
+        self.btn_reload       = QtGui.QPushButton("Refresh")
+        self.btn_start_server = QtGui.QPushButton("Start Server")
         # size
         self.btn_open.setMaximumWidth(90)
         self.btn_stop.setFixedHeight(50)
         self.btn_start_server.setFixedHeight(50)
         self.btn_stop.setEnabled(False)
         #icons
-        self.btn_open.setIcon(QIcon("icons/open.png"))
-        self.btn_stop.setIcon(QIcon("icons/Stop.png"))
-        self.btn_reload.setIcon(QIcon("icons/refresh.png"))
-        self.btn_start_server.setIcon(QIcon("icons/start.png"))
+        self.btn_open.setIcon(QtGui.QIcon("icons/open.png"))
+        self.btn_stop.setIcon(QtGui.QIcon("icons/Stop.png"))
+        self.btn_reload.setIcon(QtGui.QIcon("icons/refresh.png"))
+        self.btn_start_server.setIcon(QtGui.QIcon("icons/start.png"))
 
         # connect buttons
         self.btn_open.clicked.connect(self.getpath)
@@ -101,12 +100,12 @@ class frm_update_attack(PumpkinModule):
         self.btn_stop.clicked.connect(self.stop_attack)
 
         # radionButton
-        self.rb_windows = QRadioButton("Windows Update",self)
-        self.rb_windows.setIcon(QIcon("icons/winUp.png"))
-        self.rb_adobe = QRadioButton("Adobe Update", self)
-        self.rb_adobe.setIcon(QIcon("icons/adobe.png"))
-        self.rb_java = QRadioButton("Java Update", self)
-        self.rb_java.setIcon(QIcon("icons/java.png"))
+        self.rb_windows = QtGui.QRadioButton("Windows Update",self)
+        self.rb_windows.setIcon(QtGui.QIcon("icons/winUp.png"))
+        self.rb_adobe = QtGui.QRadioButton("Adobe Update", self)
+        self.rb_adobe.setIcon(QtGui.QIcon("icons/adobe.png"))
+        self.rb_java = QtGui.QRadioButton("Java Update", self)
+        self.rb_java.setIcon(QtGui.QIcon("icons/java.png"))
         self.rb_adobe.setEnabled(False)
         self.layoutPage.addRow(self.rb_windows)
         self.layoutPage.addRow(self.rb_java)
@@ -118,7 +117,7 @@ class frm_update_attack(PumpkinModule):
 
         self.layoutLogBox.addRow(self.logBox)
 
-        self.layoutsplit = QHBoxLayout()
+        self.layoutsplit = QtGui.QHBoxLayout()
         self.layoutsplit.addWidget(self.GroupPages)
         self.layoutsplit.addWidget(self.GroupAdpter)
 
@@ -175,7 +174,7 @@ class frm_update_attack(PumpkinModule):
                 remove(directory+filename)
             copyfile(self.path_file,directory+filename)
         except OSError,e:
-            return QMessageBox.warning(self,'error',e)
+            return QtGui.QMessageBox.warning(self,'error',e)
         file_html = open(pathPage,'r').read()
         if info:
             settings_html = file_html.replace('KBlenfile',
@@ -190,7 +189,7 @@ class frm_update_attack(PumpkinModule):
         confFile.close()
         ip = Refactor.get_Ipaddr(str(self.cb_interface.currentText()))
         if ip == None:
-            return QMessageBox.warning(self, 'Ip not found',
+            return QtGui.QMessageBox.warning(self, 'Ip not found',
             'The IP Address was not found on the selected Network Adapter.')
         self.btn_start_server.setEnabled(False)
         self.btn_stop.setEnabled(True)
@@ -198,7 +197,7 @@ class frm_update_attack(PumpkinModule):
 
     def server_start(self):
         if len(self.path.text()) <= 0:
-            return QMessageBox.information(self, 'Path file Error', 'Error in get the file path.')
+            return QtGui.QMessageBox.information(self, 'Path file Error', 'Error in get the file path.')
         if self.rb_windows.isChecked():
             return self.SettingsPage('templates/fakeupdate/Settings_WinUpdate.html',
             'templates/fakeupdate/Windows_Update/','windows-update.exe',True)
@@ -206,7 +205,7 @@ class frm_update_attack(PumpkinModule):
             return self.SettingsPage('templates/fakeupdate/Settings_java.html',
             'templates/fakeupdate/Java_Update/','java-update.exe',False)
 
-        return QMessageBox.information(self, 'Phishing settings', 'Please select an option in the Phishing page:')
+        return QtGui.QMessageBox.information(self, 'Phishing settings', 'Please select an option in the Phishing page:')
 
     def threadServer(self,directory,ip):
         global threadloading
@@ -218,7 +217,7 @@ class frm_update_attack(PumpkinModule):
 
     def getpath(self):
         files_types = "exe (*.exe);;jar (*.jar)"
-        file = QFileDialog.getOpenFileName(self, 'Open Executable file','',files_types)
+        file = QtGui.QFileDialog.getOpenFileName(self, 'Open Executable file','',files_types)
         if len(file) > 0:
             self.path_file = file
             self.path.setText(file)

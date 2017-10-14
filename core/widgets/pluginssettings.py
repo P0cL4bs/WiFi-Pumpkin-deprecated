@@ -29,11 +29,10 @@ class BDFProxySettings(PumpkinModule):
         super(BDFProxySettings, self).__init__(parent)
         self.setWindowTitle('DBFProxy-ng Plugin settings')
         self.setGeometry(0,0,480, 500)
-        self.main       = QVBoxLayout()
+        self.main       = QtGui.QVBoxLayout()
         self.THeaders   = {'Config':[],'Value':[] }
         self.userConfig = ConfigObj(str(self.configure.Settings.get_setting('plugins','bdfproxy_config')))
         self.userConfig.interpolation = False
-        self.loadtheme(self.configure.XmlThemeSelected())
         self.center()
         self.GUI()
 
@@ -45,8 +44,8 @@ class BDFProxySettings(PumpkinModule):
         for n, key in enumerate(self.THeaders.keys()):
             Headers.append(key)
             for m, item in enumerate(self.THeaders[key]):
-                item = QTableWidgetItem(item)
-                item.setFlags(item.flags() | Qt.ItemIsEditable)
+                item = QtGui.QTableWidgetItem(item)
+                item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
                 self.TabSettings.setItem(m, n, item)
         self.TabSettings.resizeColumnToContents(0)
 
@@ -80,7 +79,7 @@ class BDFProxySettings(PumpkinModule):
 
     def saveConfigObject(self):
         self.checkConfigKeysBDFProxy(saveObjct=True)
-        QMessageBox.information(self,'BDFProxy-ng settings','All settings in {} has been saved '
+        QtGui.QMessageBox.information(self,'BDFProxy-ng settings','All settings in {} has been saved '
         'with success.'.format(str(self.configure.Settings.get_setting('plugins','bdfproxy_config'))))
         self.close()
 
@@ -105,25 +104,25 @@ class BDFProxySettings(PumpkinModule):
         if saveObjct: self.userConfig.write()
 
     def GUI(self):
-        self.TabSettings = QTableWidget(50,2)
-        self.btnSave     = QPushButton('Save settings')
-        self.GroupBox    = QGroupBox(self)
-        self.widget      = QWidget()
-        self.layoutGroup = QVBoxLayout(self.widget)
+        self.TabSettings = QtGui.QTableWidget(50,2)
+        self.btnSave     = QtGui.QPushButton('Save settings')
+        self.GroupBox    = QtGui.QGroupBox(self)
+        self.widget      = QtGui.QWidget()
+        self.layoutGroup = QtGui.QVBoxLayout(self.widget)
         self.GroupBox.setLayout(self.layoutGroup)
         self.GroupBox.setTitle('Options')
         self.checkConfigKeysBDFProxy()
         self.btnSave.clicked.connect(self.saveConfigObject)
         self.TabSettings.resizeRowsToContents()
-        self.TabSettings.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.TabSettings.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         self.TabSettings.horizontalHeader().setStretchLastSection(True)
-        self.TabSettings.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.TabSettings.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         #self.TabSettings.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.TabSettings.verticalHeader().setVisible(False)
         self.TabSettings.setHorizontalHeaderLabels(self.THeaders.keys())
         self.TabSettings.verticalHeader().setDefaultSectionSize(23)
 
-        self.layout = QVBoxLayout(self.widget)
+        self.layout = QtGui.QVBoxLayout(self.widget)
         self.layoutGroup.addWidget(self.TabSettings)
         self.layout.addWidget(self.GroupBox)
         self.layout.addWidget(self.btnSave)
@@ -136,11 +135,10 @@ class ResponderSettings(PumpkinModule):
         super(ResponderSettings, self).__init__(parent)
         self.setWindowTitle('Responder Plugin settings')
         self.setGeometry(0,0,480, 500)
-        self.main       = QVBoxLayout()
+        self.main       = QtGui.QVBoxLayout()
         self.THeaders   = {'Config':[],'Value':[] }
         self.userConfig = ConfigObj(str(self.configure.Settings.get_setting('plugins','responder_config')))
         self.userConfig.interpolation = False
-        self.loadtheme(self.configure.XmlThemeSelected())
         self.center()
         self.GUI()
 
@@ -152,8 +150,8 @@ class ResponderSettings(PumpkinModule):
         for n, key in enumerate(self.THeaders.keys()):
             Headers.append(key)
             for m, item in enumerate(self.THeaders[key]):
-                item = QTableWidgetItem(item)
-                item.setFlags(item.flags() | Qt.ItemIsEditable)
+                item = QtGui.QTableWidgetItem(item)
+                item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
                 self.TabSettings.setItem(m, n, item)
         self.TabSettings.resizeColumnToContents(0)
 
@@ -193,30 +191,30 @@ class ResponderSettings(PumpkinModule):
 
     def saveConfigObject(self):
         self.checkConfigKeysResponder(saveObjct=True)
-        QMessageBox.information(self,'Responder settings','All settings in {} has been saved '
+        QtGui.QMessageBox.information(self,'Responder settings','All settings in {} has been saved '
         'with success.'.format(str(self.configure.Settings.get_setting('plugins','responder_config'))))
         self.close()
 
     def GUI(self):
-        self.TabSettings = QTableWidget(self.checkConfigKeysResponder(count=True),2)
-        self.btnSave     = QPushButton('Save settings')
-        self.GroupBox    = QGroupBox(self)
-        self.widget      = QWidget()
-        self.layoutGroup = QVBoxLayout(self.widget)
+        self.TabSettings = QtGui.QTableWidget(self.checkConfigKeysResponder(count=True),2)
+        self.btnSave     = QtGui.QPushButton('Save settings')
+        self.GroupBox    = QtGui.QGroupBox(self)
+        self.widget      = QtGui.QWidget()
+        self.layoutGroup = QtGui.QVBoxLayout(self.widget)
         self.GroupBox.setLayout(self.layoutGroup)
         self.GroupBox.setTitle('Options')
         self.addAllconfigKeys()
         self.btnSave.clicked.connect(self.saveConfigObject)
         self.TabSettings.resizeRowsToContents()
-        self.TabSettings.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.TabSettings.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         self.TabSettings.horizontalHeader().setStretchLastSection(True)
-        self.TabSettings.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.TabSettings.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         #self.TabSettings.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.TabSettings.verticalHeader().setVisible(False)
         self.TabSettings.setHorizontalHeaderLabels(self.THeaders.keys())
         self.TabSettings.verticalHeader().setDefaultSectionSize(23)
 
-        self.layout = QVBoxLayout(self.widget)
+        self.layout = QtGui.QVBoxLayout(self.widget)
         self.layoutGroup.addWidget(self.TabSettings)
         self.layout.addWidget(self.GroupBox)
         self.layout.addWidget(self.btnSave)
@@ -229,8 +227,7 @@ class PumpkinProxySettings(PumpkinModule):
         self.setWindowTitle('Settings: {} '.format(plugin[4:]))
         self.THeaders   = {'Config':[],'Value':[] }
         self.config     = SettingsINI(C.PUMPPROXY_INI)
-        self.loadtheme(self.configure.XmlThemeSelected())
-        self.main       = QVBoxLayout()
+        self.main       = QtGui.QVBoxLayout()
         self.plugin_items = items
         self.plugin_key = plugin
         self.setGeometry(0,0,400, 250)
@@ -245,8 +242,8 @@ class PumpkinProxySettings(PumpkinModule):
         for n, key in enumerate(self.THeaders.keys()):
             Headers.append(key)
             for m, item in enumerate(self.THeaders[key]):
-                item = QTableWidgetItem(item)
-                item.setFlags(item.flags() | Qt.ItemIsEditable)
+                item = QtGui.QTableWidgetItem(item)
+                item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
                 self.TabSettings.setItem(m, n, item)
         self.TabSettings.resizeColumnToContents(0)
 
@@ -264,18 +261,18 @@ class PumpkinProxySettings(PumpkinModule):
         self.close()
 
     def GUI(self):
-        self.TabSettings = QTableWidget(len(self.plugin_items),2)
-        self.btnSave     = QPushButton('Save settings')
-        self.GroupBox    = QGroupBox(self)
-        self.widget      = QWidget()
-        self.layoutGroup = QVBoxLayout(self.widget)
+        self.TabSettings = QtGui.QTableWidget(len(self.plugin_items),2)
+        self.btnSave     = QtGui.QPushButton('Save settings')
+        self.GroupBox    = QtGui.QGroupBox(self)
+        self.widget      = QtGui.QWidget()
+        self.layoutGroup = QtGui.QVBoxLayout(self.widget)
         self.GroupBox.setLayout(self.layoutGroup)
         self.GroupBox.setTitle('Options')
         self.btnSave.clicked.connect(self.saveConfigObject)
         self.TabSettings.resizeRowsToContents()
-        self.TabSettings.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.TabSettings.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         self.TabSettings.horizontalHeader().setStretchLastSection(True)
-        self.TabSettings.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.TabSettings.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         #self.TabSettings.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.TabSettings.verticalHeader().setVisible(False)
         self.TabSettings.setHorizontalHeaderLabels(self.THeaders.keys())
@@ -284,7 +281,7 @@ class PumpkinProxySettings(PumpkinModule):
         for item in self.plugin_items:
             self.addRowTableWidget(item,self.config.get_setting(self.plugin_key,item))
 
-        self.layout = QVBoxLayout(self.widget)
+        self.layout = QtGui.QVBoxLayout(self.widget)
         self.layoutGroup.addWidget(self.TabSettings)
         self.layout.addWidget(self.GroupBox)
         self.layout.addWidget(self.btnSave)

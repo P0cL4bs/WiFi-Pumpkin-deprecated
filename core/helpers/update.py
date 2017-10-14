@@ -31,7 +31,6 @@ class frm_githubUpdate(PumpkinModule):
     def __init__(self,version,parent = None):
         super(frm_githubUpdate, self).__init__(parent)
         self.setWindowTitle("WiFi-Pumpkin Software Update")
-        self.loadtheme(self.configure.XmlThemeSelected())
         self.checkHasCommits = False
         self.version = version
         self.UrlDownloadCommits = C.LCOMMITS
@@ -41,39 +40,39 @@ class frm_githubUpdate(PumpkinModule):
         self.GUI()
 
     def GUI(self):
-        self.Main       = QVBoxLayout()
-        self.widget     = QWidget()
-        self.layout     = QVBoxLayout(self.widget)
-        self.Blayout    = QHBoxLayout()
-        self.frmVersion = QFormLayout()
-        self.frmLabels  = QHBoxLayout()
-        self.frmOutPut  = QHBoxLayout()
-        self.frmCommits = QHBoxLayout()
-        self.split      = QHBoxLayout()
-        self.LVersion   = QLabel(self.version)
+        self.Main       = QtGui.QVBoxLayout()
+        self.widget     = QtGui.QWidget()
+        self.layout     = QtGui.QVBoxLayout(self.widget)
+        self.Blayout    = QtGui.QHBoxLayout()
+        self.frmVersion = QtGui.QFormLayout()
+        self.frmLabels  = QtGui.QHBoxLayout()
+        self.frmOutPut  = QtGui.QHBoxLayout()
+        self.frmCommits = QtGui.QHBoxLayout()
+        self.split      = QtGui.QHBoxLayout()
+        self.LVersion   = QtGui.QLabel(self.version)
         self.pb         = ProgressBarWid(total=101)
-        self.btnUpdate  = QPushButton('Install')
-        self.btnCheck   = QPushButton('Check Updates')
-        self.LCommits   = QListWidget(self)
-        self.LOutput    = QListWidget(self)
-        self.LCommits.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.LOutput.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.btnUpdate  = QtGui.QPushButton('Install')
+        self.btnCheck   = QtGui.QPushButton('Check Updates')
+        self.LCommits   = QtGui.QListWidget(self)
+        self.LOutput    = QtGui.QListWidget(self)
+        self.LCommits.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.LOutput.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.btnUpdate.setDisabled(True)
 
         # icons
-        self.btnCheck.setIcon(QIcon('icons/Checklist_update.png'))
-        self.btnUpdate.setIcon(QIcon('icons/updates_.png'))
+        self.btnCheck.setIcon(QtGui.QIcon('icons/Checklist_update.png'))
+        self.btnUpdate.setIcon(QtGui.QIcon('icons/updates_.png'))
         #connects
         self.btnCheck.clicked.connect(self.checkUpdate)
         self.btnUpdate.clicked.connect(self.startUpdate)
         #temporary
 
         # split left
-        self.frmLabels.addWidget(QLabel('New Commits::'))
+        self.frmLabels.addWidget(QtGui.QLabel('New Commits::'))
         self.frmCommits.addWidget(self.LCommits)
 
         # split right
-        self.frmLabels.addWidget(QLabel('Outputs::'))
+        self.frmLabels.addWidget(QtGui.QLabel('Outputs::'))
         self.frmOutPut.addWidget(self.LOutput)
         # blayout
         self.Blayout.addWidget(self.pb)
@@ -109,9 +108,9 @@ class frm_githubUpdate(PumpkinModule):
     def checkUpdate(self):
         try:
             if not path.isfile(check_output(['which','git']).rstrip()):
-                return QMessageBox.warning(self,'git','git is not installed')
+                return QtGui.QMessageBox.warning(self,'git','git is not installed')
         except CalledProcessError:
-            return QMessageBox.warning(self,'git','git is not installed')
+            return QtGui.QMessageBox.warning(self,'git','git is not installed')
         self.LCommits.clear(),self.LOutput.clear()
         self.pb.setValue(1)
         self.btnCheck.setDisabled(True)
@@ -123,31 +122,31 @@ class frm_githubUpdate(PumpkinModule):
         if data == 'URLError':
             return self.btnCheck.setEnabled(True)
         self.git = GithubUpdate(self.version,data,self.PathUrlLcommits,self.PathUrlRcommits)
-        self.connect(self.git,SIGNAL('Activated ( QString ) '), self.RcheckCommits)
+        self.connect(self.git,QtCore.SIGNAL('Activated ( QString ) '), self.RcheckCommits)
         self.git.start()
         self.btnCheck.setDisabled(True)
 
 
     def RcheckCommits(self,commits):
         if 'no changes into' in commits:
-            item = QListWidgetItem()
+            item = QtGui.QListWidgetItem()
             item.setText(commits)
-            item.setIcon(QIcon('icons/checked_update.png'))
-            item.setSizeHint(QSize(20,20))
+            item.setIcon(QtGui.QIcon('icons/checked_update.png'))
+            item.setSizeHint(QtCore.QSize(20,20))
             self.LCommits.addItem(item)
             return self.btnCheck.setEnabled(True)
         elif 'New version available WiFi-Pumpkin v' in commits:
-            reply = QMessageBox.question(self, 'Update Information',
-                '{}, would you like to update??'.format(commits), QMessageBox.Yes |
-                QMessageBox.No, QMessageBox.No)
-            if reply == QMessageBox.Yes:
+            reply = QtGui.QMessageBox.question(self, 'Update Information',
+                '{}, would you like to update??'.format(commits), QtGui.QMessageBox.Yes |
+                QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            if reply == QtGui.QMessageBox.Yes:
                 self.git.NewVersionUpdate()
             return self.btnCheck.setEnabled(True)
         elif 'commit:' in commits:
-            item = QListWidgetItem()
+            item = QtGui.QListWidgetItem()
             item.setText(commits)
-            item.setIcon(QIcon('icons/check_update.png'))
-            item.setSizeHint(QSize(20,20))
+            item.setIcon(QtGui.QIcon('icons/check_update.png'))
+            item.setSizeHint(QtCore.QSize(20,20))
             self.LCommits.addItem(item)
             self.btnCheck.setEnabled(True)
             self.btnUpdate.setEnabled(True)
@@ -156,7 +155,7 @@ class frm_githubUpdate(PumpkinModule):
             self.pb.update_bar(10)
         elif '::updated' in commits:
             self.pb.update_bar(100)
-            QMessageBox.information(self,'Update Information',
+            QtGui.QMessageBox.information(self,'Update Information',
             "Already up-to-date. Please restart WiFi-Pumpkin to apply this update.")
             self.btnUpdate.setDisabled(True)
         else:
@@ -164,27 +163,27 @@ class frm_githubUpdate(PumpkinModule):
 
 
 ''' http://stackoverflow.com/questions/22332106/python-qtgui-qprogressbar-color '''
-class ProgressBarWid(QProgressBar):
+class ProgressBarWid(QtGui.QProgressBar):
     def __init__(self, parent=None, total=0):
         super(ProgressBarWid, self).__init__()
         self.setMinimum(1)
         self.setMaximum(total)
-        font=QFont('White Rabbit')
+        font=QtGui.QFont('White Rabbit')
         font.setPointSize(5)
         self.setFont(font)
-        self.effect = QGraphicsOpacityEffect(self)
+        self.effect = QtGui.QGraphicsOpacityEffect(self)
         self.setGraphicsEffect(self.effect)
-        self.animationIn = QPropertyAnimation(self.effect, 'opacity')
+        self.animationIn = QtCore.QPropertyAnimation(self.effect, 'opacity')
         self.animationIn.setDuration(300)
         self.animationIn.setStartValue(0)
         self.animationIn.setEndValue(1.0)
         self.animationIn.start()
         self._active = False
-        self.setAlignment(Qt.AlignCenter)
+        self.setAlignment(QtCore.Qt.AlignCenter)
         self._text = None
 
     def hideProcessbar(self):
-        self.animationOut = QPropertyAnimation(self.effect, 'opacity')
+        self.animationOut = QtCore.QPropertyAnimation(self.effect, 'opacity')
         self.animationOut.setDuration(300)
         self.animationOut.setStartValue(1.0)
         self.animationOut.setEndValue(0)
@@ -192,7 +191,7 @@ class ProgressBarWid(QProgressBar):
         self.animationOut.finished.connect(self.hide)
 
     def showProcessBar(self):
-        self.animationIn = QPropertyAnimation(self.effect, 'opacity')
+        self.animationIn = QtCore.QPropertyAnimation(self.effect, 'opacity')
         self.animationIn.setDuration(300)
         self.animationIn.setStartValue(0)
         self.animationIn.setEndValue(1.0)
@@ -204,8 +203,8 @@ class ProgressBarWid(QProgressBar):
 
     def text(self):
         if self._text != None:
-            return QString(str(self._text))
-        return QString('')
+            return QtCore.QString(str(self._text))
+        return QtCore.QString('')
 
     def update_bar_simple(self, add):
         value = self.value() + add
@@ -218,7 +217,6 @@ class ProgressBarWid(QProgressBar):
             self.setValue(value)
             if value > 50:
                 self.change_color("green")
-            qApp.processEvents()
             if (not self._active or value >= self.maximum()):
                 break
         self._active = False

@@ -27,33 +27,32 @@ Copyright:
 class frm_PMonitor(PumpkinModule):
     def __init__(self, parent=None):
         super(frm_PMonitor, self).__init__(parent)
-        self.Main       = QVBoxLayout()
+        self.Main       = QtGui.QVBoxLayout()
         self.Requests   = []
         self.data       = {'Devices':[],'MacAddress': [], 'SSIDs':[]}
-        self.loadtheme(self.configure.XmlThemeSelected())
         self.setWindowTitle("Probe Request wifi Monitor")
-        self.setWindowIcon(QIcon('icons/icon.ico'))
-        self.setGeometry(QRect(100, 100, 420, 450))
+        self.setWindowIcon(QtGui.QIcon('icons/icon.ico'))
+        self.setGeometry(QtCore.QRect(100, 100, 420, 450))
         self.setupGUI()
 
     def setupGUI(self):
         # base widget responsible
-        self.widget         = QWidget()
-        self.layout         = QVBoxLayout(self.widget)
-        self.StatusBar      = QStatusBar()
-        self.StatusProbe    = QLabel('')
-        self.StatusBar.addWidget(QLabel('Scannner::'))
+        self.widget         = QtGui.QWidget()
+        self.layout         = QtGui.QVBoxLayout(self.widget)
+        self.StatusBar      = QtGui.QStatusBar()
+        self.StatusProbe    = QtGui.QLabel('')
+        self.StatusBar.addWidget(QtGui.QLabel('Scannner::'))
 
         self.StartedProbe(False)
         self.StatusBar.setFixedHeight(15)
         # create table widget
-        self.tables = QTableWidget(5,3)
+        self.tables = QtGui.QTableWidget(5,3)
         self.tables.setRowCount(50)
         self.tables.setMinimumHeight(180)
-        self.tables.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.tables.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.tables.horizontalHeader().setStretchLastSection(True)
-        self.tables.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tables.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tables.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.tables.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.tables.resizeColumnsToContents()
         self.tables.resizeRowsToContents()
         self.tables.horizontalHeader().resizeSection(0,120)
@@ -68,34 +67,34 @@ class frm_PMonitor(PumpkinModule):
         self.tables.verticalHeader().setDefaultSectionSize(23)
 
         # create all buttons
-        self.btn_scan = QPushButton('Start')
-        self.btn_stop = QPushButton('Stop')
-        self.btn_refrash = QPushButton('Refresh')
+        self.btn_scan = QtGui.QPushButton('Start')
+        self.btn_stop = QtGui.QPushButton('Stop')
+        self.btn_refrash = QtGui.QPushButton('Refresh')
         self.btn_refrash.clicked.connect(self.loadCard)
         self.btn_stop.clicked.connect(self.StopProbeResquest)
         self.btn_scan.clicked.connect(self.StartProbeResquest)
-        self.btn_scan.setIcon(QIcon('icons/network.png'))
-        self.btn_stop.setIcon(QIcon('icons/network_off.png'))
-        self.btn_refrash.setIcon(QIcon('icons/refresh.png'))
-        self.get_placa = QComboBox(self)
+        self.btn_scan.setIcon(QtGui.QIcon('icons/network.png'))
+        self.btn_stop.setIcon(QtGui.QIcon('icons/network_off.png'))
+        self.btn_refrash.setIcon(QtGui.QIcon('icons/refresh.png'))
+        self.get_placa = QtGui.QComboBox(self)
         self.btn_stop.setEnabled(False)
         self.loadCard()
 
         # group Network card select
-        self.GroupBoxNetwork = QGroupBox()
-        self.layoutGroupNW = QHBoxLayout()
+        self.GroupBoxNetwork = QtGui.QGroupBox()
+        self.layoutGroupNW = QtGui.QHBoxLayout()
         self.GroupBoxNetwork.setLayout(self.layoutGroupNW)
         self.GroupBoxNetwork.setTitle('Network Adapter:')
         self.layoutGroupNW.addWidget(self.get_placa)
         self.layoutGroupNW.addWidget(self.btn_refrash)
 
         # add table and GroupNetwork
-        self.form0  = QVBoxLayout()
+        self.form0  = QtGui.QVBoxLayout()
         self.form0.addWidget(self.tables)
         self.form0.addWidget(self.GroupBoxNetwork)
 
         # form buttons and statusbar
-        self.mForm = QFormLayout()
+        self.mForm = QtGui.QFormLayout()
         self.mForm.addRow(self.btn_scan, self.btn_stop)
         self.mForm.addRow(self.StatusBar)
 
@@ -133,8 +132,8 @@ class frm_PMonitor(PumpkinModule):
             for n, key in enumerate(reversed(self.data.keys())):
                 Headers.append(key)
                 for m, item in enumerate(self.data[key]):
-                    item = QTableWidgetItem(item)
-                    item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+                    item = QtGui.QTableWidgetItem(item)
+                    item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
                     self.tables.setItem(m, n, item)
             Headers = []
             for key in reversed(self.data.keys()):
@@ -152,12 +151,12 @@ class frm_PMonitor(PumpkinModule):
 
     def StartProbeResquest(self):
         if self.get_placa.currentText() == '':
-            return QMessageBox.information(self, 'Network Adapter', 'Network Adapter is not found. Try again.')
+            return QtGui.QMessageBox.information(self, 'Network Adapter', 'Network Adapter is not found. Try again.')
         self.btn_stop.setEnabled(True)
         self.btn_scan.setEnabled(False)
         set_monitor_mode(self.get_placa.currentText()).setEnable()
         self.ThreadProbe = ThreadProbeScan(str(self.get_placa.currentText()))
-        self.connect(self.ThreadProbe,SIGNAL('Activated ( QString ) '), self.threadReceiveScan)
+        self.connect(self.ThreadProbe,QtCore.SIGNAL('Activated ( QString ) '), self.threadReceiveScan)
         self.ThreadProbe.setObjectName('::ThreadScanProbe')
         self.ThreadProbe.start()
         self.StartedProbe(True)

@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     print('Loading GUI...')
     main = Initialize()
-    main.setWindowIcon(QtGui.QIcon('icons/icon.ico'))
+    main.setWindowIcon(QtGui.QIcon('icons/icon.png'))
     main.center()
     # check if Wireless connection
     conf = SettingsINI(C.CONFIG_INI)
@@ -63,7 +63,7 @@ if __name__ == '__main__':
         if networkcontrol.run():
             if  networkcontrol.isWiFiConnected() and len(networkcontrol.ifaceAvaliable) > 0:
                 settings = UI_NetworkManager(main)
-                settings.setWindowIcon(QtGui.QIcon('icons/icon.ico'))
+                settings.setWindowIcon(QtGui.QIcon('icons/icon.png'))
                 settings.show()
                 exit(app.exec_())
     main.show()

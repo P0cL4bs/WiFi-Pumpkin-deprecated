@@ -1,6 +1,5 @@
 from os import path
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from core.main import  QtGui,QtCore
 from datetime import datetime
 from core.utils import Refactor
 from collections import OrderedDict
@@ -38,65 +37,65 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-class StatusAccessPoint(QVBoxLayout):
+class StatusAccessPoint(QtGui.QVBoxLayout):
     ''' dashboard  infor Acccess Point '''
     def __init__(self,mainWindow ):
-        QVBoxLayout.__init__(self)
-        self.mainLayout     = QFormLayout()
+        QtGui.QVBoxLayout.__init__(self)
+        self.mainLayout     = QtGui.QFormLayout()
         self.main_method    = mainWindow
 
-        self.scrollwidget = QWidget()
+        self.scrollwidget = QtGui.QWidget()
         self.scrollwidget.setLayout(self.mainLayout)
-        self.scroll = QScrollArea()
+        self.scroll = QtGui.QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.scroll.setWidget(self.scrollwidget)
-        self.split_window = QHBoxLayout()
+        self.split_window = QtGui.QHBoxLayout()
 
-        guageWindow = QGridLayout()
-        self.currentThreadLabel = QLabel('0')
+        guageWindow = QtGui.QGridLayout()
+        self.currentThreadLabel = QtGui.QLabel('0')
         currentthread = self.create_info_box('CURRENT THREADS', 'infor',
             self.currentThreadLabel)
 
-        self.sectionTimeLabel = QLabel('00:00')
+        self.sectionTimeLabel = QtGui.QLabel('00:00')
         currentTime = self.create_info_box('UPTIME', 'infor', self.sectionTimeLabel)
         guageWindow.addLayout(currentthread, 1, 1)
         guageWindow.addLayout(currentTime, 0, 1)
 
-        self.AP_name = QLabel(self.main_method.EditApName.text())
-        self.AP_BSSID = QLabel(self.main_method.EditBSSID.text())
-        self.AP_Channel = QLabel(self.main_method.EditChannel.text())
-        self.AP_NetworkApdater = QLabel(self.main_method.selectCard.currentText())
-        self.AP_ROUTER = QLabel(self.main_method.DHCP['router'])
-        self.AP_DHCP_range = QLabel(self.main_method.DHCP['range'])
-        self.AP_Security  = QLabel('')
+        self.AP_name = QtGui.QLabel(self.main_method.EditApName.text())
+        self.AP_BSSID = QtGui.QLabel(self.main_method.EditBSSID.text())
+        self.AP_Channel = QtGui.QLabel(self.main_method.EditChannel.text())
+        self.AP_NetworkApdater = QtGui.QLabel(self.main_method.selectCard.currentText())
+        self.AP_ROUTER = QtGui.QLabel(self.main_method.DHCP['router'])
+        self.AP_DHCP_range = QtGui.QLabel(self.main_method.DHCP['range'])
+        self.AP_Security  = QtGui.QLabel('')
         self.update_security_label(self.main_method.GroupApPassphrase.isChecked())
 
-        self.group_AccessPoint  = QGroupBox()
+        self.group_AccessPoint  = QtGui.QGroupBox()
         self.form_window        = AutoGridLayout()
         self.form_window.setSpacing(10)
         self.group_AccessPoint.setTitle('Access Point')
-        self.form_window.addNextWidget(QLabel('AP Name:'))
+        self.form_window.addNextWidget(QtGui.QLabel('AP Name:'))
         self.form_window.addNextWidget(self.AP_name)
-        self.form_window.addNextWidget(QLabel('BSSID:'))
+        self.form_window.addNextWidget(QtGui.QLabel('BSSID:'))
         self.form_window.addNextWidget(self.AP_BSSID)
-        self.form_window.addNextWidget(QLabel('Channel:'))
+        self.form_window.addNextWidget(QtGui.QLabel('Channel:'))
         self.form_window.addNextWidget(self.AP_Channel)
-        self.form_window.addNextWidget(QLabel('Network Adapter:'))
+        self.form_window.addNextWidget(QtGui.QLabel('Network Adapter:'))
         self.form_window.addNextWidget(self.AP_NetworkApdater)
-        self.form_window.addNextWidget(QLabel('Router:'))
+        self.form_window.addNextWidget(QtGui.QLabel('Router:'))
         self.form_window.addNextWidget(self.AP_ROUTER)
-        self.form_window.addNextWidget(QLabel('DHCP:'))
+        self.form_window.addNextWidget(QtGui.QLabel('DHCP:'))
         self.form_window.addNextWidget(self.AP_DHCP_range)
-        self.form_window.addNextWidget(QLabel('Security Password:'))
+        self.form_window.addNextWidget(QtGui.QLabel('Security Password:'))
         self.form_window.addNextWidget(self.AP_Security)
-        self.form_window.addItem(QSpacerItem(40, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        self.form_window.addItem(QtGui.QSpacerItem(40, 10, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding))
         self.group_AccessPoint.setLayout(self.form_window)
 
         self.split_window.addWidget(self.group_AccessPoint)
         self.split_window.addLayout(guageWindow)
 
         self.mainLayout.addRow(self.split_window)
-        self.layout = QHBoxLayout()
+        self.layout = QtGui.QHBoxLayout()
         self.layout.addWidget(self.scroll)
         self.addLayout(self.layout)
 
@@ -110,7 +109,7 @@ class StatusAccessPoint(QVBoxLayout):
         self.update_security_label(self.main_method.GroupApPassphrase.isChecked())
 
     def start_timer(self):
-        self.timer = QTimer()
+        self.timer = QtCore.QTimer()
         self.now = 0
         self.update_timer()
         self.timer.timeout.connect(self.tick_timer)
@@ -139,22 +138,22 @@ class StatusAccessPoint(QVBoxLayout):
             self.AP_Security.setStyleSheet('QLabel {  color : #df1f1f; }')
 
     def create_info_box(self, labelText, objectName, valueLabel):
-        infoBox = QVBoxLayout()
+        infoBox = QtGui.QVBoxLayout()
         infoBox.setSpacing(0)
-        label = QLabel(labelText)
+        label = QtGui.QLabel(labelText)
         label.setObjectName('label')
-        valueLabel.setAlignment(Qt.AlignCenter)
+        valueLabel.setAlignment(QtCore.Qt.AlignCenter)
         valueLabel.setObjectName(objectName)
         infoBox.addWidget(label)
         infoBox.addWidget(valueLabel)
         return infoBox
 
-class PacketsSniffer(QVBoxLayout):
+class PacketsSniffer(QtGui.QVBoxLayout):
     ''' settings  Transparent Proxy '''
-    sendError = pyqtSignal(str)
+    sendError = QtCore.pyqtSignal(str)
     def __init__(self,main_method,parent = None):
         super(PacketsSniffer, self).__init__(parent)
-        self.mainLayout     = QVBoxLayout()
+        self.mainLayout     = QtGui.QVBoxLayout()
         self.config         = SettingsINI(C.TCPPROXY_INI)
         self.plugins        = []
         self.main_method    = main_method
@@ -162,30 +161,30 @@ class PacketsSniffer(QVBoxLayout):
         self.check_PluginDict   = {}
         self.search_all_ProxyPlugins()
         #scroll area
-        self.scrollwidget = QWidget()
+        self.scrollwidget = QtGui.QWidget()
         self.scrollwidget.setLayout(self.mainLayout)
-        self.scroll = QScrollArea()
+        self.scroll = QtGui.QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.scroll.setWidget(self.scrollwidget)
 
-        self.tabcontrol = QTabWidget()
-        self.tab1 = QWidget()
-        self.tab2 = QWidget()
-        self.page_1 = QVBoxLayout(self.tab1)
-        self.page_2 = QVBoxLayout(self.tab2)
+        self.tabcontrol = QtGui.QTabWidget()
+        self.tab1 = QtGui.QWidget()
+        self.tab2 = QtGui.QWidget()
+        self.page_1 = QtGui.QVBoxLayout(self.tab1)
+        self.page_2 = QtGui.QVBoxLayout(self.tab2)
         self.tableLogging  = dockTCPproxy()
 
         self.tabcontrol.addTab(self.tab1, 'Plugins')
         self.tabcontrol.addTab(self.tab2, 'Logging')
 
-        self.TabPlugins = QTableWidget()
+        self.TabPlugins = QtGui.QTableWidget()
         self.TabPlugins.setColumnCount(3)
         self.TabPlugins.setRowCount(len(self.plugins))
         self.TabPlugins.resizeRowsToContents()
-        self.TabPlugins.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.TabPlugins.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         self.TabPlugins.horizontalHeader().setStretchLastSection(True)
-        self.TabPlugins.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.TabPlugins.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.TabPlugins.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.TabPlugins.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.TabPlugins.verticalHeader().setVisible(False)
         self.TabPlugins.verticalHeader().setDefaultSectionSize(27)
         self.TabPlugins.setSortingEnabled(True)
@@ -199,8 +198,8 @@ class PacketsSniffer(QVBoxLayout):
         # get all plugins and add into TabWidget
         Headers = []
         for plugin in self.plugins:
-            self.bt_SettingsDict[plugin.Name] = QPushButton(plugin.Author)
-            self.check_PluginDict[plugin.Name] = QCheckBox(plugin.Name)
+            self.bt_SettingsDict[plugin.Name] = QtGui.QPushButton(plugin.Author)
+            self.check_PluginDict[plugin.Name] = QtGui.QCheckBox(plugin.Name)
             self.check_PluginDict[plugin.Name].setObjectName(plugin.Name)
             self.check_PluginDict[plugin.Name].clicked.connect(partial(self.setPluginOption,plugin.Name))
             self.THeaders['Plugins'].append(self.check_PluginDict[plugin.Name])
@@ -209,12 +208,12 @@ class PacketsSniffer(QVBoxLayout):
         for n, key in enumerate(self.THeaders.keys()):
             Headers.append(key)
             for m, item in enumerate(self.THeaders[key]):
-                if type(item) == type(QCheckBox()):
+                if type(item) == type(QtGui.QCheckBox()):
                     self.TabPlugins.setCellWidget(m,n,item)
                 elif type(item) == type(dict()):
                     self.TabPlugins.setCellWidget(m,n,self.bt_SettingsDict[item['name']])
                 else:
-                    item = QTableWidgetItem(item)
+                    item = QtGui.QTableWidgetItem(item)
                     self.TabPlugins.setItem(m, n, item)
         self.TabPlugins.setHorizontalHeaderLabels(self.THeaders.keys())
 
@@ -223,7 +222,7 @@ class PacketsSniffer(QVBoxLayout):
             self.check_PluginDict[box].setChecked(self.config.get_setting('plugins',box,format=bool))
 
         self.mainLayout.addWidget(self.tabcontrol)
-        self.layout = QHBoxLayout()
+        self.layout = QtGui.QHBoxLayout()
         self.layout.addWidget(self.scroll)
         self.addLayout(self.layout)
 
@@ -241,17 +240,17 @@ class PacketsSniffer(QVBoxLayout):
             if p().Name != 'httpCap':
                 self.plugins.append(p())
 
-class ImageCapture(QVBoxLayout):
+class ImageCapture(QtGui.QVBoxLayout):
     ''' settings Image capture '''
-    sendError = pyqtSignal(str)
+    sendError = QtCore.pyqtSignal(str)
     def __init__(self,main_method,parent = None):
         super(ImageCapture, self).__init__(parent)
-        self.mainLayout     = QVBoxLayout()
+        self.mainLayout     = QtGui.QVBoxLayout()
         self.main_method    = main_method
         #scroll area
-        self.scrollwidget = QWidget()
+        self.scrollwidget = QtGui.QWidget()
         self.scrollwidget.setLayout(self.mainLayout)
-        self.scroll = QScrollArea()
+        self.scroll = QtGui.QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.scroll.setWidget(self.scrollwidget)
         self.imagesList = []
@@ -259,10 +258,10 @@ class ImageCapture(QVBoxLayout):
         self.THUMBNAIL_SIZE = 146
         self.SPACING = 8
         self.IMAGES_PER_ROW = 4
-        self.TableImage = QTableWidget()
-        self.TableImage.setIconSize(QSize(146, 146))
+        self.TableImage = QtGui.QTableWidget()
+        self.TableImage.setIconSize(QtCore.QSize(146, 146))
         self.TableImage.setColumnCount(self.IMAGES_PER_ROW)
-        self.TableImage.setGridStyle(Qt.NoPen)
+        self.TableImage.setGridStyle(QtCore.Qt.NoPen)
 
         self.TableImage.verticalHeader().setDefaultSectionSize(self.THUMBNAIL_SIZE + self.SPACING)
         self.TableImage.verticalHeader().hide()
@@ -272,7 +271,7 @@ class ImageCapture(QVBoxLayout):
         self.TableImage.setMinimumWidth((self.THUMBNAIL_SIZE + self.SPACING) * self.IMAGES_PER_ROW + (self.SPACING * 2))
         self.imageListPath  = OrderedDict([ ('Path',[])])
         self.mainLayout.addWidget(self.TableImage)
-        self.layout = QHBoxLayout()
+        self.layout = QtGui.QHBoxLayout()
         self.layout.addWidget(self.scroll)
         self.addLayout(self.layout)
 
@@ -288,24 +287,24 @@ class ImageCapture(QVBoxLayout):
             self.addPicture(row, col, picture)
 
     def addPicture(self, row, col, picturePath):
-        item = QTableWidgetItem()
-        p = QPixmap(picturePath)
+        item = QtGui.QTableWidgetItem()
+        p = QtGui.QPixmap(picturePath)
         if not p.isNull():
             if p.height() > p.width():
                 p = p.scaledToWidth(self.THUMBNAIL_SIZE)
             else:
                 p = p.scaledToHeight(self.THUMBNAIL_SIZE)
             p = p.copy(0, 0, self.THUMBNAIL_SIZE, self.THUMBNAIL_SIZE)
-            item.setIcon(QIcon(p))
+            item.setIcon(QtGui.QIcon(p))
             self.TableImage.setItem(row, col, item)
             self.TableImage.scrollToBottom()
 
-class PumpkinMitmproxy(QVBoxLayout):
+class PumpkinMitmproxy(QtGui.QVBoxLayout):
     ''' settings  Transparent Proxy '''
-    sendError = pyqtSignal(str)
+    sendError = QtCore.pyqtSignal(str)
     def __init__(self,mainWindow ):
-        QVBoxLayout.__init__(self)
-        self.mainLayout     = QVBoxLayout()
+        QtGui.QVBoxLayout.__init__(self)
+        self.mainLayout     = QtGui.QVBoxLayout()
         self.config         = SettingsINI(C.PUMPPROXY_INI)
         self.plugins        = []
         self.main_method    = mainWindow
@@ -313,31 +312,31 @@ class PumpkinMitmproxy(QVBoxLayout):
         self.check_PluginDict   = {}
         self.search_all_ProxyPlugins()
         #scroll area
-        self.scrollwidget = QWidget()
+        self.scrollwidget = QtGui.QWidget()
         self.scrollwidget.setLayout(self.mainLayout)
-        self.scroll = QScrollArea()
+        self.scroll = QtGui.QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.scroll.setWidget(self.scrollwidget)
 
         # create for add dock logging
-        self.tabcontrol = QTabWidget()
-        self.tab1 = QWidget()
-        self.tab2 = QWidget()
-        self.page_1 = QVBoxLayout(self.tab1)
-        self.page_2 = QVBoxLayout(self.tab2)
+        self.tabcontrol = QtGui.QTabWidget()
+        self.tab1 = QtGui.QWidget()
+        self.tab2 = QtGui.QWidget()
+        self.page_1 = QtGui.QVBoxLayout(self.tab1)
+        self.page_2 = QtGui.QVBoxLayout(self.tab2)
         self.tableLogging  = dockPumpkinProxy()
 
         self.tabcontrol.addTab(self.tab1, 'Plugins')
         self.tabcontrol.addTab(self.tab2, 'Logging')
 
-        self.TabPlugins = QTableWidget()
+        self.TabPlugins = QtGui.QTableWidget()
         self.TabPlugins.setColumnCount(3)
         self.TabPlugins.setRowCount(len(self.plugins))
         self.TabPlugins.resizeRowsToContents()
-        self.TabPlugins.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.TabPlugins.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         self.TabPlugins.horizontalHeader().setStretchLastSection(True)
-        self.TabPlugins.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.TabPlugins.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.TabPlugins.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.TabPlugins.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.TabPlugins.verticalHeader().setVisible(False)
         self.TabPlugins.verticalHeader().setDefaultSectionSize(27)
         self.TabPlugins.setSortingEnabled(True)
@@ -354,11 +353,11 @@ class PumpkinMitmproxy(QVBoxLayout):
         Headers = []
         for plugin in self.plugins:
             if plugin.ConfigParser:
-                self.bt_SettingsDict[plugin.Name] = QPushButton('Settings')
+                self.bt_SettingsDict[plugin.Name] = QtGui.QPushButton('Settings')
                 self.bt_SettingsDict[plugin.Name].clicked.connect(partial(self.setSettingsPlgins,plugin.Name))
             else:
-                self.bt_SettingsDict[plugin.Name] = QPushButton('None')
-            self.check_PluginDict[plugin.Name] = QCheckBox(plugin.Name)
+                self.bt_SettingsDict[plugin.Name] = QtGui.QPushButton('None')
+            self.check_PluginDict[plugin.Name] = QtGui.QCheckBox(plugin.Name)
             self.check_PluginDict[plugin.Name].setObjectName(plugin.Name)
             self.check_PluginDict[plugin.Name].clicked.connect(partial(self.setPluginOption,plugin.Name))
             self.THeaders['Plugins'].append(self.check_PluginDict[plugin.Name])
@@ -367,12 +366,12 @@ class PumpkinMitmproxy(QVBoxLayout):
         for n, key in enumerate(self.THeaders.keys()):
             Headers.append(key)
             for m, item in enumerate(self.THeaders[key]):
-                if type(item) == type(QCheckBox()):
+                if type(item) == type(QtGui.QCheckBox()):
                     self.TabPlugins.setCellWidget(m,n,item)
                 elif type(item) == type(dict()):
                     self.TabPlugins.setCellWidget(m,n,self.bt_SettingsDict[item['name']])
                 else:
-                    item = QTableWidgetItem(item)
+                    item = QtGui.QTableWidgetItem(item)
                     self.TabPlugins.setItem(m, n, item)
         self.TabPlugins.setHorizontalHeaderLabels(self.THeaders.keys())
 
@@ -381,7 +380,7 @@ class PumpkinMitmproxy(QVBoxLayout):
             self.check_PluginDict[box].setChecked(self.config.get_setting('plugins',box,format=bool))
 
         self.mainLayout.addWidget(self.tabcontrol)
-        self.layout = QHBoxLayout()
+        self.layout = QtGui.QHBoxLayout()
         self.layout.addWidget(self.scroll)
         self.addLayout(self.layout)
 
@@ -405,9 +404,9 @@ class PumpkinMitmproxy(QVBoxLayout):
         for p in plugin_classes:
             self.plugins.append(p())
 
-class ProxySSLstrip(QVBoxLayout):
+class ProxySSLstrip(QtGui.QVBoxLayout):
     ''' settings  Transparent Proxy '''
-    sendError = pyqtSignal(str)
+    sendError = QtCore.pyqtSignal(str)
     _PluginsToLoader = {'plugins': None,'Content':''}
     def __init__(self,popup,main_method,FsettingsUI=None,parent = None):
         super(ProxySSLstrip, self).__init__(parent)
@@ -415,23 +414,23 @@ class ProxySSLstrip(QVBoxLayout):
         self.popup      = popup
         self.urlinjected= []
         self.FSettings  = FsettingsUI
-        self.mainLayout    = QVBoxLayout()
+        self.mainLayout    = QtGui.QVBoxLayout()
 
         #scroll area
-        self.scrollwidget = QWidget()
+        self.scrollwidget = QtGui.QWidget()
         self.scrollwidget.setLayout(self.mainLayout)
-        self.scroll = QScrollArea()
+        self.scroll = QtGui.QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.scroll.setWidget(self.scrollwidget)
 
         # create widgets
-        self.argsLabel  = QLabel('')
-        self.hBox       = QHBoxLayout()
-        self.hBoxargs   = QHBoxLayout()
-        self.btnLoader  = QPushButton('Reload')
-        self.btnEnable  = QPushButton('Enable')
-        self.btncancel  = QPushButton('Cancel')
-        self.btnbrownser= QPushButton('Browser')
+        self.argsLabel  = QtGui.QLabel('')
+        self.hBox       = QtGui.QHBoxLayout()
+        self.hBoxargs   = QtGui.QHBoxLayout()
+        self.btnLoader  = QtGui.QPushButton('Reload')
+        self.btnEnable  = QtGui.QPushButton('Enable')
+        self.btncancel  = QtGui.QPushButton('Cancel')
+        self.btnbrownser= QtGui.QPushButton('Browser')
 
         # size buttons
         self.btnLoader.setFixedWidth(100)
@@ -439,21 +438,21 @@ class ProxySSLstrip(QVBoxLayout):
         self.btncancel.setFixedWidth(100)
         self.btnbrownser.setFixedWidth(100)
 
-        self.comboxBox  = QComboBox()
-        self.log_inject = QListWidget()
-        self.docScripts = QTextEdit()
-        self.argsScripts= QLineEdit()
-        self.btncancel.setIcon(QIcon('icons/cancel.png'))
-        self.btnLoader.setIcon(QIcon('icons/search.png'))
-        self.btnEnable.setIcon(QIcon('icons/accept.png'))
-        self.btnbrownser.setIcon(QIcon("icons/open.png"))
+        self.comboxBox  = QtGui.QComboBox()
+        self.log_inject = QtGui.QListWidget()
+        self.docScripts = QtGui.QTextEdit()
+        self.argsScripts= QtGui.QLineEdit()
+        self.btncancel.setIcon(QtGui.QIcon('icons/cancel.png'))
+        self.btnLoader.setIcon(QtGui.QIcon('icons/search.png'))
+        self.btnEnable.setIcon(QtGui.QIcon('icons/accept.png'))
+        self.btnbrownser.setIcon(QtGui.QIcon("icons/open.png"))
         self.argsScripts.setEnabled(False)
         self.btnbrownser.setEnabled(False)
 
         # group settings
-        self.GroupSettings  = QGroupBox()
+        self.GroupSettings  = QtGui.QGroupBox()
         self.GroupSettings.setTitle('settings:')
-        self.SettingsLayout = QFormLayout()
+        self.SettingsLayout = QtGui.QFormLayout()
         self.hBox.addWidget(self.comboxBox)
         self.hBox.addWidget(self.btnLoader)
         self.hBox.addWidget(self.btnEnable)
@@ -466,17 +465,17 @@ class ProxySSLstrip(QVBoxLayout):
         self.GroupSettings.setLayout(self.SettingsLayout)
         #self.GroupSettings.setFixedWidth(450)
         #group logger
-        self.GroupLogger  = QGroupBox()
+        self.GroupLogger  = QtGui.QGroupBox()
         self.GroupLogger.setTitle('Logger Injection:')
-        self.LoggerLayout = QVBoxLayout()
+        self.LoggerLayout = QtGui.QVBoxLayout()
         self.LoggerLayout.addWidget(self.log_inject)
         self.GroupLogger.setLayout(self.LoggerLayout)
         #self.GroupLogger.setFixedWidth(450)
 
         #group descriptions
-        self.GroupDoc  = QGroupBox()
+        self.GroupDoc  = QtGui.QGroupBox()
         self.GroupDoc.setTitle('Description:')
-        self.DocLayout = QFormLayout()
+        self.DocLayout = QtGui.QFormLayout()
         self.DocLayout.addRow(self.docScripts)
         self.GroupDoc.setLayout(self.DocLayout)
         self.GroupDoc.setFixedHeight(100)
@@ -485,7 +484,7 @@ class ProxySSLstrip(QVBoxLayout):
         self.SearchProxyPlugins()
         self.readDocScripts('html_injector')
         self.btnLoader.clicked.connect(self.SearchProxyPlugins)
-        self.connect(self.comboxBox,SIGNAL('currentIndexChanged(QString)'),self.readDocScripts)
+        self.connect(self.comboxBox,QtCore.SIGNAL('currentIndexChanged(QString)'),self.readDocScripts)
         self.btnEnable.clicked.connect(self.setPluginsActivated)
         self.btncancel.clicked.connect(self.unsetPluginsConf)
         self.btnbrownser.clicked.connect(self.get_filenameToInjection)
@@ -493,17 +492,17 @@ class ProxySSLstrip(QVBoxLayout):
         self.mainLayout.addWidget(self.GroupSettings)
         self.mainLayout.addWidget(self.GroupDoc)
         self.mainLayout.addWidget(self.GroupLogger)
-        self.layout = QHBoxLayout()
+        self.layout = QtGui.QHBoxLayout()
         self.layout.addWidget(self.scroll)
         self.addLayout(self.layout)
 
     def get_filenameToInjection(self):
         ''' open file for injection plugin '''
-        filename = QFileDialog.getOpenFileName(None,
+        filename = QtGui.QFileDialog.getOpenFileName(None,
         'load File','','HTML (*.html);;js (*.js);;css (*.css)')
         if len(filename) > 0:
             self.argsScripts.setText(filename)
-            QMessageBox.information(None, 'Scripts Loaders', 'file has been loaded with success.')
+            QtGui.QMessageBox.information(None, 'Scripts Loaders', 'file has been loaded with success.')
 
     def setPluginsActivated(self):
         ''' check arguments for plugins '''
@@ -530,10 +529,10 @@ class ProxySSLstrip(QVBoxLayout):
             with open(C.LOG_SSLSTRIP,'w') as bufferlog:
                 bufferlog.write(''), bufferlog.close()
             self.injectionThread = ThreadPopen(['tail','-f',C.LOG_SSLSTRIP])
-            self.connect(self.injectionThread,SIGNAL('Activated ( QString ) '), self.GetloggerInjection)
+            self.connect(self.injectionThread,QtCore.SIGNAL('Activated ( QString ) '), self.GetloggerInjection)
             self.injectionThread.setObjectName('Pump-Proxy::Capture')
             return self.injectionThread.start()
-        QMessageBox.warning(self,'error proxy logger','Pump-Proxy::capture is not found')
+        QtGui.QMessageBox.warning(self,'error proxy logger','Pump-Proxy::capture is not found')
 
     def GetloggerInjection(self,data):
         ''' read load file and add in Qlistwidget '''
@@ -583,26 +582,26 @@ class ProxySSLstrip(QVBoxLayout):
         self.comboxBox.addItems(self.plugins.keys())
 
 
-class PumpkinMonitor(QVBoxLayout):
+class PumpkinMonitor(QtGui.QVBoxLayout):
     ''' Monitor Access Point cleints connections'''
     def __init__(self,FsettingsUI=None ,parent = None):
         super(PumpkinMonitor, self).__init__(parent)
         self.FSettings      = FsettingsUI
-        self.Home   = QVBoxLayout()
-        self.widget = QWidget()
-        self.layout = QVBoxLayout(self.widget)
+        self.Home   = QtGui.QVBoxLayout()
+        self.widget = QtGui.QWidget()
+        self.layout = QtGui.QVBoxLayout(self.widget)
 
-        self.GroupMonitor   = QGroupBox()
-        self.MonitorTreeView= QTreeView()
-        self.MonitorTreeView.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.model = QStandardItemModel()
+        self.GroupMonitor   = QtGui.QGroupBox()
+        self.MonitorTreeView= QtGui.QTreeView()
+        self.MonitorTreeView.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.model = QtGui.QStandardItemModel()
         self.model.setHorizontalHeaderLabels(['Devices','Informations'])
         self.MonitorTreeView.setModel(self.model)
         self.MonitorTreeView.setUniformRowHeights(True)
         self.MonitorTreeView.setColumnWidth(0,130)
 
         self.GroupMonitor.setTitle('Station Monitor AP:')
-        self.MonitorLayout = QVBoxLayout()
+        self.MonitorLayout = QtGui.QVBoxLayout()
         self.MonitorLayout.addWidget(self.MonitorTreeView)
         self.GroupMonitor.setLayout(self.MonitorLayout)
         self.layout.addWidget(self.GroupMonitor)
@@ -611,39 +610,39 @@ class PumpkinMonitor(QVBoxLayout):
 
     def addRequests(self,macddress,user,status):
         if status:
-            ParentMaster = QStandardItem('Connected:: {} at {}'.format(macddress,
+            ParentMaster = QtGui.QStandardItem('Connected:: {} at {}'.format(macddress,
             datetime.now().strftime("%H:%M")))
-            ParentMaster.setIcon(QIcon('icons/connected.png'))
-            ParentMaster.setSizeHint(QSize(30,30))
-            info1 = QStandardItem('{}'.format(user['device']))
-            info2 = QStandardItem('{}'.format(user['IP']))
-            info3 = QStandardItem('{}'.format(datetime.now().strftime("%Y-%m-%d %H:%M")))
-            ParentMaster.appendRow([QStandardItem('Device::'),info1])
-            ParentMaster.appendRow([QStandardItem('IPAddr::'),info2])
-            ParentMaster.appendRow([QStandardItem('Current date::'),info3])
+            ParentMaster.setIcon(QtGui.QIcon('icons/connected.png'))
+            ParentMaster.setSizeHint(QtCore.QSize(30,30))
+            info1 = QtGui.QStandardItem('{}'.format(user['device']))
+            info2 = QtGui.QStandardItem('{}'.format(user['IP']))
+            info3 = QtGui.QStandardItem('{}'.format(datetime.now().strftime("%Y-%m-%d %H:%M")))
+            ParentMaster.appendRow([QtGui.QStandardItem('Device::'),info1])
+            ParentMaster.appendRow([QtGui.QStandardItem('IPAddr::'),info2])
+            ParentMaster.appendRow([QtGui.QStandardItem('Current date::'),info3])
             self.model.appendRow(ParentMaster)
             return self.MonitorTreeView.setFirstColumnSpanned(ParentMaster.row(),
             self.MonitorTreeView.rootIndex(), True)
 
-        ParentMaster = QStandardItem('Disconnected:: {} at {}'.format(macddress,
+        ParentMaster = QtGui.QStandardItem('Disconnected:: {} at {}'.format(macddress,
         datetime.now().strftime("%H:%M")))
-        ParentMaster.setIcon(QIcon('icons/disconnected.png'))
-        ParentMaster.setSizeHint(QSize(30,30))
-        info1 = QStandardItem('{}'.format(user['device']))
-        info2 = QStandardItem('{}'.format(user['IP']))
-        info3 = QStandardItem('{}'.format(datetime.now().strftime("%Y-%m-%d %H:%M")))
-        ParentMaster.appendRow([QStandardItem('Device::'),info1])
-        ParentMaster.appendRow([QStandardItem('IPAddr::'),info2])
-        ParentMaster.appendRow([QStandardItem('Current date::'),info3])
+        ParentMaster.setIcon(QtGui.QIcon('icons/disconnected.png'))
+        ParentMaster.setSizeHint(QtCore.QSize(30,30))
+        info1 = QtGui.QStandardItem('{}'.format(user['device']))
+        info2 = QtGui.QStandardItem('{}'.format(user['IP']))
+        info3 = QtGui.QStandardItem('{}'.format(datetime.now().strftime("%Y-%m-%d %H:%M")))
+        ParentMaster.appendRow([QtGui.QStandardItem('Device::'),info1])
+        ParentMaster.appendRow([QtGui.QStandardItem('IPAddr::'),info2])
+        ParentMaster.appendRow([QtGui.QStandardItem('Current date::'),info3])
         self.model.appendRow(ParentMaster)
         self.MonitorTreeView.setFirstColumnSpanned(ParentMaster.row(),
         self.MonitorTreeView.rootIndex(), True)
 
 
-class PumpkinSettings(QVBoxLayout):
+class PumpkinSettings(QtGui.QVBoxLayout):
     ''' settings DHCP options'''
-    sendMensage = pyqtSignal(str)
-    checkDockArea = pyqtSignal(dict)
+    sendMensage = QtCore.pyqtSignal(str)
+    checkDockArea = QtCore.pyqtSignal(dict)
     def __init__(self, parent=None,widgets=None):
         super(PumpkinSettings, self).__init__(parent)
         self.SettingsAp      = widgets['SettingsAP']
@@ -651,26 +650,26 @@ class PumpkinSettings(QVBoxLayout):
         self.dockInfo      = widgets['DockInfo']
         self.FSettings     = widgets['Settings']
         self.NetworkGroup  = widgets['Network']
-        self.mainLayout    = QFormLayout()
+        self.mainLayout    = QtGui.QFormLayout()
         self.SettingsDHCP  = {}
 
         #scroll area
-        self.scrollwidget = QWidget()
+        self.scrollwidget = QtGui.QWidget()
         self.scrollwidget.setLayout(self.mainLayout)
-        self.scroll = QScrollArea()
+        self.scroll = QtGui.QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.scroll.setWidget(self.scrollwidget)
 
-        self.GroupDHCP     = QGroupBox()
-        self.GroupArea     = QGroupBox()
-        self.layoutDHCP    = QFormLayout()
-        self.layoutArea    = QFormLayout()
-        self.layoutbuttons = QHBoxLayout()
-        self.btnDefault    = QPushButton('Default')
-        self.btnSave       = QPushButton('save settings')
-        self.btnSave.setIcon(QIcon('icons/export.png'))
-        self.btnDefault.setIcon(QIcon('icons/settings.png'))
-        self.dhcpClassIP   = QComboBox()
+        self.GroupDHCP     = QtGui.QGroupBox()
+        self.GroupArea     = QtGui.QGroupBox()
+        self.layoutDHCP    = QtGui.QFormLayout()
+        self.layoutArea    = QtGui.QFormLayout()
+        self.layoutbuttons = QtGui.QHBoxLayout()
+        self.btnDefault    = QtGui.QPushButton('Default')
+        self.btnSave       = QtGui.QPushButton('save settings')
+        self.btnSave.setIcon(QtGui.QIcon('icons/export.png'))
+        self.btnDefault.setIcon(QtGui.QIcon('icons/settings.png'))
+        self.dhcpClassIP   = QtGui.QComboBox()
         # dhcp class
         self.classtypes = ['Class-A-Address','Class-B-Address','Class-C-Address','Class-Custom-Address']
         for types in self.classtypes:
@@ -678,13 +677,13 @@ class PumpkinSettings(QVBoxLayout):
                 self.classtypes.remove(types),self.classtypes.insert(0,types)
         self.dhcpClassIP.addItems(self.classtypes)
 
-        self.leaseTime_def = QLineEdit(self.FSettings.Settings.get_setting('dhcp','leasetimeDef'))
-        self.leaseTime_Max = QLineEdit(self.FSettings.Settings.get_setting('dhcp','leasetimeMax'))
-        self.netmask       = QLineEdit(self.FSettings.Settings.get_setting('dhcp','netmask'))
-        self.range_dhcp    = QLineEdit(self.FSettings.Settings.get_setting('dhcp','range'))
-        self.route         = QLineEdit(self.FSettings.Settings.get_setting('dhcp','router'))
-        self.subnet        = QLineEdit(self.FSettings.Settings.get_setting('dhcp','subnet'))
-        self.broadcast     = QLineEdit(self.FSettings.Settings.get_setting('dhcp','broadcast'))
+        self.leaseTime_def = QtGui.QLineEdit(self.FSettings.Settings.get_setting('dhcp','leasetimeDef'))
+        self.leaseTime_Max = QtGui.QLineEdit(self.FSettings.Settings.get_setting('dhcp','leasetimeMax'))
+        self.netmask       = QtGui.QLineEdit(self.FSettings.Settings.get_setting('dhcp','netmask'))
+        self.range_dhcp    = QtGui.QLineEdit(self.FSettings.Settings.get_setting('dhcp','range'))
+        self.route         = QtGui.QLineEdit(self.FSettings.Settings.get_setting('dhcp','router'))
+        self.subnet        = QtGui.QLineEdit(self.FSettings.Settings.get_setting('dhcp','subnet'))
+        self.broadcast     = QtGui.QLineEdit(self.FSettings.Settings.get_setting('dhcp','broadcast'))
         self.dhcpClassIP.currentIndexChanged.connect(self.dhcpClassIPClicked)
         self.GroupDHCP.setTitle('DHCP-Settings')
         self.GroupDHCP.setLayout(self.layoutDHCP)
@@ -703,15 +702,15 @@ class PumpkinSettings(QVBoxLayout):
         self.layoutDHCP.addRow(self.layoutbuttons)
 
         # Area Group
-        self.gridArea = QGridLayout()
-        self.CB_ActiveMode = QCheckBox('::Advanced Mode:: Monitor MITM Attack')
+        self.gridArea = QtGui.QGridLayout()
+        self.CB_ActiveMode = QtGui.QCheckBox('::Advanced Mode:: Monitor MITM Attack')
         self.CB_ActiveMode.setHidden(True)
-        self.CB_Cread    = QCheckBox('HTTP-Authentication')
-        self.CB_monitorURL = QCheckBox('HTTP-Requests')
-        self.CB_bdfproxy   = QCheckBox('BDFProxy-ng')
-        self.CB_dns2proxy  = QCheckBox('Dns2Proxy')
-        self.CB_responder  = QCheckBox('Responder')
-        self.CB_pumpkinPro = QCheckBox('Pumpkin-Proxy')
+        self.CB_Cread    = QtGui.QCheckBox('HTTP-Authentication')
+        self.CB_monitorURL = QtGui.QCheckBox('HTTP-Requests')
+        self.CB_bdfproxy   = QtGui.QCheckBox('BDFProxy-ng')
+        self.CB_dns2proxy  = QtGui.QCheckBox('Dns2Proxy')
+        self.CB_responder  = QtGui.QCheckBox('Responder')
+        self.CB_pumpkinPro = QtGui.QCheckBox('Pumpkin-Proxy')
         self.CB_ActiveMode.setChecked(self.FSettings.Settings.get_setting('dockarea','advanced',format=bool))
         self.CB_Cread.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_credencials',format=bool))
         self.CB_monitorURL.setChecked(self.FSettings.Settings.get_setting('dockarea','dock_urlmonitor',format=bool))
@@ -749,7 +748,7 @@ class PumpkinSettings(QVBoxLayout):
         self.mainLayout.addRow(self.NetworkGroup)
         self.mainLayout.addRow(self.GroupArea)
         self.mainLayout.addRow(self.GroupDHCP)
-        self.layout = QHBoxLayout()
+        self.layout = QtGui.QHBoxLayout()
         self.layout.addWidget(self.scroll)
         self.addLayout(self.layout)
 
@@ -773,7 +772,7 @@ class PumpkinSettings(QVBoxLayout):
             self.dockList = []
             for key in DockInfo.keys():
                 if DockInfo[key]['active']:
-                    self.dock = QDockWidget(key)
+                    self.dock = QtGui.QDockWidget(key)
                     if key == 'HTTP-Authentication':
                         self.AllDockArea[key] = dockCredsMonitor(None,DockInfo[key])
                     elif key == 'HTTP-Requests':
@@ -783,10 +782,10 @@ class PumpkinSettings(QVBoxLayout):
                     else:
                         self.AllDockArea[key] = dockAreaAPI(None,DockInfo[key])
                     self.dock.setWidget(self.AllDockArea[key])
-                    self.dock.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-                    self.dock.setAllowedAreas(Qt.AllDockWidgetAreas)
-                    self.dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-                    self.Tab_Dock.addDockWidget(Qt.LeftDockWidgetArea, self.dock)
+                    self.dock.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+                    self.dock.setAllowedAreas(QtCore.Qt.AllDockWidgetAreas)
+                    self.dock.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
+                    self.Tab_Dock.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.dock)
                     self.dockList.insert(0,self.dock)
             if len(self.dockList) > 1:
                 for index in range(1, len(self.dockList) - 1):

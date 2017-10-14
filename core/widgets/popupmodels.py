@@ -1,7 +1,6 @@
 from re import search
 import modules as GUIs
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from core.main import QtGui,QtCore
 from core.utils import Refactor
 from collections import OrderedDict
 from core.widgets.pluginssettings import BDFProxySettings,ResponderSettings
@@ -26,18 +25,18 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-class PopUpPlugins(QVBoxLayout):
+class PopUpPlugins(QtGui.QVBoxLayout):
     ''' this module control all plugins to MITM attack'''
-    sendSingal_disable = pyqtSignal(object)
+    sendSingal_disable = QtCore.pyqtSignal(object)
     def __init__(self,FSettings,main,parent=None):
         super(PopUpPlugins, self).__init__(parent)
         self.main_method = main
         self.FSettings = FSettings
-        self.layout = QVBoxLayout()
-        self.layoutform = QFormLayout()
-        self.layoutproxy = QVBoxLayout()
-        self.GroupPlugins = QGroupBox()
-        self.GroupPluginsProxy = QGroupBox()
+        self.layout = QtGui.QVBoxLayout()
+        self.layoutform = QtGui.QFormLayout()
+        self.layoutproxy = QtGui.QVBoxLayout()
+        self.GroupPlugins = QtGui.QGroupBox()
+        self.GroupPluginsProxy = QtGui.QGroupBox()
         self.GroupPlugins.setTitle('plugins:')
         self.GroupPluginsProxy.setTitle('Enable proxy server:')
         self.GroupPluginsProxy.setCheckable(True)
@@ -45,19 +44,19 @@ class PopUpPlugins(QVBoxLayout):
         self.GroupPluginsProxy.setLayout(self.layoutproxy)
         self.GroupPlugins.setLayout(self.layoutform)
 
-        self.check_netcreds     = QCheckBox('net-creds ')
-        self.check_responder    = QCheckBox('Responder')
-        self.check_tcpproxy     = QCheckBox('TCP-Proxy')
-        self.check_pumpkinProxy = QRadioButton('Pumpkin-Proxy')
-        self.check_dns2proy     = QRadioButton('SSLstrip+|Dns2proxy')
-        self.check_sergioProxy  = QRadioButton('SSLstrip|Sergio-proxy')
-        self.check_bdfproxy     = QRadioButton('BDFProxy-ng')
-        self.check_noproxy      = QRadioButton('No Proxy')
+        self.check_netcreds     = QtGui.QCheckBox('net-creds ')
+        self.check_responder    = QtGui.QCheckBox('Responder')
+        self.check_tcpproxy     = QtGui.QCheckBox('TCP-Proxy')
+        self.check_pumpkinProxy = QtGui.QRadioButton('Pumpkin-Proxy')
+        self.check_dns2proy     = QtGui.QRadioButton('SSLstrip+|Dns2proxy')
+        self.check_sergioProxy  = QtGui.QRadioButton('SSLstrip|Sergio-proxy')
+        self.check_bdfproxy     = QtGui.QRadioButton('BDFProxy-ng')
+        self.check_noproxy      = QtGui.QRadioButton('No Proxy')
 
-        self.btnBDFSettings    = QPushButton('Change')
-        self.btnResponderSettings = QPushButton('Change')
-        self.btnBDFSettings.setIcon(QIcon('icons/config.png'))
-        self.btnResponderSettings.setIcon(QIcon('icons/config.png'))
+        self.btnBDFSettings    = QtGui.QPushButton('Change')
+        self.btnResponderSettings = QtGui.QPushButton('Change')
+        self.btnBDFSettings.setIcon(QtGui.QIcon('icons/config.png'))
+        self.btnResponderSettings.setIcon(QtGui.QIcon('icons/config.png'))
         self.btnBDFSettings.clicked.connect(self.ConfigOBJBDFproxy)
         self.btnResponderSettings.clicked.connect(self.ConfigOBJBResponder)
 
@@ -83,7 +82,7 @@ class PopUpPlugins(QVBoxLayout):
         # table 1 for add plugins with QradioBtton
         self.THeadersPluginsProxy  = OrderedDict(
         [   ('Plugins',[self.check_pumpkinProxy,self.check_dns2proy,self.check_sergioProxy,self.check_bdfproxy]),
-            ('Settings',[QPushButton('None'),QPushButton('None'),QPushButton('None'),self.btnBDFSettings]),
+            ('Settings',[QtGui.QPushButton('None'),QtGui.QPushButton('None'),QtGui.QPushButton('None'),self.btnBDFSettings]),
             ('Description',[self.check_pumpkinProxy.objectName(),
             self.check_dns2proy.objectName(),self.check_sergioProxy.objectName(),
             self.check_bdfproxy.objectName()])
@@ -92,18 +91,18 @@ class PopUpPlugins(QVBoxLayout):
         # table 2 for add plugins with checkbox
         self.THeadersPlugins  = OrderedDict(
         [   ('Plugins',[self.check_tcpproxy,self.check_responder]),
-            ('Settings',[QPushButton('None'),self.btnResponderSettings]),
+            ('Settings',[QtGui.QPushButton('None'),self.btnResponderSettings]),
             ('Description',[self.check_tcpproxy.objectName(),self.check_responder.objectName(),])
         ])
 
-        self.tableplugins = QTableWidget()
+        self.tableplugins = QtGui.QTableWidget()
         self.tableplugins.setColumnCount(3)
         self.tableplugins.setRowCount(len(self.THeadersPluginsProxy['Plugins']))
         self.tableplugins.resizeRowsToContents()
-        self.tableplugins.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.tableplugins.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         self.tableplugins.horizontalHeader().setStretchLastSection(True)
-        self.tableplugins.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tableplugins.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tableplugins.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.tableplugins.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.tableplugins.verticalHeader().setVisible(False)
         self.tableplugins.verticalHeader().setDefaultSectionSize(23)
         self.tableplugins.setSortingEnabled(True)
@@ -112,14 +111,14 @@ class PopUpPlugins(QVBoxLayout):
         self.tableplugins.horizontalHeader().resizeSection(1,80)
         self.tableplugins.resizeRowsToContents()
 
-        self.tableplugincheckbox = QTableWidget()
+        self.tableplugincheckbox = QtGui.QTableWidget()
         self.tableplugincheckbox.setColumnCount(3)
         self.tableplugincheckbox.setRowCount(len(self.THeadersPlugins['Plugins']))
         self.tableplugincheckbox.resizeRowsToContents()
-        self.tableplugincheckbox.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.tableplugincheckbox.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         self.tableplugincheckbox.horizontalHeader().setStretchLastSection(True)
-        self.tableplugincheckbox.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tableplugincheckbox.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tableplugincheckbox.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.tableplugincheckbox.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.tableplugincheckbox.verticalHeader().setVisible(False)
         self.tableplugincheckbox.verticalHeader().setDefaultSectionSize(23)
         self.tableplugincheckbox.setSortingEnabled(True)
@@ -133,10 +132,10 @@ class PopUpPlugins(QVBoxLayout):
         for n, key in enumerate(self.THeadersPluginsProxy.keys()):
             Headers.append(key)
             for m, item in enumerate(self.THeadersPluginsProxy[key]):
-                if type(item) == type(QRadioButton()) or type(item) == type(QPushButton()):
+                if type(item) == type(QtGui.QRadioButton()) or type(item) == type(QtGui.QPushButton()):
                     self.tableplugins.setCellWidget(m,n,item)
                 else:
-                    item = QTableWidgetItem(item)
+                    item = QtGui.QTableWidgetItem(item)
                     self.tableplugins.setItem(m, n, item)
         self.tableplugins.setHorizontalHeaderLabels(self.THeadersPluginsProxy.keys())
         # add all widgets in Qtable 2 plugin
@@ -144,14 +143,14 @@ class PopUpPlugins(QVBoxLayout):
         for n, key in enumerate(self.THeadersPlugins.keys()):
             Headers.append(key)
             for m, item in enumerate(self.THeadersPlugins[key]):
-                if type(item) == type(QCheckBox()) or type(item) == type(QPushButton()):
+                if type(item) == type(QtGui.QCheckBox()) or type(item) == type(QtGui.QPushButton()):
                     self.tableplugincheckbox.setCellWidget(m,n,item)
                 else:
-                    item = QTableWidgetItem(item)
+                    item = QtGui.QTableWidgetItem(item)
                     self.tableplugincheckbox.setItem(m, n, item)
         self.tableplugins.setHorizontalHeaderLabels(self.THeadersPlugins.keys())
 
-        self.proxyGroup = QButtonGroup()
+        self.proxyGroup = QtGui.QButtonGroup()
         self.proxyGroup.addButton(self.check_pumpkinProxy)
         self.proxyGroup.addButton(self.check_dns2proy)
         self.proxyGroup.addButton(self.check_sergioProxy)
@@ -265,16 +264,16 @@ class PopUpPlugins(QVBoxLayout):
             items.append(str(self.FSettings.ListRules.item(index).text()))
         if self.optionsRules('sslstrip') in items:
             return
-        item = QListWidgetItem()
+        item = QtGui.QListWidgetItem()
         item.setText(self.optionsRules('sslstrip'))
-        item.setSizeHint(QSize(30,30))
+        item.setSizeHint(QtCore.QSize(30,30))
         self.FSettings.ListRules.addItem(item)
 
     # set redirect port rules dns2proy
     def set_Dns2proxyRule(self):
-        item = QListWidgetItem()
+        item = QtGui.QListWidgetItem()
         item.setText(self.optionsRules('dns2proxy'))
-        item.setSizeHint(QSize(30,30))
+        item.setSizeHint(QtCore.QSize(30,30))
         self.FSettings.ListRules.addItem(item)
 
     # set redirect port rules bdfproxy
@@ -284,9 +283,9 @@ class PopUpPlugins(QVBoxLayout):
             items.append(str(self.FSettings.ListRules.item(index).text()))
         if self.optionsRules('bdfproxy') in items:
             return
-        item = QListWidgetItem()
+        item = QtGui.QListWidgetItem()
         item.setText(self.optionsRules('bdfproxy'))
-        item.setSizeHint(QSize(30,30))
+        item.setSizeHint(QtCore.QSize(30,30))
         self.FSettings.ListRules.addItem(item)
 
     def set_PumpkinProxy(self):
@@ -295,9 +294,9 @@ class PopUpPlugins(QVBoxLayout):
             items.append(str(self.FSettings.ListRules.item(index).text()))
         if self.optionsRules('PumpkinProxy') in items:
             return
-        item = QListWidgetItem()
+        item = QtGui.QListWidgetItem()
         item.setText(self.optionsRules('PumpkinProxy'))
-        item.setSizeHint(QSize(30,30))
+        item.setSizeHint(QtCore.QSize(30,30))
         self.FSettings.ListRules.addItem(item)
 
     def unset_Rules(self,type):
@@ -308,84 +307,3 @@ class PopUpPlugins(QVBoxLayout):
         for position,line in enumerate(items):
             if self.optionsRules(type) == line:
                 self.FSettings.ListRules.takeItem(position)
-
-
-class PopUpServer(QWidget):
-    ''' this module fast access to phishing-manager'''
-    def __init__(self,FSettings):
-        QWidget.__init__(self)
-        self.FSettings  = FSettings
-        self.Ftemplates = GUIs.frm_PhishingManager()
-        self.layout     = QVBoxLayout()
-        self.FormLayout = QFormLayout()
-        self.GridForm   = QGridLayout()
-        self.Status     = QStatusBar()
-        self.StatusLabel= QLabel(self)
-        self.Status.addWidget(QLabel('Status::'))
-        self.Status.addWidget(self.StatusLabel)
-        self.GroupBox           = QGroupBox()
-        self.GroupBox.setTitle('::Server-HTTP::')
-        self.GroupBox.setLayout(self.FormLayout)
-        self.btntemplates       = QPushButton('Phishing M.')
-        self.btnStopServer      = QPushButton('Stop Server')
-        self.btnRefresh         = QPushButton('ReFresh')
-        self.txt_IP             = QLineEdit(self)
-        self.ComboIface         = QComboBox(self)
-        self.txt_IP.setVisible(False)
-        self.StatusServer(False)
-        #icons
-        self.btntemplates.setIcon(QIcon('icons/page.png'))
-        self.btnStopServer.setIcon(QIcon('icons/close.png'))
-        self.btnRefresh.setIcon(QIcon('icons/refresh.png'))
-
-        #conects
-        self.refrash_interface()
-        self.btntemplates.clicked.connect(self.show_template_dialog)
-        self.btnStopServer.clicked.connect(self.StopLocalServer)
-        self.btnRefresh.clicked.connect(self.refrash_interface)
-        self.connect(self.ComboIface, SIGNAL('currentIndexChanged(QString)'), self.discoveryIface)
-
-        #layout
-        self.GridForm.addWidget(self.ComboIface,0,1)
-        self.GridForm.addWidget(self.btnRefresh,0,2)
-        self.GridForm.addWidget(self.btntemplates,1,1)
-        self.GridForm.addWidget(self.btnStopServer,1,2)
-        self.FormLayout.addRow(self.GridForm)
-        self.FormLayout.addWidget(self.Status)
-        self.layout.addWidget(self.GroupBox)
-        self.setLayout(self.layout)
-
-
-    def emit_template(self,log):
-        if log == 'started':
-            self.StatusServer(True)
-
-    def StopLocalServer(self):
-        self.StatusServer(False)
-        self.Ftemplates.killThread()
-
-    def StatusServer(self,server):
-        if server:
-            self.StatusLabel.setText('[ ON ]')
-            self.StatusLabel.setStyleSheet('QLabel {  color : green; }')
-        elif not server:
-            self.StatusLabel.setText('[ OFF ]')
-            self.StatusLabel.setStyleSheet('QLabel {  color : red; }')
-
-    def refrash_interface(self):
-        self.ComboIface.clear()
-        n = Refactor.get_interfaces()['all']
-        for i,j in enumerate(n):
-            if search('at',j) or search('wl',j):
-                self.ComboIface.addItem(n[i])
-                self.discoveryIface()
-
-    def discoveryIface(self):
-        iface = str(self.ComboIface.currentText())
-        ip = Refactor.get_Ipaddr(iface)
-        self.txt_IP.setText(ip)
-
-    def show_template_dialog(self):
-        self.connect(self.Ftemplates,SIGNAL('Activated ( QString ) '), self.emit_template)
-        self.Ftemplates.txt_redirect.setText(self.txt_IP.text())
-        self.Ftemplates.show()

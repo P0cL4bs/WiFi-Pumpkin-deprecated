@@ -48,6 +48,8 @@ Version 0.8.5
 - added more code organization in file main.py
 - fixed bug not working as expected #279
 - fixed small bug with Table when add new users
+- added new icon WiFi-Pumpkin
+- fixed group all object PyQt4 QtGui,QtCore
 
 Version 0.8.4
 -------------

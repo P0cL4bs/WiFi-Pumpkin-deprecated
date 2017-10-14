@@ -200,7 +200,7 @@ class frm_Settings(QDialog):
         super(frm_Settings, self).__init__(parent)
         self.setWindowTitle('WiFi-Pompkin - Settings')
         self.Settings = SettingsINI(C.CONFIG_INI)
-        self.loadtheme(self.XmlThemeSelected())
+        self.loadtheme(self.get_theme_qss())
         self.setGeometry(0, 0, 420, 440)
         self.center()
         self.Qui()
@@ -211,7 +211,7 @@ class frm_Settings(QDialog):
         with open(sshFile,"r") as fh:
             self.setStyleSheet(fh.read())
 
-    def XmlThemeSelected(self):
+    def get_theme_qss(self):
         ''' get theme selected path'''
         return self.Settings.get_setting('settings','themes')
 

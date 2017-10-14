@@ -30,20 +30,19 @@ Copyright:
 class frm_deauth(PumpkinModule):
     def __init__(self, parent=None):
         super(frm_deauth, self).__init__(parent)
-        self.Main           = QVBoxLayout()
+        self.Main           = QtGui.QVBoxLayout()
         self.setWindowTitle("Wireless Deauthentication Attack")
-        self.setWindowIcon(QIcon('icons/icon.ico'))
+        self.setWindowIcon(QtGui.QIcon('icons/icon.ico'))
         self.ApsCaptured    = {}
         self.data           = {'Bssid':[], 'Essid':[], 'Channel':[]}
-        self.loadtheme(self.configure.XmlThemeSelected())
         self.window_qt()
 
     def closeEvent(self, event):
         global threadloading
         if len(threadloading['deauth']) != 0 or len(threadloading['mdk3']) != 0:
-            reply = QMessageBox.question(self, 'About Exit',"Are you sure that you want to quit?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-            if reply == QMessageBox.Yes:
+            reply = QtGui.QMessageBox.question(self, 'About Exit',"Are you sure that you want to quit?",
+            QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            if reply == QtGui.QMessageBox.Yes:
                 event.accept()
                 for i in threadloading['deauth']:
                     i.terminate()
@@ -63,26 +62,26 @@ class frm_deauth(PumpkinModule):
 
     def window_qt(self):
         # base form add all widgets
-        self.mForm = QFormLayout()
+        self.mForm = QtGui.QFormLayout()
         # base widget this make Objected responsive
-        self.widget = QWidget()
-        self.layout = QVBoxLayout(self.widget)
+        self.widget = QtGui.QWidget()
+        self.layout = QtGui.QVBoxLayout(self.widget)
 
         #status bar attack
-        self.statusbar = QStatusBar()
-        system = QLabel('Deauthentication::')
+        self.statusbar = QtGui.QStatusBar()
+        system = QtGui.QLabel('Deauthentication::')
         self.statusbar.addWidget(system)
-        self.Controlador = QLabel('')
+        self.Controlador = QtGui.QLabel('')
         self.AttackStatus(False)
 
         # create table for add info devices APs
-        self.tables = QTableWidget(5,3)
+        self.tables = QtGui.QTableWidget(5,3)
         self.tables.setRowCount(50)
         self.tables.setMinimumHeight(200)
-        self.tables.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.tables.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.tables.horizontalHeader().setStretchLastSection(True)
-        self.tables.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tables.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tables.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.tables.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.tables.clicked.connect(self.select_target)
         self.tables.resizeColumnsToContents()
         self.tables.resizeRowsToContents()
@@ -98,19 +97,19 @@ class frm_deauth(PumpkinModule):
         self.tables.verticalHeader().setDefaultSectionSize(23)
 
         # create inputs and controles
-        self.linetarget = QLineEdit(self)
-        self.input_client = QLineEdit(self)
-        self.checkbox_client = QCheckBox(self)
+        self.linetarget = QtGui.QLineEdit(self)
+        self.input_client = QtGui.QLineEdit(self)
+        self.checkbox_client = QtGui.QCheckBox(self)
         self.checkbox_client.setText('Set a custom client to deauthenticate')
         self.checkbox_client.clicked.connect(self.get_event_checkbox_client)
         self.input_client.setText("ff:ff:ff:ff:ff:ff")
-        self.btn_enviar = QPushButton("Send Attack", self)
+        self.btn_enviar = QtGui.QPushButton("Send Attack", self)
         self.btn_enviar.clicked.connect(self.attack_deauth)
-        self.btn_scan_start = QPushButton("Start Scan", self)
+        self.btn_scan_start = QtGui.QPushButton("Start Scan", self)
         self.btn_scan_start.clicked.connect(self.SettingsScan)
-        self.btn_stop = QPushButton("Stop  Attack ", self)
+        self.btn_stop = QtGui.QPushButton("Stop  Attack ", self)
         self.btn_stop.clicked.connect(self.kill_thread)
-        self.btn_scan_stop = QPushButton('Stop Scan',self)
+        self.btn_scan_stop = QtGui.QPushButton('Stop Scan',self)
         self.btn_scan_stop.clicked.connect(self.kill_scanAP)
         self.btn_enviar.setFixedWidth(170)
         self.btn_stop.setFixedWidth(170)
@@ -118,12 +117,12 @@ class frm_deauth(PumpkinModule):
         self.btn_stop.setEnabled(False)
         self.input_client.setEnabled(False)
         #icons
-        self.btn_scan_start.setIcon(QIcon("icons/network.png"))
-        self.btn_scan_stop.setIcon(QIcon('icons/network_off.png'))
-        self.btn_enviar.setIcon(QIcon("icons/start.png"))
-        self.btn_stop.setIcon(QIcon("icons/Stop.png"))
+        self.btn_scan_start.setIcon(QtGui.QIcon("icons/network.png"))
+        self.btn_scan_stop.setIcon(QtGui.QIcon('icons/network_off.png'))
+        self.btn_enviar.setIcon(QtGui.QIcon("icons/start.png"))
+        self.btn_stop.setIcon(QtGui.QIcon("icons/Stop.png"))
 
-        self.get_placa = QComboBox(self)
+        self.get_placa = QtGui.QComboBox(self)
         # get all wireless card avaliable
         all = Refactor.get_interfaces()['all']
         for count,card in enumerate(all):
@@ -131,8 +130,8 @@ class frm_deauth(PumpkinModule):
                 self.get_placa.addItem(all[count])
 
         # group Network card select
-        self.GroupBoxNetwork = QGroupBox()
-        self.layoutGroupNW = QHBoxLayout()
+        self.GroupBoxNetwork = QtGui.QGroupBox()
+        self.layoutGroupNW = QtGui.QHBoxLayout()
         self.GroupBoxNetwork.setLayout(self.layoutGroupNW)
         self.GroupBoxNetwork.setTitle('Network Adapter:')
         self.layoutGroupNW.addWidget(self.get_placa)
@@ -140,17 +139,17 @@ class frm_deauth(PumpkinModule):
         self.layoutGroupNW.addWidget(self.btn_scan_stop)
 
         # group settings card select
-        self.GroupBoxSettings = QGroupBox()
-        self.layoutGroupST = QVBoxLayout()
+        self.GroupBoxSettings = QtGui.QGroupBox()
+        self.layoutGroupST = QtGui.QVBoxLayout()
         self.GroupBoxSettings.setLayout(self.layoutGroupST)
         self.GroupBoxSettings.setTitle('Settings:')
-        self.layoutGroupST.addWidget(QLabel('Target:'))
+        self.layoutGroupST.addWidget(QtGui.QLabel('Target:'))
         self.layoutGroupST.addWidget(self.linetarget)
-        self.layoutGroupST.addWidget(QLabel('Options:'))
+        self.layoutGroupST.addWidget(QtGui.QLabel('Options:'))
         self.layoutGroupST.addWidget(self.checkbox_client)
         self.layoutGroupST.addWidget(self.input_client)
 
-        self.form0  = QVBoxLayout()
+        self.form0  = QtGui.QVBoxLayout()
         self.form0.addWidget(self.tables)
         self.form0.addWidget(self.GroupBoxNetwork)
         self.form0.addWidget(self.GroupBoxSettings)
@@ -164,7 +163,7 @@ class frm_deauth(PumpkinModule):
 
     def get_event_checkbox_client(self):
         if self.configure.Settings.get_setting('settings','deauth') == 'packets_mdk3':
-            QMessageBox.warning(self,'mdk3 Deauth',
+            QtGui.QMessageBox.warning(self,'mdk3 Deauth',
             'mdk3 Deauth not have these options, you can set custom '
             'client deauth on Modules->Settings->Advanced tab (mdk3 args option) ')
             return self.checkbox_client.setCheckable(False)
@@ -191,8 +190,8 @@ class frm_deauth(PumpkinModule):
                         for n, key in enumerate(self.data.keys()):
                             Headers.append(key)
                             for m, item in enumerate(self.data[key]):
-                                item = QTableWidgetItem(item)
-                                item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+                                item = QtGui.QTableWidgetItem(item)
+                                item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
                                 self.tables.setItem(m, n, item)
                     self.cap =[]
 
@@ -223,15 +222,15 @@ class frm_deauth(PumpkinModule):
                for n, key in enumerate(self.data.keys()):
                    Headers.append(key)
                    for m, item in enumerate(self.data[key]):
-                       item = QTableWidgetItem(item)
-                       item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+                       item = QtGui.QTableWidgetItem(item)
+                       item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
                        self.tables.setItem(m, n, item)
 
     def SettingsScan(self):
         self.ApsCaptured    = {}
         self.data = {'Bssid':[], 'Essid':[], 'Channel':[]}
         if self.get_placa.currentText() == "":
-            QMessageBox.information(self, "Network Adapter", 'Network Adapter is not found. Try again.')
+            QtGui.QMessageBox.information(self, "Network Adapter", 'Network Adapter is not found. Try again.')
         else:
             self.interface = str(set_monitor_mode(self.get_placa.currentText()).setEnable())
             self.btn_scan_stop.setEnabled(True)
@@ -239,7 +238,7 @@ class frm_deauth(PumpkinModule):
             if self.interface != None:
                 if self.configure.Settings.get_setting('settings','scan_scapy',format=bool):
                     self.threadScanAP = ThreadScannerAP(self.interface)
-                    self.connect(self.threadScanAP,SIGNAL('Activated ( QString ) '), self.monitorThreadScan)
+                    self.connect(self.threadScanAP,QtCore.SIGNAL('Activated ( QString ) '), self.monitorThreadScan)
                     self.threadScanAP.setObjectName('Thread Scanner AP::scapy')
                     self.threadScanAP.start()
                 elif self.configure.Settings.get_setting('settings','scan_airodump',format=bool):
@@ -248,8 +247,8 @@ class frm_deauth(PumpkinModule):
                             self.thread_airodump = threading.Thread(target=self.scan_diveces_airodump)
                             self.thread_airodump.daemon = True
                             return self.thread_airodump.start()
-                        QMessageBox.warning(self, 'Error xterm', 'xterm is not installed')
-                    QMessageBox.information(self,'Error airodump','airodump-ng is not installed')
+                        QtGui.QMessageBox.warning(self, 'Error xterm', 'xterm is not installed')
+                    QtGui.QMessageBox.information(self,'Error airodump','airodump-ng is not installed')
             set_monitor_mode(self.get_placa.currentText()).setDisable()
 
 
@@ -257,12 +256,12 @@ class frm_deauth(PumpkinModule):
         global threadloading
         if hasattr(self,'threadScanAP'):
             if not self.threadScanAP.stopped:
-                return QMessageBox.warning(self,'scanner','you need to stop the scanner Access Point')
+                return QtGui.QMessageBox.warning(self,'scanner','you need to stop the scanner Access Point')
         if hasattr(self,'thread_airodump'):
             if self.thread_airodump.isAlive():
-                return QMessageBox.warning(self,'scanner','you need to stop the scanner Access Point')
+                return QtGui.QMessageBox.warning(self,'scanner','you need to stop the scanner Access Point')
         if self.linetarget.text() == '':
-            return QMessageBox.warning(self, 'Target Error', 'Please select a target to attack')
+            return QtGui.QMessageBox.warning(self, 'Target Error', 'Please select a target to attack')
         # get args for thread attack
         self.btn_stop.setEnabled(True)
         self.btn_enviar.setEnabled(False)
@@ -287,7 +286,7 @@ class frm_deauth(PumpkinModule):
                 self.processmdk.setObjectName('Thread::mdk3')
                 threadloading['mdk3'].append(self.processmdk)
                 return self.processmdk.start()
-            QMessageBox.information(self,'Error mdk3','mkd3 not installed')
+            QtGui.QMessageBox.information(self,'Error mdk3','mkd3 not installed')
             set_monitor_mode(self.get_placa.currentText()).setDisable()
 
     def AttackStatus(self,bool):
@@ -299,7 +298,7 @@ class frm_deauth(PumpkinModule):
             self.Controlador.setStyleSheet("QLabel {  color : red; }")
         self.statusbar.addWidget(self.Controlador)
 
-    @pyqtSlot(QModelIndex)
+    @QtCore.pyqtSlot(QtCore.QModelIndex)
     def list_clicked(self, index):
         itms = self.list.selectedIndexes()
         for i in itms:
@@ -308,5 +307,5 @@ class frm_deauth(PumpkinModule):
                 if Refactor.check_is_mac(i.replace(' ', '')):
                     self.linetarget.setText(str(i))
             if self.linetarget.text() == '':
-                QMessageBox.information(self, 'MacAddress',
+                QtGui.QMessageBox.information(self, 'MacAddress',
                 'Please select a valid MAC Address as target.')

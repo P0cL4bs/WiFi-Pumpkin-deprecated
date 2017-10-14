@@ -6,7 +6,7 @@ from re import search
 from socket import gethostbyname
 from scapy.all import get_if_hwaddr
 from core.loaders.models.PackagesUI import *
-from modules.spreads.UpdateFake import frm_update_attack
+from modules.spreads.update_fake_attack import frm_update_attack
 from core.packets.network import ThARP_posion,ThreadDNSspoofNF
 threadloading = {'template':[],'dnsspoof':[],'arps':[]}
 
@@ -35,20 +35,19 @@ class frm_DnsSpoof(PumpkinModule):
     def __init__(self, PhishingManager,parent=None):
         super(frm_DnsSpoof, self).__init__(parent)
         self.setWindowTitle('DNS Spoofer')
-        self.Main       = QVBoxLayout()
+        self.Main       = QtGui.QVBoxLayout()
         self.owd        = getcwd()
         self.Ftemplates = PhishingManager
-        self.loadtheme(self.configure.XmlThemeSelected())
         self.data       = {'IPaddress':[], 'Hostname':[], 'MacAddress':[]}
         self.ThreadDirc = {'dns_spoof':[]}
         global threadloading
         self.GUI()
 
     def closeEvent(self, event):
-        reply = QMessageBox.question(self, 'DNS spoofer',
-            'Are you sure that you want to close Dns spoof?', QMessageBox.Yes |
-            QMessageBox.No, QMessageBox.No)
-        if reply == QMessageBox.Yes:
+        reply = QtGui.QMessageBox.question(self, 'DNS spoofer',
+            'Are you sure that you want to close Dns spoof?', QtGui.QMessageBox.Yes |
+                                           QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        if reply == QtGui.QMessageBox.Yes:
             event.accept()
             if len(self.ThreadDirc['dns_spoof']) != 0:
                 for i in self.ThreadDirc['dns_spoof']:i.stop()
@@ -63,19 +62,19 @@ class frm_DnsSpoof(PumpkinModule):
 
 
     def GUI(self):
-        self.form           = QFormLayout()
-        self.layoutform     = QFormLayout()
-        self.layoutHost     = QFormLayout()
-        self.layoutDNSReq   = QFormLayout()
-        self.statusBar      = QStatusBar(self)
-        self.tables = QTableWidget(5,3)
+        self.form           = QtGui.QFormLayout()
+        self.layoutform     = QtGui.QFormLayout()
+        self.layoutHost     = QtGui.QFormLayout()
+        self.layoutDNSReq   = QtGui.QFormLayout()
+        self.statusBar      = QtGui.QStatusBar(self)
+        self.tables = QtGui.QTableWidget(5,3)
         self.tables.setRowCount(100)
         self.tables.setFixedHeight(245)
         self.tables.setFixedWidth(350)
-        self.tables.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.tables.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.tables.horizontalHeader().setStretchLastSection(True)
-        self.tables.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tables.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tables.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.tables.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.tables.clicked.connect(self.list_clicked_scan)
         self.tables.resizeColumnsToContents()
         self.tables.resizeRowsToContents()
@@ -90,12 +89,12 @@ class frm_DnsSpoof(PumpkinModule):
         self.tables.setHorizontalHeaderLabels(Headers)
         self.tables.verticalHeader().setDefaultSectionSize(23)
 
-        self.ip_range = QLineEdit(self)
-        self.txt_gateway = QLineEdit(self)
-        self.txt_redirect = QLineEdit(self)
-        self.txt_target = QLineEdit(self)
-        self.ComboIface = QComboBox(self)
-        self.connect(self.ComboIface, SIGNAL("currentIndexChanged(QString)"), self.discoveryIface)
+        self.ip_range = QtGui.QLineEdit(self)
+        self.txt_gateway = QtGui.QLineEdit(self)
+        self.txt_redirect = QtGui.QLineEdit(self)
+        self.txt_target = QtGui.QLineEdit(self)
+        self.ComboIface = QtGui.QComboBox(self)
+        self.connect(self.ComboIface, QtCore.SIGNAL("currentIndexChanged(QString)"), self.discoveryIface)
 
         self.layoutform.addRow('Target:',self.txt_target)
         self.layoutform.addRow('Gateway:',self.txt_gateway)
@@ -103,24 +102,24 @@ class frm_DnsSpoof(PumpkinModule):
         self.layoutform.addRow('IP Scan Range:',self.ip_range)
         self.layoutform.addRow('Interface:',self.ComboIface)
 
-        self.GroupOptions = QGroupBox(self)
+        self.GroupOptions = QtGui.QGroupBox(self)
         self.GroupOptions.setTitle('Options')
         self.GroupOptions.setLayout(self.layoutform)
 
-        self.myListDns = QListWidget(self)
-        self.myDNsoutput = QListWidget(self)
-        self.myListDns.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
-        self.myDNsoutput.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.myListDns = QtGui.QListWidget(self)
+        self.myDNsoutput = QtGui.QListWidget(self)
+        self.myListDns.setSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Maximum)
+        self.myDNsoutput.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
 
-        self.GroupHosts  = QGroupBox(self)
-        self.checkAllhost = QCheckBox('Redirect traffic from all domains ')
+        self.GroupHosts  = QtGui.QGroupBox(self)
+        self.checkAllhost = QtGui.QCheckBox('Redirect traffic from all domains ')
         self.checkAllhost.clicked.connect(self.set_redirect_all_domains)
         self.GroupHosts.setTitle('DNS::spoof')
         self.GroupHosts.setLayout(self.layoutHost)
         self.layoutHost.addRow(self.myListDns,self.myDNsoutput)
         self.layoutHost.addRow(self.checkAllhost)
 
-        self.GroupOuput  = QGroupBox(self)
+        self.GroupOuput  = QtGui.QGroupBox(self)
         self.GroupOuput.setTitle('DNS::Requests')
         self.GroupOuput.setLayout(self.layoutDNSReq)
         self.layoutDNSReq.addRow(self.myDNsoutput)
@@ -128,14 +127,14 @@ class frm_DnsSpoof(PumpkinModule):
         self.SettingsGUI()
 
 
-        self.myListDns.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.myListDns.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.myListDns.connect(self.myListDns,
-        SIGNAL('customContextMenuRequested(QPoint)' ),
+        QtCore.SIGNAL('customContextMenuRequested(QPoint)' ),
         self.listItemclicked)
 
-        self.txt_status_scan = QLabel('')
-        self.txt_statusarp = QLabel('')
-        self.txt_status_phishing = QLabel('')
+        self.txt_status_scan = QtGui.QLabel('')
+        self.txt_statusarp = QtGui.QLabel('')
+        self.txt_status_phishing = QtGui.QLabel('')
 
         self.StatusMonitor(False,'stas_scan')
         self.StatusMonitor(False,'dns_spoof')
@@ -144,13 +143,13 @@ class frm_DnsSpoof(PumpkinModule):
         self.ip_range.setText(scan_range)
 
         # button conf
-        self.btn_start_scanner = QPushButton('Start Scan  ')
-        self.btn_stop_scanner = QPushButton('Stop Scan    ')
-        self.btn_Attack_Posion = QPushButton('Start Attack')
-        self.btn_Stop_Posion = QPushButton('Stop Attack')
-        self.btn_server = QPushButton('Phishing M.')
-        self.btn_windows_update = QPushButton('Fake Update')
-        self.btn_server.setIcon(QIcon('icons/page.png'))
+        self.btn_start_scanner = QtGui.QPushButton('Start Scan  ')
+        self.btn_stop_scanner = QtGui.QPushButton('Stop Scan    ')
+        self.btn_Attack_Posion = QtGui.QPushButton('Start Attack')
+        self.btn_Stop_Posion = QtGui.QPushButton('Stop Attack')
+        self.btn_server = QtGui.QPushButton('Phishing M.')
+        self.btn_windows_update = QtGui.QPushButton('Fake Update')
+        self.btn_server.setIcon(QtGui.QIcon('icons/page.png'))
 
         self.layoutform.addRow(self.btn_start_scanner,self.btn_stop_scanner)
         self.layoutform.addRow(self.btn_server,self.btn_windows_update)
@@ -165,32 +164,32 @@ class frm_DnsSpoof(PumpkinModule):
         self.btn_windows_update.clicked.connect(self.show_frm_fake)
 
         #icons
-        self.btn_start_scanner.setIcon(QIcon('icons/network.png'))
-        self.btn_Attack_Posion.setIcon(QIcon('icons/start.png'))
-        self.btn_Stop_Posion.setIcon(QIcon('icons/Stop.png'))
-        self.btn_stop_scanner.setIcon(QIcon('icons/network_off.png'))
-        self.btn_windows_update.setIcon(QIcon('icons/winUp.png'))
+        self.btn_start_scanner.setIcon(QtGui.QIcon('icons/network.png'))
+        self.btn_Attack_Posion.setIcon(QtGui.QIcon('icons/start.png'))
+        self.btn_Stop_Posion.setIcon(QtGui.QIcon('icons/Stop.png'))
+        self.btn_stop_scanner.setIcon(QtGui.QIcon('icons/network_off.png'))
+        self.btn_windows_update.setIcon(QtGui.QIcon('icons/winUp.png'))
 
         self.btn_stop_scanner.setEnabled(False)
         self.btn_Stop_Posion.setEnabled(False)
 
-        self.statusBar.addWidget(QLabel('DnsSpoof:'))
+        self.statusBar.addWidget(QtGui.QLabel('DnsSpoof:'))
         self.statusBar.addWidget(self.txt_statusarp,10)
-        self.statusBar.addWidget(QLabel('Phishing:'))
+        self.statusBar.addWidget(QtGui.QLabel('Phishing:'))
         self.statusBar.addWidget(self.txt_status_phishing,10)
-        self.statusBar.addWidget(QLabel('Scan:'))
+        self.statusBar.addWidget(QtGui.QLabel('Scan:'))
         self.statusBar.addWidget(self.txt_status_scan,10)
 
         #btn start and stop
-        self.grid2 = QGridLayout()
+        self.grid2 = QtGui.QGridLayout()
         self.grid2.addWidget(self.btn_Attack_Posion,1,0)
         self.grid2.addWidget(self.btn_Stop_Posion,1,5)
 
-        self.form0  = QHBoxLayout()
+        self.form0  = QtGui.QHBoxLayout()
         self.form0.addWidget(self.tables)
         self.form0.addWidget(self.GroupOptions)
 
-        self.layout = QHBoxLayout()
+        self.layout = QtGui.QHBoxLayout()
         self.layout.addWidget(self.GroupHosts)
         self.layout.addWidget(self.GroupOuput)
         self.form.addRow(self.grid2)
@@ -215,10 +214,10 @@ class frm_DnsSpoof(PumpkinModule):
         if ifaces['gateway'] != None:
             self.txt_gateway.setText(ifaces['gateway'])
             self.txt_redirect.setText(ifaces['IPaddress'])
-        item = QListWidgetItem()
-        item.setIcon(QIcon('icons/dnsspoof.png'))
+        item = QtGui.QListWidgetItem()
+        item.setIcon(QtGui.QIcon('icons/dnsspoof.png'))
         item.setText('example.com')
-        item.setSizeHint(QSize(30,30))
+        item.setSizeHint(QtCore.QSize(30,30))
         self.myListDns.addItem(item)
         if self.configure.Settings.get_setting('accesspoint','statusAP',format=bool):
             self.ComboIface.setCurrentIndex(ifaces['all'].index(self.configure.Settings.get_setting('accesspoint',
@@ -228,8 +227,8 @@ class frm_DnsSpoof(PumpkinModule):
 
     def listItemclicked(self,pos):
         item = self.myListDns.selectedItems()
-        self.listMenu= QMenu()
-        menu = QMenu()
+        self.listMenu= QtGui.QMenu()
+        menu = QtGui.QMenu()
         additem = menu.addAction('Add Host')
         removeitem = menu.addAction('Remove Host')
         clearitem = menu.addAction('Clear All')
@@ -238,7 +237,7 @@ class frm_DnsSpoof(PumpkinModule):
             if item != []:
                 self.myListDns.takeItem(self.myListDns.currentRow())
         elif action == additem:
-            text, resp = QInputDialog.getText(self, 'Add DNS',
+            text, resp = QtGui.QInputDialog.getText(self, 'Add DNS',
             'Enter the Host to spoof: (ex.: example2.com)')
             if resp:
                 try:
@@ -247,20 +246,20 @@ class frm_DnsSpoof(PumpkinModule):
                         itemsexits.append(str(self.myListDns.item(index).text()))
                     for i in itemsexits:
                         if search(str(text),i):
-                            QMessageBox.information(self,'Dns Rsolver','This Host already exists on the List')
+                            QtGui.MessageBox.information(self,'Dns Rsolver','This Host already exists on the List')
                             return
-                    item = QListWidgetItem()
-                    item.setIcon(QIcon('icons/dnsspoof.png'))
+                    item = QtGui.QListWidgetItem()
+                    item.setIcon(QtGui.QIcon('icons/dnsspoof.png'))
                     item.setText(text)
-                    item.setSizeHint(QSize(30,30))
+                    item.setSizeHint(QtCore.QSize(30,30))
                     self.myListDns.addItem(item)
                 except gaierror,e:
-                    QMessageBox.information(self,'error',str(e))
+                    QtGui.QMessageBox.information(self,'error',str(e))
                     return
         elif action == clearitem:
             self.myListDns.clear()
 
-    @pyqtSlot(QModelIndex)
+    @QtCore.pyqtSlot(QtCore.QModelIndex)
     def discoveryIface(self,iface):
         if self.configure.Settings.get_setting('accesspoint','interfaceAP') == str(iface):
             if self.configure.Settings.get_setting('accesspoint','statusAP',format=bool):
@@ -280,8 +279,8 @@ class frm_DnsSpoof(PumpkinModule):
         for n, key in enumerate(reversed(self.data.keys())):
             Headers.append(key)
             for m, item in enumerate(self.data[key]):
-                item = QTableWidgetItem(item)
-                item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+                item = QtGui.QTableWidgetItem(item)
+                item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
                 self.tables.setItem(m, n, item)
         Headers = []
         for key in reversed(self.data.keys()):
@@ -291,7 +290,7 @@ class frm_DnsSpoof(PumpkinModule):
 
     def show_frm_fake(self):
         self.n = frm_update_attack()
-        self.n.setGeometry(QRect(100, 100, 300, 300))
+        self.n.setGeometry(QtCore.QRect(100, 100, 300, 300))
         self.n.show()
 
     def emit_template(self,log):
@@ -299,7 +298,7 @@ class frm_DnsSpoof(PumpkinModule):
             self.StatusMonitor(True,'stas_phishing')
 
     def show_template_dialog(self):
-        self.connect(self.Ftemplates,SIGNAL('Activated ( QString ) '), self.emit_template)
+        self.connect(self.Ftemplates,QtCore.SIGNAL('Activated ( QString ) '), self.emit_template)
         self.Ftemplates.txt_redirect.setText(self.txt_redirect.text())
         self.Ftemplates.show()
 
@@ -319,7 +318,7 @@ class frm_DnsSpoof(PumpkinModule):
         self.btn_Stop_Posion.setEnabled(False)
         self.myDNsoutput.clear()
 
-    @pyqtSlot(QModelIndex)
+    @QtCore.pyqtSlot(QtCore.QModelIndex)
     def check_options(self,index):
         if self.check_face.isChecked():
             self.check_route.setChecked(False)
@@ -345,7 +344,7 @@ class frm_DnsSpoof(PumpkinModule):
         self.myDNsoutput.clear()
         if not self.configure.Settings.get_setting('accesspoint','statusAP',format=bool):
             if (len(self.txt_target.text()) and  len(self.txt_gateway.text())) == 0:
-                return QMessageBox.warning(self, 'Error Dnsspoof', 'you need set the input correctly')
+                return QtGui.QMessageBox.warning(self, 'Error Dnsspoof', 'you need set the input correctly')
             if (len(self.txt_target.text()) and len(self.txt_gateway.text())) and len(self.txt_redirect.text()) != 0:
                 Refactor.set_ip_forward(1)
 
@@ -367,7 +366,7 @@ class frm_DnsSpoof(PumpkinModule):
             self.thr = ThreadDNSspoofNF(self.targets,str(self.ComboIface.currentText()),
             str(self.txt_redirect.text()),APmode=True)
             self.thr.DnsReq.connect(self.get_outputDNSspoof)
-        self.connect(self.thr,SIGNAL('Activated ( QString ) '), self.StopArpAttack)
+        self.connect(self.thr,QtCore.SIGNAL('Activated ( QString ) '), self.StopArpAttack)
         self.thr.setObjectName('Dns Spoof')
         self.ThreadDirc['dns_spoof'].append(self.thr)
         self.StatusMonitor(True,'dns_spoof')
@@ -389,7 +388,7 @@ class frm_DnsSpoof(PumpkinModule):
             for key in reversed(self.data.keys()):
                 Headers.append(key)
             return self.tables.setHorizontalHeaderLabels(Headers)
-        return QMessageBox.information(self,'Error in gateway','gateway not found.')
+        return QtGui.QMessageBox.information(self,'Error in gateway','gateway not found.')
 
     def get_outputDNSspoof(self,data):
         self.myDNsoutput.addItem(data)
@@ -405,8 +404,8 @@ class frm_DnsSpoof(PumpkinModule):
             for n, key in enumerate(reversed(self.data.keys())):
                 Headers.append(key)
                 for m, item in enumerate(self.data[key]):
-                    item = QTableWidgetItem(item)
-                    item.setTextAlignment(Qt.AlignVCenter | Qt.AlignCenter)
+                    item = QtGui.QTableWidgetItem(item)
+                    item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
                     self.tables.setItem(m, n, item)
         Headers = []
         for key in reversed(self.data.keys()):
@@ -447,7 +446,7 @@ class frm_DnsSpoof(PumpkinModule):
             self.txt_status_phishing.setText('[ OFF ]')
             self.txt_status_phishing.setStyleSheet('QLabel {  color : red; }')
 
-    @pyqtSlot(QModelIndex)
+    @QtCore.pyqtSlot(QtCore.QModelIndex)
     def list_clicked_scan(self, index):
         item = self.tables.selectedItems()
         if item != []:

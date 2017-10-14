@@ -33,9 +33,8 @@ class frm_ReportLogger(PumpkinModule):
     def __init__(self,sessions,parent = None):
         super(frm_ReportLogger, self).__init__(parent)
         self.setWindowTitle('WiFi-Pumpkin - Report Logger')
-        self.loadtheme(self.configure.XmlThemeSelected())
         self.setGeometry(0,0,320,400)
-        self.Main     = QVBoxLayout()
+        self.Main     = QtGui.QVBoxLayout()
         self.sessions = sessions
         self.center()
         self.GUI()
@@ -44,8 +43,8 @@ class frm_ReportLogger(PumpkinModule):
         # add in listview all logger files
         empty = Refactor.exportHtml(unchecked,sessionID=session)[key]
         for loggerfile in empty:
-            item = QStandardItem(loggerfile)
-            check = Qt.Checked if checked == True else Qt.Unchecked
+            item = QtGui.QStandardItem(loggerfile)
+            check = QtCore.Qt.Checked if checked == True else QtCore.Qt.Unchecked
             item.setCheckState(check)
             item.setEnabled(enable)
             item.setCheckable(True)
@@ -56,14 +55,14 @@ class frm_ReportLogger(PumpkinModule):
         all_items_row = {}
         for index in range(self.model.rowCount()):
             item = self.model.item(index)
-            if item.isCheckable() and item.checkState() == Qt.Unchecked:
+            if item.isCheckable() and item.checkState() == QtCore.Qt.Unchecked:
                 all_items_row[str(item.text())] = False
         return  all_items_row
 
     def convertIt(self,printer):
         # generate file pdf
         self.ExportPDF.print_(printer)
-        QMessageBox.information(self, 'WiFi Pumpkin Report PDF', 'file PDF has been generated successfully.')
+        QtGui.QMessageBox.information(self, 'WiFi Pumpkin Report PDF', 'file PDF has been generated successfully.')
 
     def getImagesCapturedSession(self,session):
         ''' find images by session for export '''
@@ -91,10 +90,10 @@ class frm_ReportLogger(PumpkinModule):
         # export HTML or pdf file
         all_unchecked = self.get_all_items_Unchecked()
         if not self.checkHTML.isChecked() and not self.checkPDF.isChecked():
-            return QMessageBox.warning(self, 'WiFi Pumpkin Options',
+            return QtGui.QMessageBox.warning(self, 'WiFi Pumpkin Options',
             'You have to select a <strong>option</strong> file type  for export.')
         if  len(all_unchecked.keys()) == Refactor.exportHtml(all_unchecked,'')['Count']:
-            return QMessageBox.warning(self, 'WiFi Pumpkin empty session',
+            return QtGui.QMessageBox.warning(self, 'WiFi Pumpkin empty session',
             'logger:ERROR Could not find log files.')
 
         sessions_activated = ''
@@ -110,27 +109,27 @@ class frm_ReportLogger(PumpkinModule):
             contents = Refactor.exportHtml(all_unchecked,sessions_activated)
 
         if self.checkHTML.isChecked():
-            filename = QFileDialog.getSaveFileNameAndFilter(self,
+            filename = QtGui.QFileDialog.getSaveFileNameAndFilter(self,
             'Save File Logger as HTML','report.html','HTML (*.html)')
             if len(filename[0]) != 0:
                 with open(str(filename[0]),'w') as filehtml:
                     filehtml.write(contents['HTML']),filehtml.close()
-                QMessageBox.information(self, 'WiFi Pumpkin Report HTML', 'file logs has been saved successfully.')
+                QtGui.QMessageBox.information(self, 'WiFi Pumpkin Report HTML', 'file logs has been saved successfully.')
 
         elif self.checkPDF.isChecked():
-            filename = QFileDialog.getSaveFileNameAndFilter(self,
+            filename = QtGui.QFileDialog.getSaveFileNameAndFilter(self,
             'Save File Logger as PDF','report.pdf','PDF (*.pdf)')
             if len(filename[0]) != 0:
                 self.ExportPDF.setHtml(contents['HTML'])
-                printer = QPrinter()
-                printer.setPageSize(QPrinter.A4)
-                printer.setOutputFormat(QPrinter.PdfFormat)
+                printer = QtGui.QPrinter()
+                printer.setPageSize(QtGui.QPrinter.A4)
+                printer.setOutputFormat(QtGui.QPrinter.PdfFormat)
                 printer.setOutputFileName(filename[0])
                 self.convertIt(printer)
 
         self.ExportImagesCaptured(filename)
 
-    @pyqtSlot(QModelIndex)
+    @QtCore.pyqtSlot(QtCore.QModelIndex)
     def combo_clicked(self, session):
         # get  activated logger files
         self.model.clear()
@@ -148,11 +147,11 @@ class frm_ReportLogger(PumpkinModule):
         checked=False,session=sessions_activated)
 
     def GUI(self):
-        self.frm0       = QFormLayout()
-        self.model      = QStandardItemModel()
-        self.viewlogger = QListView()
-        self.widget = QWidget()
-        self.layout = QVBoxLayout(self.widget)
+        self.frm0       = QtGui.QFormLayout()
+        self.model      = QtGui.QStandardItemModel()
+        self.viewlogger = QtGui.QListView()
+        self.widget = QtGui.QWidget()
+        self.layout = QtGui.QVBoxLayout(self.widget)
 
         if QWebView_checker:
             self.ExportPDF = QWebView()
@@ -162,39 +161,39 @@ class frm_ReportLogger(PumpkinModule):
         self.layout.addLayout(self.frm0)
 
         # group file type
-        self.GroupBoxFile    = QGroupBox()
-        self.layoutGroupFile = QVBoxLayout()
+        self.GroupBoxFile    = QtGui.QGroupBox()
+        self.layoutGroupFile = QtGui.QVBoxLayout()
         self.GroupBoxFile.setLayout(self.layoutGroupFile)
         self.GroupBoxFile.setTitle('Options:')
-        self.checkHTML   = QRadioButton('HTML')
-        self.checkPDF    = QRadioButton('PDF')
+        self.checkHTML   = QtGui.QRadioButton('HTML')
+        self.checkPDF    = QtGui.QRadioButton('PDF')
         self.checkPDF.setEnabled(QWebView_checker)
         self.layoutGroupFile.addWidget(self.checkHTML)
         self.layoutGroupFile.addWidget(self.checkPDF)
 
         # group informations
-        self.GroupBoxINFO    = QGroupBox()
-        self.layoutGroupINFO = QFormLayout()
+        self.GroupBoxINFO    = QtGui.QGroupBox()
+        self.layoutGroupINFO = QtGui.QFormLayout()
         self.GroupBoxINFO.setLayout(self.layoutGroupINFO)
         self.GroupBoxINFO.setTitle('Information:')
-        self.labelStart = QLabel()
-        self.labelStop = QLabel()
+        self.labelStart = QtGui.QLabel()
+        self.labelStop = QtGui.QLabel()
         self.layoutGroupINFO.addRow('started AP at:',self.labelStart)
         self.layoutGroupINFO.addRow('stoped AP at:',self.labelStop)
 
         # get all session data add combobox
-        self.CB_Data_Logger = QComboBox(self)
+        self.CB_Data_Logger = QtGui.QComboBox(self)
         all_sessions = []
         for key in self.sessions.keys():
             all_sessions.append(self.sessions[key]['started'])
         all_sessions.append('select All logger file...')
         self.CB_Data_Logger.addItems(all_sessions)
-        self.connect(self.CB_Data_Logger, SIGNAL('activated(QString)'), self.combo_clicked)
-        index = self.CB_Data_Logger.findText(all_sessions[len(all_sessions)-2], Qt.MatchFixedString)
+        self.connect(self.CB_Data_Logger, QtCore.SIGNAL('activated(QString)'), self.combo_clicked)
+        index = self.CB_Data_Logger.findText(all_sessions[len(all_sessions)-2], QtCore.Qt.MatchFixedString)
         self.CB_Data_Logger.setCurrentIndex(index)
         self.combo_clicked(self.CB_Data_Logger.currentText())
 
-        self.btnSave = QPushButton('Export')
+        self.btnSave = QtGui.QPushButton('Export')
         self.btnSave.clicked.connect(self.exportFilesSystem)
 
         self.frm0.addRow('Session:',self.CB_Data_Logger)

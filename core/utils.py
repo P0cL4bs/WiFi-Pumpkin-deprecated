@@ -7,8 +7,8 @@ from subprocess import check_output,Popen,PIPE,STDOUT,CalledProcessError,call
 from re import search,compile,VERBOSE,IGNORECASE
 import netifaces
 from scapy.all import *
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4 import QtCore
+from PyQt4 import QtGui
 import logging
 import signal
 import configparser
@@ -37,7 +37,7 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-class set_monitor_mode(QDialog):
+class set_monitor_mode(QtGui.QDialog):
     ''' enable/disable interface for monitor mode '''
     def __init__(self,interface,parent = None):
         super(set_monitor_mode, self).__init__(parent)
@@ -47,11 +47,11 @@ class set_monitor_mode(QDialog):
             output  = check_output(['ifconfig', self.interface, 'down'])
             output += check_output(['iwconfig', self.interface, 'mode','monitor'])
             output += check_output(['ifconfig', self.interface, 'up'])
-            if len(output) > 0:QMessageBox.information(self,'Monitor Mode',
+            if len(output) > 0:QtGui.QMessageBox.information(self,'Monitor Mode',
             'device %s.%s'%(self.interface,output))
             return self.interface
         except Exception ,e:
-            QMessageBox.information(self,'Monitor Mode',
+            QtGui.QMessageBox.information(self,'Monitor Mode',
             'mode on device %s.your card does not support Monitor Mode'%(self.interface))
     def setDisable(self):
         Popen(['ifconfig', self.interface, 'down'])
@@ -59,11 +59,11 @@ class set_monitor_mode(QDialog):
         Popen(['ifconfig', self.interface, 'up'])
 
 
-class ThreadPhishingServer(QThread):
+class ThreadPhishingServer(QtCore.QThread):
     ''' thread for get ouput the Phishing file .log requests '''
-    send = pyqtSignal(str)
+    send = QtCore.pyqtSignal(str)
     def __init__(self,cmd,):
-        QThread.__init__(self)
+        QtCore.QThread.__init__(self)
         self.cmd     = cmd
         self.process = None
 
@@ -353,9 +353,9 @@ class Refactor:
         ''' generate session encoded base64 '''
         return str(b64encode(str(random.randint(0,100000))))
 
-class waiterSleepThread(QThread):
+class waiterSleepThread(QtCore.QThread):
     ''' Simples Thread for wait 10 segunds for check update app'''
-    quit = pyqtSignal(object)
+    quit = QtCore.pyqtSignal(object)
     def __int__(self,parent=None):
         super(waiterSleepThread, self).__init__(self,parent)
     def run(self):
