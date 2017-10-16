@@ -1,6 +1,5 @@
 ![logo](https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/docs/logo.png)
 
----
 [![build](https://travis-ci.org/P0cL4bs/WiFi-Pumpkin.svg)](https://travis-ci.org/P0cL4bs/WiFi-Pumpkin/)
 
 WiFi-Pumpkin - Framework for Rogue Wi-Fi Access Point Attack
