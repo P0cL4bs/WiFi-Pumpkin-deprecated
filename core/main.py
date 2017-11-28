@@ -1235,13 +1235,16 @@ class WifiPumpkin(QtGui.QWidget):
                     str(self.selectCard.currentText()),line))
 
         # check if range ip class is same
-        dh, gateway = self.PumpSettingsTAB.getPumpkinSettings()['router'],str(self.EditGateway.text())
-        if dh[:len(dh)-len(dh.split('.').pop())] == gateway[:len(gateway)-len(gateway.split('.').pop())]:
-            return QtGui.QMessageBox.warning(self,'DHCP Server settings',
-                'The DHCP server check if range ip class is same.'
-                'it works, but not share internet connection in some case.\n'
-                'for fix this, You need change on tab (settings -> Class Ranges)'
-                'now you have choose the Class range different of your network.')
+        gateway_wp, gateway = self.PumpSettingsTAB.getPumpkinSettings()['router'],self.interfacesLink['gateway']
+        if gateway != None:
+            if gateway_wp[:len(gateway_wp)-len(gateway_wp.split('.').pop())] == \
+                gateway[:len(gateway)-len(gateway.split('.').pop())]:
+                return QtGui.QMessageBox.warning(self,'DHCP Server settings',
+                    'The <b>DHCP server</b> check if range ip class is same.'
+                    'it works, but not share internet connection in some case.<br>'
+                    'for fix this, You need change on tab <b> (settings -> Class Ranges)</b>'
+                    ' now you have choose the Class range different of your network.')
+        del(gateway,gateway_wp)
 
         # Check the key
         if self.GroupApPassphrase.isChecked():

@@ -51,6 +51,7 @@ Version 0.8.5
 - added new icon WiFi-Pumpkin
 - fixed group all object PyQt4 QtGui,QtCore
 - fixed except when try import QtGui
+- fixed detect if range ip class is same the [DHCP Server] #285
 
 Version 0.8.4
 -------------
