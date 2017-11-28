@@ -50,6 +50,7 @@ Version 0.8.5
 - fixed small bug with Table when add new users
 - added new icon WiFi-Pumpkin
 - fixed group all object PyQt4 QtGui,QtCore
+- fixed except when try import QtGui
 
 Version 0.8.4
 -------------
