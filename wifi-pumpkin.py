@@ -33,8 +33,9 @@ if version_info.major != 2:
 
 if __name__ == '__main__':
     from core.loaders.checker.depedences import check_dep_pumpkin
+    from PyQt4 import QtGui
     try:
-        from core.utility.application import ApplicationLoop,QtGui
+        from core.utility.application import ApplicationLoop
     except ImportError:
         exit('WiFi-Pumpkin need PyQt4 :(')
 
