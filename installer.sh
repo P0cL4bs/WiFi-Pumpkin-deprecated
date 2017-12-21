@@ -55,6 +55,7 @@ func_install(){
 	apt-get install -y python-dev git
 	apt-get install -y libpcap-dev
 	pip install -r requirements.txt
+	pip install mitmproxy==0.18.2
 	echo "----------------------------------------"
 	echo "[=]$bldblu checking dependencies $txtrst "
 	func_check_install "hostapd"
