@@ -16,10 +16,13 @@ from PyQt4.QtCore import QThread,pyqtSignal,SIGNAL,pyqtSlot,QProcess,QObject,SLO
 from PyQt4.QtGui import QMessageBox
 from plugins.external.sergio_proxy.plugins import *
 from multiprocessing import Process,Manager
-from core.servers.proxy.http.controller.handler import MasterHandler
-from mitmproxy import proxy,flow,options
-from mitmproxy.proxy.server import ProxyServer
 import core.utility.constants as C
+try:
+    from core.servers.proxy.http.controller.handler import MasterHandler
+    from mitmproxy import proxy,flow,options
+    from mitmproxy.proxy.server import ProxyServer
+except Exception:
+    pass
 
 """
 Description:

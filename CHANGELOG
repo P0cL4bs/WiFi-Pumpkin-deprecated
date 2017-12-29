@@ -54,6 +54,7 @@ Version 0.8.5
 - fixed detect if range ip class is same the [DHCP Server] #285
 - fixed import QtGui thanks @Brain2000 #282
 - fixed redirect Traffic from all domain [dns spoof] #296
+- added run WP without mitmproxy packager #309
 
 Version 0.8.4
 -------------
