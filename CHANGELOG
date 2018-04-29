@@ -56,6 +56,7 @@ Version 0.8.5
 - fixed redirect Traffic from all domain [dns spoof] #296
 - added run WP without mitmproxy packager #309
 - fixed cryptography kali 2017.3 thanks @yudevan #315
+- fixed import Queue module from multiprocessing #357
 
 Version 0.8.4
 -------------

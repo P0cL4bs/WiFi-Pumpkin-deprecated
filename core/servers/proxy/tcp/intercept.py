@@ -2,7 +2,7 @@ from PyQt4.QtCore import QThread,pyqtSignal
 from time import sleep,asctime,strftime
 import threading
 from threading import Thread
-import Queue
+from multiprocessing import Queue
 from scapy.all import *
 import logging
 from plugins.analyzers import *
