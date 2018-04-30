@@ -2,12 +2,12 @@ from PyQt4.QtCore import QThread,pyqtSignal
 from time import sleep,asctime,strftime
 import threading
 from threading import Thread
-from multiprocessing import Queue
 from scapy.all import *
 import logging
 from plugins.analyzers import *
 from core.utility.collection import SettingsINI
 import core.utility.constants as C
+import  queue
 
 """
 Description:
@@ -83,7 +83,7 @@ class ThreadSniffingPackets(QThread):
                 self.plugins[name].getInstance()._activated = True
                 print('TCPProxy::{0:17} status:On'.format(name))
         print('\n')
-        q = Queue.Queue()
+        q = queue.Queue()
         sniff = Thread(target =self.sniffer, args = (q,))
         sniff.start()
         while (not self.stopped):
