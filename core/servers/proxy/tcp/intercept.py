@@ -94,7 +94,7 @@ class ThreadSniffingPackets(QThread):
                         try:
                             self.plugins[Active].filterPackets(pkt)
                         except Exception: pass
-            except Queue.Empty:
+            except queue.Empty:
               pass
 
     def snifferParser(self,pkt):
