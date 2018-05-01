@@ -59,6 +59,7 @@ Version 0.8.5
 - fixed import Queue module from multiprocessing #357
 - fixed bug module Queue #357
 - fixed renamed module Queue to queue [modules func]
+- fixed struct.error: argument for 's' must be a string [ARP poisoner] #326
 
 Version 0.8.4
 -------------
