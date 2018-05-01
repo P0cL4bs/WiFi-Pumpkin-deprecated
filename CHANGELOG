@@ -58,6 +58,7 @@ Version 0.8.5
 - fixed cryptography kali 2017.3 thanks @yudevan #315
 - fixed import Queue module from multiprocessing #357
 - fixed bug module Queue #357
+- fixed renamed module Queue to queue [modules func]
 
 Version 0.8.4
 -------------
