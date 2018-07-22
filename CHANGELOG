@@ -60,6 +60,7 @@ Version 0.8.5
 - fixed bug module Queue #357
 - fixed renamed module Queue to queue [modules func]
 - fixed struct.error: argument for 's' must be a string [ARP poisoner] #326
+- change update for brump beta version 0.8.7
 
 Version 0.8.4
 -------------

@@ -85,7 +85,7 @@ TEMPLATES       = 'templates/fakeupdate/Windows_Update/Settins_WinUpdate.html'
 TEMPLATE_PH     = 'templates/phishing/custom/index.html'
 TEMPLATE_CLONE  = 'templates/phishing/web_server/index.html'
 EXTRACT_TEMP    = 'cd templates/ && tar -xf fakeupdate.tar.gz'
-LCOMMITS        = 'https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/Core/config/commits/Lcommits.cfg'
+LCOMMITS        = 'https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/0.8.7Beta/core/config/commits/Lcommits.cfg'
 SOURCE_URL      = 'https://github.com/P0cL4bs/WiFi-Pumpkin.git'
 
 #settings template
