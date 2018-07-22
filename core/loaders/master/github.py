@@ -62,6 +62,11 @@ class GithubUpdate(QThread):
         self.localC     = localC
         self.remoteC    = remoteC
         self.Rchangelog = Rlogger
+        self.__branch   = '0.8.7Beta'
+
+    @property
+    def getBranch(self):
+        return  self.__branch
 
     def run(self):
         with open(self.remoteC,'w') as resp:
@@ -74,14 +79,14 @@ class GithubUpdate(QThread):
         if hasattr(self,'commit_update'):
             if self.commit_update['Updates'] != []:
                 if not path.isdir('.git/'):self.gitZipRepo()
-                call(['git','reset','--hard','origin/master'])
-                self.ProcessCall_(['git','pull','origin','master'])
+                call(['git','reset','--hard','origin/{}'.format(self.getBranch)])
+                self.ProcessCall_(['git','pull','origin',self.getBranch])
                 self.ProcessCall_(['pip', 'install', '-r', 'requirements.txt'])
 
     def NewVersionUpdate(self):
         if not path.isdir('.git/'):self.gitZipRepo()
-        call(['git','reset','--hard','origin/master'])
-        self.ProcessCall_(['git','pull','origin','master'])
+        call(['git','reset','--hard','origin/{}'.format(self.getBranch)])
+        self.ProcessCall_(['git','pull','origin',self.getBranch])
         self.ProcessCall_(['pip', 'install', '-r', 'requirements.txt'])
 
     def checkUpdate(self,Version):
@@ -112,7 +117,7 @@ class GithubUpdate(QThread):
         call(['git','init'])
         call(['git','remote', 'add', 'origin', C.SOURCE_URL])
         call(['git', 'fetch','--all'])
-        call(['git','reset','--hard','origin/master'])
+        call(['git','reset','--hard','origin/{}'.format(self.getBranch)])
         call(['pip', 'install', '-r', 'requirements.txt'])
 
     def status(self):
