@@ -1,3 +1,5 @@
+Before opening a new issue, please read this [wiki](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Bug-reporting)
+
 ## What's the problem (or question)?
 
 *answer here*
