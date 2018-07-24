@@ -667,7 +667,8 @@ class WifiPumpkin(QtGui.QWidget):
         self.donateLabel = ServiceNotify(C.DONATE_TXT,title='Support development',
         link=self.donatelink,timeout=15000)
         self.donatelink = C.DONATE
-        self.versionBeta = ServiceNotify(C.DONATE_TXT,title='Version <strong>beta</strong> '+ version)
+        self.versionBeta = ServiceNotify('This is a beta version the WiFi-Pumpkin 0.8.7 '
+        ,title='Version <strong>beta</strong> ')
         # set main page Tool
         self.widget = QtGui.QWidget()
         self.layout = QtGui.QVBoxLayout(self.widget)
