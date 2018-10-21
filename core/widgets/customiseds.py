@@ -1,5 +1,7 @@
 from PyQt4 import QtGui, QtCore
 from core.utils import Refactor
+from core.utility.collection import SettingsINI
+import core.utility.constants as C
 
 """
 Description:
@@ -42,16 +44,29 @@ class AutoTableWidget(QtGui.QTableWidget):
         QtGui.QTableWidget.__init__(self)
         self.column,self.row = 0,0
         self.max_column     = 4
+        self.loadtheme(SettingsINI(C.CONFIG_INI).get_setting('settings', 'themes'))
         self.items_widgets  = {}
         self.APclients      = {}
         self.setColumnCount(self.max_column)
+
+    def loadtheme(self,theme):
+        ''' load Theme from file .qss '''
+        sshFile=("core/%s.qss"%(theme))
+        with open(sshFile,"r") as fh:
+            self.setStyleSheet(fh.read())
+
+    def clearInfoClients(self):
+        self.APclients = {}
+        self.column, self.row = 0, 0
+        self.clearContents()
 
     def addNextWidget(self, agent={}):
         ''' auto add item in table '''
         self.items_widgets[agent.keys()[0]] = {}
         self.APclients[agent.keys()[0]] = agent[agent.keys()[0]]
         for key in agent.keys():
-            for client in agent[key].keys():
+            #for client in agent[key].keys():
+            for client in agent[key]:
                 item = QtGui.QTableWidgetItem(agent[key][client])
                 item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
                 self.setItem(self.row, self.column, item)

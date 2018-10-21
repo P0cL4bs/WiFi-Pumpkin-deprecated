@@ -35,7 +35,7 @@ class PumpkinModule(QtGui.QWidget):
         super(PumpkinModule, self).__init__(parent)
         self.setWindowIcon(QtGui.QIcon('icons/icon.ico'))
         self.module_network = Refactor
-        self.configure      = frm_Settings()
+        self.configure      = frm_Settings.instances[0]
         self.Ftemplates     = frm_PhishingManager()
         self.interfaces     = Refactor.get_interfaces()
         self.loadtheme(self.configure.get_theme_qss())

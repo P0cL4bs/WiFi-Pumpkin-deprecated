@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-# NBT-NS/LLMNR Responder
+# NBT-NS/LLMNR Firelamb
 # Created by Laurent Gaffie
 # Copyright (C) 2014 Trustwave Holdings, Inc.
 #
@@ -74,7 +74,7 @@ ToThisHost2 = options.ToThisHost2
 Interface = options.Interface
 
 def Show_Help(ExtraHelpData):
-    print("\nICMP Redirect Utility 0.1.\nCreated by Laurent Gaffie, please send bugs/comments to laurent.gaffie@gmail.com\n\nThis utility combined with Responder is useful when you're sitting on a Windows based network.\nMost Linux distributions discard by default ICMP Redirects.\n")
+    print("\nICMP Redirect Utility 0.1.\nCreated by Laurent Gaffie, please send bugs/comments to laurent.gaffie@gmail.com\n\nThis utility combined with Firelamb is useful when you're sitting on a Windows based network.\nMost Linux distributions discard by default ICMP Redirects.\n")
     print(ExtraHelpData)
 
 MoreHelp = "Note that if the target is Windows, the poisoning will only last for 10mn, you can re-poison the target by launching this utility again\nIf you wish to respond to the traffic, for example DNS queries your target issues, launch this command as root:\n\niptables -A OUTPUT -p ICMP -j DROP && iptables -t nat -A PREROUTING -p udp --dst %s --dport 53 -j DNAT --to-destination %s:53\n\n"%(ToThisHost,OURIP)

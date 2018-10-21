@@ -34,18 +34,23 @@ class PopUpPlugins(QtGui.QVBoxLayout):
         self.FSettings = FSettings
         self.layout = QtGui.QVBoxLayout()
         self.layoutform = QtGui.QFormLayout()
-        self.layoutproxy = QtGui.QVBoxLayout()
         self.GroupPlugins = QtGui.QGroupBox()
+        self.GroupPlugins.setTitle('Activity Monitor:')
+
+        self.layoutproxy = QtGui.QVBoxLayout()
         self.GroupPluginsProxy = QtGui.QGroupBox()
-        self.GroupPlugins.setTitle('plugins:')
         self.GroupPluginsProxy.setTitle('Enable proxy server:')
         self.GroupPluginsProxy.setCheckable(True)
-        self.GroupPluginsProxy.clicked.connect(self.get_disable_proxyserver)
+        #self.GroupPluginsProxy.toggled.connect(self.get_disable_proxyserver)
         self.GroupPluginsProxy.setLayout(self.layoutproxy)
         self.GroupPlugins.setLayout(self.layoutform)
+        self.proxyGroup = QtGui.QButtonGroup()
+
+
+
 
         self.check_netcreds     = QtGui.QCheckBox('net-creds ')
-        self.check_responder    = QtGui.QCheckBox('Responder')
+        self.check_responder    = QtGui.QCheckBox('Firelamb')
         self.check_tcpproxy     = QtGui.QCheckBox('TCP-Proxy')
         self.check_pumpkinProxy = QtGui.QRadioButton('Pumpkin-Proxy')
         self.check_dns2proy     = QtGui.QRadioButton('SSLstrip+|Dns2proxy')
@@ -57,8 +62,21 @@ class PopUpPlugins(QtGui.QVBoxLayout):
         self.btnResponderSettings = QtGui.QPushButton('Change')
         self.btnBDFSettings.setIcon(QtGui.QIcon('icons/config.png'))
         self.btnResponderSettings.setIcon(QtGui.QIcon('icons/config.png'))
-        self.btnBDFSettings.clicked.connect(self.ConfigOBJBDFproxy)
-        self.btnResponderSettings.clicked.connect(self.ConfigOBJBResponder)
+
+
+
+        self.proxyGroup.addButton(self.check_pumpkinProxy)
+        self.proxyGroup.addButton(self.check_dns2proy)
+        self.proxyGroup.addButton(self.check_sergioProxy)
+
+        self.proxyGroup.addButton(self.check_bdfproxy)
+
+        self.check_tcpproxy.clicked.connect(self.checkBoxTCPproxy)
+        self.check_pumpkinProxy.clicked.connect(self.checkGeneralOptions)
+        self.check_dns2proy.clicked.connect(self.checkGeneralOptions)
+        self.check_sergioProxy.clicked.connect(self.checkGeneralOptions)
+        self.check_bdfproxy.clicked.connect(self.checkGeneralOptions)
+        self.check_noproxy.clicked.connect(self.checkGeneralOptions)
 
         # set text description plugins
         self.check_dns2proy.setObjectName('This tools offer a different features '
@@ -75,99 +93,15 @@ class PopUpPlugins(QtGui.QVBoxLayout):
         ' coded by: Dan McInerney')
         self.check_tcpproxy.setObjectName('sniff for isntercept network traffic on UDP,TCP protocol.'
         ' get password,hash,image,etc...')
-        self.check_responder.setObjectName('Responder an LLMNR, NBT-NS and MDNS poisoner. '
+        self.check_responder.setObjectName('Firelamb an LLMNR, NBT-NS and MDNS poisoner. '
         'By default, the tool will only answer to File Server Service request, which is for SMB.')
 
 
-        # table 1 for add plugins with QradioBtton
-        self.THeadersPluginsProxy  = OrderedDict(
-        [   ('Plugins',[self.check_pumpkinProxy,self.check_dns2proy,self.check_sergioProxy,self.check_bdfproxy]),
-            ('Settings',[QtGui.QPushButton('None'),QtGui.QPushButton('None'),QtGui.QPushButton('None'),self.btnBDFSettings]),
-            ('Description',[self.check_pumpkinProxy.objectName(),
-            self.check_dns2proy.objectName(),self.check_sergioProxy.objectName(),
-            self.check_bdfproxy.objectName()])
-        ])
 
-        # table 2 for add plugins with checkbox
-        self.THeadersPlugins  = OrderedDict(
-        [   ('Plugins',[self.check_tcpproxy,self.check_responder]),
-            ('Settings',[QtGui.QPushButton('None'),self.btnResponderSettings]),
-            ('Description',[self.check_tcpproxy.objectName(),self.check_responder.objectName(),])
-        ])
-
-        self.tableplugins = QtGui.QTableWidget()
-        self.tableplugins.setColumnCount(3)
-        self.tableplugins.setRowCount(len(self.THeadersPluginsProxy['Plugins']))
-        self.tableplugins.resizeRowsToContents()
-        self.tableplugins.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
-        self.tableplugins.horizontalHeader().setStretchLastSection(True)
-        self.tableplugins.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.tableplugins.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.tableplugins.verticalHeader().setVisible(False)
-        self.tableplugins.verticalHeader().setDefaultSectionSize(23)
-        self.tableplugins.setSortingEnabled(True)
-        self.tableplugins.setHorizontalHeaderLabels(self.THeadersPluginsProxy.keys())
-        self.tableplugins.horizontalHeader().resizeSection(0,158)
-        self.tableplugins.horizontalHeader().resizeSection(1,80)
-        self.tableplugins.resizeRowsToContents()
-
-        self.tableplugincheckbox = QtGui.QTableWidget()
-        self.tableplugincheckbox.setColumnCount(3)
-        self.tableplugincheckbox.setRowCount(len(self.THeadersPlugins['Plugins']))
-        self.tableplugincheckbox.resizeRowsToContents()
-        self.tableplugincheckbox.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
-        self.tableplugincheckbox.horizontalHeader().setStretchLastSection(True)
-        self.tableplugincheckbox.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self.tableplugincheckbox.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.tableplugincheckbox.verticalHeader().setVisible(False)
-        self.tableplugincheckbox.verticalHeader().setDefaultSectionSize(23)
-        self.tableplugincheckbox.setSortingEnabled(True)
-        self.tableplugincheckbox.setHorizontalHeaderLabels(self.THeadersPlugins.keys())
-        self.tableplugincheckbox.horizontalHeader().resizeSection(0,158)
-        self.tableplugincheckbox.horizontalHeader().resizeSection(1,80)
-        self.tableplugincheckbox.resizeRowsToContents()
-
-        # add all widgets in Qtable 1 plgins
-        Headers = []
-        for n, key in enumerate(self.THeadersPluginsProxy.keys()):
-            Headers.append(key)
-            for m, item in enumerate(self.THeadersPluginsProxy[key]):
-                if type(item) == type(QtGui.QRadioButton()) or type(item) == type(QtGui.QPushButton()):
-                    self.tableplugins.setCellWidget(m,n,item)
-                else:
-                    item = QtGui.QTableWidgetItem(item)
-                    self.tableplugins.setItem(m, n, item)
-        self.tableplugins.setHorizontalHeaderLabels(self.THeadersPluginsProxy.keys())
-        # add all widgets in Qtable 2 plugin
-        Headers = []
-        for n, key in enumerate(self.THeadersPlugins.keys()):
-            Headers.append(key)
-            for m, item in enumerate(self.THeadersPlugins[key]):
-                if type(item) == type(QtGui.QCheckBox()) or type(item) == type(QtGui.QPushButton()):
-                    self.tableplugincheckbox.setCellWidget(m,n,item)
-                else:
-                    item = QtGui.QTableWidgetItem(item)
-                    self.tableplugincheckbox.setItem(m, n, item)
-        self.tableplugins.setHorizontalHeaderLabels(self.THeadersPlugins.keys())
-
-        self.proxyGroup = QtGui.QButtonGroup()
-        self.proxyGroup.addButton(self.check_pumpkinProxy)
-        self.proxyGroup.addButton(self.check_dns2proy)
-        self.proxyGroup.addButton(self.check_sergioProxy)
-        self.proxyGroup.addButton(self.check_noproxy)
-        self.proxyGroup.addButton(self.check_bdfproxy)
-
-        self.check_tcpproxy.clicked.connect(self.checkBoxTCPproxy)
-        self.check_pumpkinProxy.clicked.connect(self.checkGeneralOptions)
-        self.check_dns2proy.clicked.connect(self.checkGeneralOptions)
-        self.check_sergioProxy.clicked.connect(self.checkGeneralOptions)
-        self.check_bdfproxy.clicked.connect(self.checkGeneralOptions)
-        self.check_noproxy.clicked.connect(self.checkGeneralOptions)
-        self.check_responder.clicked.connect(self.checkBoxResponder)
-
-        self.layoutproxy.addWidget(self.tableplugins)
-        self.layoutproxy.addWidget(self.tableplugincheckbox)
+        #self.layoutproxy.addWidget(self.tableplugins)
+        #self.layoutproxy.addWidget(self.tableplugincheckbox)
         self.layout.addWidget(self.GroupPluginsProxy)
+        self.layout.addWidget(self.GroupPlugins)
         self.addLayout(self.layout)
 
     def get_disable_proxyserver(self):
@@ -214,23 +148,13 @@ class PopUpPlugins(QtGui.QVBoxLayout):
             self.unset_Rules('sslstrip')
             self.set_PumpkinProxy()
         elif self.check_noproxy.isChecked():
-            self.main_method.set_proxy_statusbar('',disabled=True)
-            self.main_method.PumpkinProxyTAB.tabcontrol.setEnabled(False)
-            self.main_method.ProxyPluginsTAB.scrollwidget.setEnabled(False)
+            #self.main_method.set_proxy_statusbar('',disabled=True)
+            #self.main_method.PumpkinProxyTAB.tabcontrol.setEnabled(False)
+            #self.main_method.ProxyPluginsTAB.scrollwidget.setEnabled(False)
             self.unset_Rules('dns2proxy')
             self.unset_Rules('sslstrip')
             self.unset_Rules('bdfproxy')
-
-    def ConfigOBJBDFproxy(self):
-        ''' show BDFproxy settings page '''
-        self.SettingsBDFProxy  = BDFProxySettings()
-        self.SettingsBDFProxy.show()
-
-    def ConfigOBJBResponder(self):
-        ''' show REsponder settings page '''
-        self.SettingsResponder  = ResponderSettings()
-        self.SettingsResponder.show()
-
+    #TODO Routine relates with TCP Proxy
     def checkBoxTCPproxy(self):
         if self.check_tcpproxy.isChecked():
             self.FSettings.Settings.set_setting('plugins','tcpproxy_plugin',True)
@@ -240,12 +164,6 @@ class PopUpPlugins(QtGui.QVBoxLayout):
             self.FSettings.Settings.set_setting('plugins','tcpproxy_plugin',False)
             self.main_method.PacketSnifferTAB.tabcontrol.setEnabled(False)
             self.main_method.ImageCapTAB.TableImage.setEnabled(False)
-
-    def checkBoxResponder(self):
-        if self.check_responder.isChecked():
-            self.FSettings.Settings.set_setting('plugins','responder_plugin',True)
-        else:
-            self.FSettings.Settings.set_setting('plugins','responder_plugin',False)
 
     def optionsRules(self,type):
         ''' add rules iptable by type plugins'''

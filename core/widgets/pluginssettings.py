@@ -133,7 +133,7 @@ class BDFProxySettings(PumpkinModule):
 class ResponderSettings(PumpkinModule):
     def __init__(self,parent=None):
         super(ResponderSettings, self).__init__(parent)
-        self.setWindowTitle('Responder Plugin settings')
+        self.setWindowTitle('Firelamb Plugin settings')
         self.setGeometry(0,0,480, 500)
         self.main       = QtGui.QVBoxLayout()
         self.THeaders   = {'Config':[],'Value':[] }
@@ -191,7 +191,7 @@ class ResponderSettings(PumpkinModule):
 
     def saveConfigObject(self):
         self.checkConfigKeysResponder(saveObjct=True)
-        QtGui.QMessageBox.information(self,'Responder settings','All settings in {} has been saved '
+        QtGui.QMessageBox.information(self,'Firelamb settings','All settings in {} has been saved '
         'with success.'.format(str(self.configure.Settings.get_setting('plugins','responder_config'))))
         self.close()
 

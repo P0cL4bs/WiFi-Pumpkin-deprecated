@@ -2,8 +2,22 @@
 
 [![build](https://travis-ci.org/P0cL4bs/WiFi-Pumpkin.svg)](https://travis-ci.org/P0cL4bs/WiFi-Pumpkin/)
 
-WiFi-Pumpkin - Framework for Rogue Wi-Fi Access Point Attack
+WiFi-Pumpkin - Framework for Rogue Wi-Fi Access Point Attack with modularized proxy
 ### Description
+This fork is an improved wifi pumpkin in term of the ease to add new proxy, plugins, and also page on the main page.but I can assure that the functionality is still the same, except you are introducing new proxy method and attack. there are so many cchange I have been made on this fork, naming some of those change made are:
+
+* Modularized and auto loaded proxy package, this has been a hard work segregating proxy into its own file. the proxy now can be added or removed just like plugin. it is located inside core/server/proxy/packages. user can create theier own proxy by following the existing example and focus on their new proxy without need to worry how it will be loaded into the program.
+
+* Modularized and autoloaded plugins which is located inside core/server/http_handler/proxyhandler
+* Modularized the wireless mode, it is now easy to add new wireless mode (hostapd), this to facilitate the other type of hostapd available out there (karma, mana) mode. the mode implementation are located under core/wirelessmode
+* The main tab (Home, Settings, Station, Activity Monitor) now segregated into its own file, if you want to add new tab, you will just need to subclass a base class which will load your new ui automatically. all this pages are located under core/widgets/defaults
+* The setting tab it is now generated automatically, this done if you subclassing CoreSettings class, the CoreSettings class is located in core/default/uimodel.py . after you subclassing the CoreSettings then you can generate your own user interface and it will be loaded in the Settings page
+* Same as Setting page, the home page will also now automatically generated if you make subclass of HomeDisplay class which is located inside core/default/uimodel.py
+* Moved the progrress bar display to the status bar next to the client counter. 
+* Made an easy refference for the FSettings by  calling FSettings.getInstance()
+* The FSettings call now located on the QApplication method instead of WifiPumpkin method.
+* More implementation is coming...
+
 WiFi-Pumpkin is a very complete framework for auditing Wi-Fi security. The main feature is the ability to create a fake AP and make Man In The Middle attack, but the list of features is quite broad.
 
 ![screenshot](https://i.imgur.com/bNTOHLq.png)

@@ -64,15 +64,15 @@ print '##                                                                       
 print '##     To inject a DNS server/domain/route on a Windows >= Vista and       ##'
 print '##               any linux box, use -R (can be noisy)                      ##'
 print '##                                                                         ##'
-print '##   Use `RespondTo` setting in Responder.conf for in-scope targets only.  ##'
+print '##   Use `RespondTo` setting in Firelamb.conf for in-scope targets only.  ##'
 print '#############################################################################'
 print ''
 print color('[*]', 2, 1), 'Listening for events...'
 
 config = ConfigParser.ConfigParser()
-config.read(os.path.join(BASEDIR,'Responder.conf'))
-RespondTo           = filter(None, [x.upper().strip() for x in config.get('Responder Core', 'RespondTo').strip().split(',')])
-DontRespondTo       = filter(None, [x.upper().strip() for x in config.get('Responder Core', 'DontRespondTo').strip().split(',')])
+config.read(os.path.join(BASEDIR,'Firelamb.conf'))
+RespondTo           = filter(None, [x.upper().strip() for x in config.get('Firelamb Core', 'RespondTo').strip().split(',')])
+DontRespondTo       = filter(None, [x.upper().strip() for x in config.get('Firelamb Core', 'DontRespondTo').strip().split(',')])
 Interface           = options.Interface
 Responder_IP        = FindLocalIP(Interface)
 ROUTERIP            = options.RouterIP

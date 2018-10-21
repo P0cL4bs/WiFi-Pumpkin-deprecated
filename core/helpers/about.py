@@ -49,7 +49,7 @@ class SettingsTranks(QtGui.QVBoxLayout):
         self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/davinerd"><strong>@davinerd</strong></a>'))
         self.formMode.addRow(QtGui.QLabel('Plugin <a href="https://github.com/davinerd/BDFProxy-ng"> BDFProxy-ng</a> version fork <br>'))
         self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/lgandx"><strong> Laurent Gaffie @lgandx</strong></a>'))
-        self.formMode.addRow(QtGui.QLabel('Plugin <a href="https://github.com/lgandx/Responder"> Responder</a><br>'))
+        self.formMode.addRow(QtGui.QLabel('Plugin <a href="https://github.com/lgandx/Firelamb"> Firelamb</a><br>'))
         self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/supernothing"><strong>Ben Schmidt @supernothing</strong></a>'))
         self.formMode.addRow(QtGui.QLabel('Plugin <a href="https://github.com/supernothing/sergio-proxy">SergioProxy</a> - bypass HSTS<br>'))
         self.formMode.addRow(QtGui.QLabel('<a href="http://www.yasinuludag.com/darkorange.stylesheet"><strong>Yasin Uludag</strong></a>'))

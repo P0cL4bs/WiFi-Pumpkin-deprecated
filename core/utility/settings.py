@@ -1,7 +1,9 @@
 from os import path,popen
 from re import search
+import weakref
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from core.utility.meta import *
 from core.utility.collection import SettingsINI
 import core.utility.constants as C
 
@@ -196,14 +198,19 @@ class SettingsTabGeneral(QVBoxLayout):
 
 
 class frm_Settings(QDialog):
+    instances =[]
     def __init__(self, parent = None):
         super(frm_Settings, self).__init__(parent)
-        self.setWindowTitle('WiFi-Pompkin - Settings')
+        self.__class__.instances.append(weakref.proxy(self))
+        self.setWindowTitle('WiFi-Pumpkin - Settings')
         self.Settings = SettingsINI(C.CONFIG_INI)
         self.loadtheme(self.get_theme_qss())
         self.setGeometry(0, 0, 420, 440)
         self.center()
         self.Qui()
+    @classmethod
+    def getInstance(cls):
+        return cls.instances[0]
 
     def loadtheme(self,theme):
         ''' load theme widgets '''
