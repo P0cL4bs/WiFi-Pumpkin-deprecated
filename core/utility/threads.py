@@ -9,6 +9,7 @@ from os import path,stat,getpgid,setsid,killpg,devnull
 from twisted.web import http
 from twisted.internet import reactor
 from twisted.internet.defer import DebugInfo
+from twisted.internet.endpoints import TCP4ServerEndpoint
 del DebugInfo.__del__
 from core.utils import setup_logger,Refactor
 from subprocess import (Popen,PIPE,STDOUT)
@@ -16,13 +17,10 @@ from PyQt4.QtCore import QThread,pyqtSignal,SIGNAL,pyqtSlot,QProcess,QObject,SLO
 from PyQt4.QtGui import QMessageBox
 from plugins.external.sergio_proxy.plugins import *
 from multiprocessing import Process,Manager
+from core.servers.proxy.http.controller.handler import MasterHandler
+from mitmproxy import proxy,flow,options
+from mitmproxy.proxy.server import ProxyServer
 import core.utility.constants as C
-try:
-    from core.servers.proxy.http.controller.handler import MasterHandler
-    from mitmproxy import proxy,flow,options
-    from mitmproxy.proxy.server import ProxyServer
-except Exception:
-    pass
 
 """
 Description:
@@ -45,6 +43,23 @@ Copyright:
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
+class ThreadBase(QThread):
+    def __init__(self,cmd, session =None):
+        super(ThreadBase,self).__init__()
+        self.args = cmd
+        self.session = session
+        self.process = None
+    def run(self):
+        print self.getNameThread
+        self.startup()
+    def startup(self):
+        pass
+    def stop(self):
+        if self.process is not None:
+            self.process.terminate()
+    @property
+    def getNameThread(self):
+        return '[New Thread {} ({})]'.format(self.currentThreadId(), self.objectName())
 
 class ProcessThreadScanner(threading.Thread):
     ''' thread for run airodump-ng backgroung and get data'''
@@ -59,17 +74,13 @@ class ProcessThreadScanner(threading.Thread):
         if self.process is not None:
             self.process.terminate()
 
-class ThreadPopen(QThread):
+class ThreadPopen(ThreadBase):
     def __init__(self,cmd):
-        QThread.__init__(self)
-        self.cmd = cmd
-        self.process = None
-
+        super(ThreadPopen,self).__init__(cmd)
+    @property
     def getNameThread(self):
-        return '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
-
-    def run(self):
-        print '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
+        return '[New DHCP Thread {} ({})]'.format(self.process.pid,self.objectName())
+    def startup(self):
         self.process = Popen(self.cmd,stdout=PIPE,stderr=STDOUT,close_fds=True)
         for line in iter(self.process.stdout.readline, b''):
             self.emit(SIGNAL('Activated( QString )'),line.rstrip())
@@ -80,22 +91,17 @@ class ThreadPopen(QThread):
             self.process.terminate()
             self.process = None
 
-class ThRunDhcp(QThread):
+class ThRunDhcp(ThreadBase):
     ''' thread: run DHCP on background fuctions'''
     sendRequest = pyqtSignal(object)
-    def __init__(self,args,session):
-        QThread.__init__(self)
-        self.args    = args
-        self.session = session
-        self.process = None
-
+    def __init__(self,cmd,session):
+        super(ThRunDhcp,self).__init__(cmd,session)
+    @property
     def getNameThread(self):
-        return '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
-
-    def run(self):
-        self.process = Popen(self.args,
+        return '[New DHCP Thread {} ({})]'.format(self.process.pid,self.objectName())
+    def startup(self):
+        self.process = Popen(self.cmd,
         stdout=PIPE,stderr=STDOUT,preexec_fn=setsid)
-        print '[New Thread {} ({})]'.format(self.process.pid,self.objectName())
         setup_logger('dhcp', C.LOG_DHCP,self.session)
         loggerDhcp = logging.getLogger('dhcp')
         loggerDhcp.info('---[ Start DHCP '+asctime()+']---')
@@ -176,9 +182,8 @@ class ThreadFastScanIP(QThread):
 
 class ProcessThread(QObject):
     _ProcssOutput = pyqtSignal(object)
-    def __init__(self,cmd ,directory_exec=None):
+    def __init__(self,cmd,):
         QObject.__init__(self)
-        self.directory_exec = directory_exec
         self.cmd = cmd
 
     def getNameThread(self):
@@ -192,8 +197,6 @@ class ProcessThread(QObject):
     def start(self):
         self.procThread = QProcess(self)
         self.procThread.setProcessChannelMode(QProcess.MergedChannels)
-        if self.directory_exec:
-            self.procThread.setWorkingDirectory(self.directory_exec)
         QObject.connect(self.procThread, SIGNAL('readyReadStandardOutput()'), self, SLOT('readProcessOutput()'))
         self.procThread.start(self.cmd.keys()[0],self.cmd[self.cmd.keys()[0]])
         print '[New Thread {} ({})]'.format(self.procThread.pid(),self.objectName())
@@ -256,10 +259,15 @@ class ThreadReactor(QThread):
     '''Thread: run reactor twisted on brackground'''
     def __init__(self,parent=None):
         super(ThreadReactor, self).__init__(parent)
+        global reactor
     def run(self):
-        reactor.run(installSignalHandlers=False)
+        if not reactor.running:
+            reactor.run(installSignalHandlers=False)
     def stop(self):
         reactor.callFromThread(reactor.stop)
+    @property
+    def isReactorRunning(self):
+        return reactor.running
 
 class ThreadPumpkinProxy(QObject):
     '''Thread: run Pumpkin-Proxy mitmproxy on brackground'''
@@ -285,12 +293,14 @@ class ThreadPumpkinProxy(QObject):
 
 class Thread_sslstrip(QThread):
     '''Thread: run sslstrip on brackground'''
+    logging = pyqtSignal(object)
     def __init__(self,port,plugins={},data= {},session=None):
         QThread.__init__(self)
         self.port     = port
         self.plugins  = plugins
         self.loaderPlugins = data
         self.session    = session
+        global reactor
 
     def getNameThread(self):
         return '[New Thread {} ({})]'.format(self.currentThreadId(),self.objectName())
@@ -311,15 +321,19 @@ class Thread_sslstrip(QThread):
         CookieCleaner.getInstance().setEnabled(killSessions)
         strippingFactory              = http.HTTPFactory(timeout=10)
         strippingFactory.protocol     = StrippingProxy
-        self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
+        strippingFactory.protocol.requestFactory.logging = self.logging
+        #self.connector = reactor.listenTCP(int(listenPort), strippingFactory)
+        self.connector = TCP4ServerEndpoint(reactor, int(listenPort))
+        self.connector.listen(strippingFactory)
 
     def stop(self):
         print 'Thread::[{}] successfully stopped.'.format(self.objectName())
         self.connector.loseConnection()
-        self.connector.connectionLost(reason=None)
+        #self.connector.connectionLost(reason=None)
 
 class Thread_sergioProxy(QThread):
     '''Thread: run sergio-proxy on brackground'''
+    logging = pyqtSignal(object)
     def __init__(self,port,plugins={},data= {},session=None):
         QThread.__init__(self)
         self.port          = port
@@ -429,7 +443,7 @@ class Thread_sergioProxy(QThread):
             from plugins.external.sergio_proxy import launch_msf
             launch_msf(args.msf_path,args.msf_rc,args.msf_user)
 
-        from plugins.external.sergio_proxy.sslstrip.StrippingProxy import StrippingProxy
+        from plugins.external.sslstrip.StrippingProxy import StrippingProxy
         from plugins.external.sergio_proxy.sslstrip.URLMonitor import URLMonitor
         from plugins.external.sergio_proxy.sslstrip.CookieCleaner import CookieCleaner
 
@@ -437,10 +451,13 @@ class Thread_sergioProxy(QThread):
         CookieCleaner.getInstance().setEnabled(killSessions)
         strippingFactory              = http.HTTPFactory(timeout=10)
         strippingFactory.protocol     = StrippingProxy
+        strippingFactory.protocol.requestFactory.logging = self.logging
         print 'sslstrip {} + sergio-proxy v{} online'.format(sslstrip_version,sergio_version)
-        self.connectorSP = reactor.listenTCP(int(listenPort), strippingFactory)
+        #self.connectorSP = reactor.listenTCP(int(listenPort), strippingFactory)
+        self.connectorSP = TCP4ServerEndpoint(reactor, int(listenPort))
+        self.connectorSP.listen(strippingFactory)
 
     def stop(self):
         print 'Thread::[{}] successfully stopped.'.format(self.objectName())
         self.connectorSP.loseConnection()
-        self.connectorSP.connectionLost(reason=None)
+        #self.connectorSP.connectionLost(reason=None)

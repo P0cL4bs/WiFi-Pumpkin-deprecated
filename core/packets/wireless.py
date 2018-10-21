@@ -1,4 +1,4 @@
-import queue as Queue
+import Queue
 from scapy.all import *
 from threading import Thread
 from PyQt4.QtCore import QThread,SIGNAL
@@ -39,7 +39,7 @@ class ThreadScannerAP(QThread):
     def scannerAP(self,q):
         while not self.stopped:
             try:
-                sniff(iface=self.interface, prn =lambda x : q.put(x))
+                sniff(iface=self.interface, prn =lambda x : q.put(x), timeout=20)
             except:pass
             if self.stopped:
                 break

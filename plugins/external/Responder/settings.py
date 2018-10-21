@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# This file is part of Responder
+# This file is part of Firelamb
 # Original work by Laurent Gaffie - Trustwave Holdings
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@ import ConfigParser
 
 from utils import *
 
-__version__ = 'Responder 2.3'
+__version__ = 'Firelamb 2.3'
 
 class Settings:
 	
@@ -71,23 +71,23 @@ class Settings:
 
 		# Config parsing
 		config = ConfigParser.ConfigParser()
-		config.read(os.path.join(self.ResponderPATH, 'Responder.conf'))
+		config.read(os.path.join(self.ResponderPATH, 'Firelamb.conf'))
 
 		# Servers
-		self.HTTP_On_Off     = self.toBool(config.get('Responder Core', 'HTTP'))
-		self.SSL_On_Off      = self.toBool(config.get('Responder Core', 'HTTPS'))
-		self.SMB_On_Off      = self.toBool(config.get('Responder Core', 'SMB'))
-		self.SQL_On_Off      = self.toBool(config.get('Responder Core', 'SQL'))
-		self.FTP_On_Off      = self.toBool(config.get('Responder Core', 'FTP'))
-		self.POP_On_Off      = self.toBool(config.get('Responder Core', 'POP'))
-		self.IMAP_On_Off     = self.toBool(config.get('Responder Core', 'IMAP'))
-		self.SMTP_On_Off     = self.toBool(config.get('Responder Core', 'SMTP'))
-		self.LDAP_On_Off     = self.toBool(config.get('Responder Core', 'LDAP'))
-		self.DNS_On_Off      = self.toBool(config.get('Responder Core', 'DNS'))
-		self.Krb_On_Off      = self.toBool(config.get('Responder Core', 'Kerberos'))
+		self.HTTP_On_Off     = self.toBool(config.get('Firelamb Core', 'HTTP'))
+		self.SSL_On_Off      = self.toBool(config.get('Firelamb Core', 'HTTPS'))
+		self.SMB_On_Off      = self.toBool(config.get('Firelamb Core', 'SMB'))
+		self.SQL_On_Off      = self.toBool(config.get('Firelamb Core', 'SQL'))
+		self.FTP_On_Off      = self.toBool(config.get('Firelamb Core', 'FTP'))
+		self.POP_On_Off      = self.toBool(config.get('Firelamb Core', 'POP'))
+		self.IMAP_On_Off     = self.toBool(config.get('Firelamb Core', 'IMAP'))
+		self.SMTP_On_Off     = self.toBool(config.get('Firelamb Core', 'SMTP'))
+		self.LDAP_On_Off     = self.toBool(config.get('Firelamb Core', 'LDAP'))
+		self.DNS_On_Off      = self.toBool(config.get('Firelamb Core', 'DNS'))
+		self.Krb_On_Off      = self.toBool(config.get('Firelamb Core', 'Kerberos'))
 
 		# Db File
-		self.DatabaseFile    = os.path.join(self.ResponderPATH, config.get('Responder Core', 'Database'))
+		self.DatabaseFile    = os.path.join(self.ResponderPATH, config.get('Firelamb Core', 'Database'))
 
 		# Log Files
 		self.LogDir = os.path.join(self.ResponderPATH, 'logs')
@@ -95,9 +95,9 @@ class Settings:
 		if not os.path.exists(self.LogDir):
 			os.mkdir(self.LogDir)
 
-		self.SessionLogFile      = os.path.join(self.LogDir, config.get('Responder Core', 'SessionLog'))
-		self.PoisonersLogFile    = os.path.join(self.LogDir, config.get('Responder Core', 'PoisonersLog'))
-		self.AnalyzeLogFile      = os.path.join(self.LogDir, config.get('Responder Core', 'AnalyzeLog'))
+		self.SessionLogFile      = os.path.join(self.LogDir, config.get('Firelamb Core', 'SessionLog'))
+		self.PoisonersLogFile    = os.path.join(self.LogDir, config.get('Firelamb Core', 'PoisonersLog'))
+		self.AnalyzeLogFile      = os.path.join(self.LogDir, config.get('Firelamb Core', 'AnalyzeLog'))
 
 		self.FTPLog          = os.path.join(self.LogDir, 'FTP-Clear-Text-Password-%s.txt')
 		self.IMAPLog         = os.path.join(self.LogDir, 'IMAP-Clear-Text-Password-%s.txt')
@@ -140,14 +140,14 @@ class Settings:
 		self.SSLCert = config.get('HTTPS Server', 'SSLCert')
 
 		# Respond to hosts
-		self.RespondTo         = filter(None, [x.upper().strip() for x in config.get('Responder Core', 'RespondTo').strip().split(',')])
-		self.RespondToName     = filter(None, [x.upper().strip() for x in config.get('Responder Core', 'RespondToName').strip().split(',')])
-		self.DontRespondTo     = filter(None, [x.upper().strip() for x in config.get('Responder Core', 'DontRespondTo').strip().split(',')])
-		self.DontRespondToName = filter(None, [x.upper().strip() for x in config.get('Responder Core', 'DontRespondToName').strip().split(',')])
+		self.RespondTo         = filter(None, [x.upper().strip() for x in config.get('Firelamb Core', 'RespondTo').strip().split(',')])
+		self.RespondToName     = filter(None, [x.upper().strip() for x in config.get('Firelamb Core', 'RespondToName').strip().split(',')])
+		self.DontRespondTo     = filter(None, [x.upper().strip() for x in config.get('Firelamb Core', 'DontRespondTo').strip().split(',')])
+		self.DontRespondToName = filter(None, [x.upper().strip() for x in config.get('Firelamb Core', 'DontRespondToName').strip().split(',')])
 
 		# Auto Ignore List
-		self.AutoIgnore                 = self.toBool(config.get('Responder Core', 'AutoIgnoreAfterSuccess'))
-		self.CaptureMultipleCredentials = self.toBool(config.get('Responder Core', 'CaptureMultipleCredentials'))
+		self.AutoIgnore                 = self.toBool(config.get('Firelamb Core', 'AutoIgnoreAfterSuccess'))
+		self.CaptureMultipleCredentials = self.toBool(config.get('Firelamb Core', 'CaptureMultipleCredentials'))
 		self.AutoIgnoreList             = []
 
 		# CLI options
@@ -174,7 +174,7 @@ class Settings:
 		self.Os_version      = sys.platform
 
 		# Set up Challenge
-		self.NumChal = config.get('Responder Core', 'Challenge')
+		self.NumChal = config.get('Firelamb Core', 'Challenge')
 
 		if len(self.NumChal) is not 16:
 			print utils.color("[!] The challenge must be exactly 16 chars long.\nExample: 1122334455667788", 1)
@@ -186,8 +186,8 @@ class Settings:
 
 		# Set up logging
 		logging.basicConfig(filename=self.SessionLogFile, level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-		logging.warning('Responder Started: %s' % self.CommandLine)
-		logging.warning('Responder Config: %s' % str(self))
+		logging.warning('Firelamb Started: %s' % self.CommandLine)
+		logging.warning('Firelamb Config: %s' % str(self))
 
 		Formatter = logging.Formatter('%(asctime)s - %(message)s')
 		PLog_Handler = logging.FileHandler(self.PoisonersLogFile, 'w')
