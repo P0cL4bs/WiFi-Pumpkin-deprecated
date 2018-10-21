@@ -570,26 +570,6 @@ class WifiPumpkin(QtGui.QWidget):
         self.Formbuttons.addWidget(self.btn_cancelar)
         self.hBoxbutton.addLayout(self.Formbuttons)
 
-        self.Main_  = QtGui.QVBoxLayout()
-        self.slipt = QtGui.QHBoxLayout()
-        self.slipt.addWidget(self.GroupAP)
-        self.slipt.addWidget(self.GroupApPassphrase)
-
-        self.donatelink = C.DONATE
-        self.donateLabel = ServiceNotify(C.DONATE_TXT,title='Support development',
-        link=self.donatelink,timeout=15000)
-        self.donatelink = C.DONATE
-        self.versionBeta = ServiceNotify('This is a beta version the WiFi-Pumpkin 0.8.7 '
-        ,title='Version <strong>beta</strong> ')
-        # set main page Tool
-        self.widget = QtGui.QWidget()
-        self.layout = QtGui.QVBoxLayout(self.widget)
-        self.layout.addWidget(self.donateLabel)
-        self.layout.addWidget(self.versionBeta)
-        self.layout.addWidget(self.TabInfoAP)
-        self.Main_.addWidget(self.widget)
-        self.ContentTabHome.addLayout(self.Main_)
-
     def show_arp_posion(self):
         ''' call GUI Arp Poison module '''
         if not self.FSettings.Settings.get_setting('accesspoint','statusAP',format=bool):

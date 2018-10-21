@@ -69,9 +69,9 @@ LCOMMITS        = 'https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/0.8.7B
 SOURCE_URL      = 'https://github.com/P0cL4bs/WiFi-Pumpkin.git'
 
 #settings template
-TEMP_CUSTOM = dir_path+'/templates/phishing/custom'
-TEMP_Win    = dir_path+'/templates/fakeupdate/Windows_Update'
-TEMP_Java   = dir_path+'/templates/fakeupdate/Java_Update'
+TEMP_CUSTOM = dir_of_executable+'/templates/phishing/custom'
+TEMP_Win    = dir_of_executable+'/templates/fakeupdate/Windows_Update'
+TEMP_Java   = dir_of_executable+'/templates/fakeupdate/Java_Update'
 
 #plugins path
 FIRELAMB_EXEC  = 'plugins/external/firelamb/firelamb.py'
