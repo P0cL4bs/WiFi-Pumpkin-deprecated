@@ -63,9 +63,15 @@ TEMPLATES_WWW   = 'templates/www/portal/index.html'
 TEMPLATE_PH     = 'templates/phishing/custom/index.html'
 TEMPLATE_CLONE  = 'templates/phishing/web_server/index.html'
 EXTRACT_TEMP    = 'cd templates/ && tar -xf fakeupdate.tar.gz'
+
 EXTRACT_WWW     = 'cd templates/ && tar -xf www.tar.gz'
-LCOMMITS        = 'https://raw.githubusercontent.com/yudevan/WiFi-Pumpkin/master/Core/config/commits/Lcommits.cfg'
-SOURCE_URL      = 'https://github.com/yudevan/WiFi-Pumpkin.git'
+LCOMMITS        = 'https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/0.8.7Beta/core/config/commits/Lcommits.cfg'
+SOURCE_URL      = 'https://github.com/P0cL4bs/WiFi-Pumpkin.git'
+
+#settings template
+TEMP_CUSTOM = dir_path+'/templates/phishing/custom'
+TEMP_Win    = dir_path+'/templates/fakeupdate/Windows_Update'
+TEMP_Java   = dir_path+'/templates/fakeupdate/Java_Update'
 
 #plugins path
 FIRELAMB_EXEC  = 'plugins/external/firelamb/firelamb.py'
