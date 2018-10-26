@@ -35,6 +35,8 @@ class SettingsTranks(QtGui.QVBoxLayout):
         self.scroll.setWidget(self.scrollwidget)
 
         self.formMode = QtGui.QFormLayout()
+        self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/yudevan"><strong>@yudevan</strong></a>'))
+        self.formMode.addRow(QtGui.QLabel('implementation full moduled proxy, plugins, main page<br>'))
         self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/mitmproxy/mitmproxy"><strong>@mitmproxy</strong></a>'))
         self.formMode.addRow(QtGui.QLabel('ProxyServer tranparent HTTP proxy <br>'))
         self.formMode.addRow(QtGui.QLabel('<a href="https://github.com/TimSchumi"><strong>@TimSchumi</strong></a>'))

@@ -1,5 +1,14 @@
 Version 0.8.7
 -------------
+- modularized and auto loaded proxy package
+- autoloaded plugins which is located inside core/server/http_handler/proxyhandler
+- modularized the wireless mode [mana, karma, etc]
+- the main tab (Home, Settings, Station, Activity Monitor) now segregated into its own file
+- all this pages are located under core/widgets/defaults
+- the setting tab it is now generated automatically
+- same as Setting page, the home page will also now automatically generated 
+- made an easy refference for the FSettings by  calling FSettings.getInstance()
+- FSettings call now located on the QApplication method instead of WifiPumpkin method.
 - fixed version beta alert and constants
 - fixed when include interface in Networking-manager
 - set ip class A by default
