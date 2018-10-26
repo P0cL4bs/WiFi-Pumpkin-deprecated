@@ -236,7 +236,7 @@ class AccessPointSettings(CoreSettings):
         if interface != 'None' and interface in self.get_interfaces['all']:
             self.WLANCard.setCurrentIndex(wireless.index(interface))
 
-        self.btrn_find_Inet = QtGui.QPushButton("Find Interface")
+        self.btrn_find_Inet = QtGui.QPushButton("Find Network Connection")
         self.btrn_find_Inet.setIcon(QtGui.QIcon('icons/router2.png'))
         self.btrn_find_Inet.clicked.connect(self.check_NetworkConnection)
         self.btrn_find_Inet.setFixedWidth(220)
