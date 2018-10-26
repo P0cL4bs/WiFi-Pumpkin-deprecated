@@ -1,3 +1,10 @@
+Version 0.8.7
+-------------
+- fixed version beta alert and constants
+- fixed when include interface in Networking-manager
+- set ip class A by default
+- fixed  [Errno 9] Bad file descriptor from dhcpserver
+
 Version 0.8.5
 -------------
 - added new plugin TCP-Proxy

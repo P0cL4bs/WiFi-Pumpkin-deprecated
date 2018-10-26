@@ -163,6 +163,8 @@ class DNSServer(QThread):
                 except dns.exception.DNSException:
                     # server format ERROR unable to responde #RCODE 1
                     self.dns_sock.sendto(packet.make_response(data,1), addr)
+                except socket.error: # [Errno 9] Bad file descriptor
+                    pass
                 continue
             # I'll use this in future for implements new feature
             self.dns_sock.sendto(packet.respuesta(self.GatewayAddr), addr) # for next feature
