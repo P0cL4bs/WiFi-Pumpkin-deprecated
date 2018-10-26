@@ -40,7 +40,7 @@ class UI_NetworkManager(QtGui.QWidget):
 
     def closeEvent(self, event):
         if self.check_no_internet.isChecked:
-            self.app.form_widget.InternetShareWiFi = False # show window without internet connection
+            self.app.UI.InternetShareWiFi = False # show window without internet connection
         self.app.center()
         self.app.show()
         print('WiFi-Pumpkin Running!')
