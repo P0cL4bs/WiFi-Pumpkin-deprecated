@@ -62,7 +62,7 @@ Copyright:
 author      = 'Marcos Nesster (@mh4x0f)  P0cl4bs Team'
 emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
 license     = ' GNU GPL 3'
-version     = '0.8.5'
+version     = '0.8.7'
 update      = '04/05/2017' # This is Brasil :D
 desc        = ['Framework for Rogue Wi-Fi Access Point Attacks']
 
