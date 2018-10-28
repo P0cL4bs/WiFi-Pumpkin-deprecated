@@ -73,6 +73,7 @@ class Static(Mode):
                 self.parent.StationMonitor.addRequests(data,self.parent.Home.DHCP.ClientTable.APclients[data],False)
             self.parent.Home.DHCP.ClientTable.delete_item(data)
             self.parent.connectedCount.setText(str(len(self.parent.Home.DHCP.ClientTable.APclients.keys())))
+    
     def check_key_security_invalid(self):
         return QtGui.QMessageBox.warning(self, 'Security Key',
                                    'This Key can not be used.\n'

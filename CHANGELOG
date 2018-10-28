@@ -13,6 +13,7 @@ Version 0.8.7
 - fixed when include interface in Networking-manager
 - set ip class A by default
 - fixed  [Errno 9] Bad file descriptor from dhcpserver
+- fixed #322 error when remove the client from tableWidget
 
 Version 0.8.5
 -------------

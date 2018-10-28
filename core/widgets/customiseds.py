@@ -82,8 +82,12 @@ class AutoTableWidget(QtGui.QTableWidget):
                         self.removeRow(row)
                         del self.APclients[mac_address]
             self.reset_inc() # reset increment and re-add all clients in table
-            for agent in self.APclients.keys():
-                self.addNextWidget(self.APclients[agent])
+
+            temp = {}
+            for key_mac,dict_agent in self.APclients.iteritems():
+                temp[key_mac] = dict_agent
+                self.addNextWidget(temp)
+                temp.clear() # reset temp 
 
     def get_connected_clients(self):
         ''' get amount client connected '''
