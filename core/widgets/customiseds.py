@@ -1,5 +1,7 @@
 from PyQt4 import QtGui, QtCore
 from core.utils import Refactor
+from core.utility.collection import SettingsINI
+import core.utility.constants as C
 
 """
 Description:
@@ -42,9 +44,21 @@ class AutoTableWidget(QtGui.QTableWidget):
         QtGui.QTableWidget.__init__(self)
         self.column,self.row = 0,0
         self.max_column     = 4
+        self.loadtheme(SettingsINI(C.CONFIG_INI).get_setting('settings', 'themes'))
         self.items_widgets  = {}
         self.APclients      = {}
         self.setColumnCount(self.max_column)
+
+    def loadtheme(self,theme):
+        ''' load Theme from file .qss '''
+        sshFile=("core/%s.qss"%(theme))
+        with open(sshFile,"r") as fh:
+            self.setStyleSheet(fh.read())
+
+    def clearInfoClients(self):
+        self.APclients = {}
+        self.column, self.row = 0, 0
+        self.clearContents()
 
     def addNextWidget(self, agent={}):
         ''' auto add item in table '''
@@ -67,8 +81,12 @@ class AutoTableWidget(QtGui.QTableWidget):
                         self.removeRow(row)
                         del self.APclients[mac_address]
             self.reset_inc() # reset increment and re-add all clients in table
-            for agent in self.APclients.keys():
-                self.addNextWidget(self.APclients[agent])
+
+            temp = {}
+            for key_mac,dict_agent in self.APclients.iteritems():
+                temp[key_mac] = dict_agent
+                self.addNextWidget(temp)
+                temp.clear() # reset temp 
 
     def get_connected_clients(self):
         ''' get amount client connected '''
