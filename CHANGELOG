@@ -14,6 +14,8 @@ Version 0.8.7
 - set ip class A by default
 - fixed  [Errno 9] Bad file descriptor from dhcpserver
 - fixed #322 error when remove the client from tableWidget
+- set plugin BDFPROXY to hidden in Home
+- fixed home GUI design auto resize when maximized
 
 Version 0.8.5
 -------------

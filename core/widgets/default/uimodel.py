@@ -44,7 +44,7 @@ class TabsWidget(QtGui.QWidget):
         self.tabinterface.setSizeHint(QtCore.QSize(30, 30))
         if self.Icon is not None:
             self.tabinterface.setIcon(QtGui.QIcon(self.Icon))
-        self.mainlayout = QtGui.QFormLayout()
+        self.mainlayout = QtGui.QVBoxLayout()
         self.scrollwidget = QtGui.QWidget()
         self.scroll = QtGui.QScrollArea()
         self.scrollwidget.setLayout(self.mainlayout)
@@ -104,8 +104,18 @@ class HomeDisplay(QtGui.QWidget):
         self.setObjectName(self.Name)
         self.FSettings = SuperSettings.getInstance()
         self.parent = parent
-        self.layout = QtGui.QVBoxLayout(self)
-        self.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+
+
+        self.mainlayout = QtGui.QVBoxLayout()
+        self.scrollwidget = QtGui.QWidget()
+        self.scroll = QtGui.QScrollArea()
+        self.scrollwidget.setLayout(self.mainlayout)
+        self.scroll.setWidgetResizable(True)
+        self.scrollwidget.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        self.scroll.setWidget(self.scrollwidget)
+
+        self.layout = QtGui.QHBoxLayout()
+        self.layout.addWidget(self.scroll)
         self.setLayout(self.layout)
 
     @property

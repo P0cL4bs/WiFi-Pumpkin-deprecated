@@ -283,21 +283,10 @@ class DHCPClient(HomeDisplay):
         self.ClientTable.setSortingEnabled(True)
         self.ClientTable.setObjectName('table_clients')
 
-        self.mainLayout = QtGui.QVBoxLayout()
-        self.scrollwidget = QtGui.QWidget()
-        self.scrollwidget.setLayout(self.mainLayout)
-        self.scroll = QtGui.QScrollArea()
-        self.scroll.setWidgetResizable(True)
-        self.scroll.setWidget(self.scrollwidget)
 
         self.donatelink = C.DONATE
         self.donateLabel = ServiceNotify(C.DONATE_TXT,title='Support development',
         link=self.donatelink,timeout=10000)
         # set main page Tool
-        self.mainLayout.addWidget(self.donateLabel)
-
-        self.mainLayout.addWidget(self.ClientTable)
-
-        self.layout_table = QtGui.QHBoxLayout()
-        self.layout_table.addWidget(self.scroll)
-        self.layout.addLayout(self.layout_table)
+        self.mainlayout.addWidget(self.donateLabel)
+        self.mainlayout.addWidget(self.ClientTable)

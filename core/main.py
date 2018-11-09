@@ -653,11 +653,9 @@ class WifiPumpkin(QtGui.QWidget):
         ''' show/hide dashboard infor '''
         if self.statusap_action.isChecked():
             self.Home.APStatus.scroll.setHidden(False)
-            #self.Home.DHCP.scroll.setFixedHeight(200)
             return self.FSettings.Settings.set_setting('settings', 'show_dashboard_info', True)
         self.FSettings.Settings.set_setting('settings', 'show_dashboard_info', False)
         self.Home.APStatus.scroll.setHidden(True)
-        #self.Home.DHCP.scroll.setFixedHeight(400)
 
     def check_NetworkConnection(self):
         ''' update inferfaces '''

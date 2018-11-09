@@ -101,12 +101,6 @@ class APStatus(HomeDisplay):
     def __init__(self,parent=0):
         super(APStatus, self).__init__(parent)
         self.timer = QtCore.QTimer()
-        self.mainLayout = QtGui.QFormLayout()
-        self.scrollwidget = QtGui.QWidget()
-        self.scrollwidget.setLayout(self.mainLayout)
-        self.scroll = QtGui.QScrollArea()
-        self.scroll.setWidgetResizable(True)
-        self.scroll.setWidget(self.scrollwidget)
         self.split_window = QtGui.QHBoxLayout()
 
         guageWindow = QtGui.QGridLayout()
@@ -151,9 +145,7 @@ class APStatus(HomeDisplay):
 
         self.split_window.addWidget(self.group_AccessPoint)
         self.split_window.addLayout(guageWindow)
-
-        self.mainLayout.addRow(self.split_window)
-        self.layout.addWidget(self.scroll)
+        self.mainlayout.addLayout(self.split_window)
 
     def update_labels(self):
         self.AP_name.setText(self.FSettings.Settings.get_setting('accesspoint', 'ssid'))
