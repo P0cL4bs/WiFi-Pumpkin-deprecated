@@ -32,7 +32,7 @@ class BDFProxy(ProxyMode):
     Author = "secretsquirrel"
     Description = 'Patch Binaries via MITM: BackdoorFactory + mitmProxy, bdfproxy-ng is a fork and review of the original BDFProxy..'
     ModSettings = True
-    Hidden = False
+    Hidden = True
     _cmd_array = []
     ModType = "proxy"  # proxy or server
 
