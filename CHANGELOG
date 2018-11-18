@@ -16,6 +16,7 @@ Version 0.8.7
 - fixed #322 error when remove the client from tableWidget
 - set plugin BDFPROXY to hidden in Home
 - fixed home GUI design auto resize when maximized
+- updated Qtimer Count hours and mins 
 
 Version 0.8.5
 -------------

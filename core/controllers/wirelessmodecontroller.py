@@ -13,6 +13,8 @@ from json import dumps,loads
 from core.utility.threads import ProcessHostapd,ThRunDhcp,ProcessThread
 from core.widgets.default.uimodel import *
 from core.widgets.default.SessionConfig import *
+from datetime import datetime
+
 
 class WirelessModeController(QtGui.QTableWidget):
 
@@ -157,19 +159,26 @@ class APStatus(HomeDisplay):
         self.update_security_label(self.FSettings.Settings.get_setting('accesspoint', 'enable_Security', format=bool))
 
     def start_timer(self):
-
-        self.now = 0
+        self.start_time_conut = datetime.now()
         self.update_timer()
         self.timer.timeout.connect(self.tick_timer)
         self.timer.start(1000)
 
     def update_timer(self):
-        self.runtime = ('%d:%02d' % (self.now / 60, self.now % 60))
-        self.sectionTimeLabel.setText(self.runtime)
+        self.end_time_count = datetime.now()
+        self.sectionTimeLabel.setText(self.strfdelta(
+            (self.end_time_count - self.start_time_conut),
+            '{hours} hs {minutes} mins'))
         self.currentThreadLabel.setText(self.FSettings.Settings.get_setting('runningconfig', 'totalthread'))
 
+    def strfdelta(self, tdelta, fmt):
+        # https://stackoverflow.com/questions/8906926/formatting-python-timedelta-objects
+        d = {"D": tdelta.days}
+        d["hours"], rem = divmod(tdelta.seconds, 3600)
+        d["minutes"], d["seconds"] = divmod(rem, 60)
+        return fmt.format(**d)
+
     def tick_timer(self):
-        self.now += 1
         self.update_timer()
 
     def stop_timer(self):

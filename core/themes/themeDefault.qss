@@ -40,7 +40,7 @@ QLabel#infor {
     border-bottom-left-radius: 5px;
     background-color: #23252b;
     color: #996633;
-    font-size: 25px;
+    font-size: 20px;
     font-family: "Asap";
     font: bold;
     padding: 10px;
