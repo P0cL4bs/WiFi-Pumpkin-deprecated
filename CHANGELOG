@@ -17,6 +17,7 @@ Version 0.8.7
 - set plugin BDFPROXY to hidden in Home
 - fixed home GUI design auto resize when maximized
 - updated Qtimer Count hours and mins 
+- added method for check if wireless mode binary exist [hostapd mana/karma]
 
 Version 0.8.5
 -------------

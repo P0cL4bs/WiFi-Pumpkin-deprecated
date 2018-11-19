@@ -31,6 +31,12 @@ class Mode(QtGui.QWidget):
         self.SessionConfig = SessionConfig.getInstance()
         self.interfacesLink = Refactor.get_interfaces()
 
+    def checkifHostapdBinaryExist(self):
+        """ check if hostapd binary file exist"""
+        if path.isfile(self.hostapd_path):
+            return True
+        return False
+
     def get_soft_dependencies(self):
         ''' check if Hostapd, isc-dhcp-server is installed '''
         if not path.isfile(self.hostapd_path):

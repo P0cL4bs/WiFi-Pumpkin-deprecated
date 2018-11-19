@@ -253,19 +253,13 @@ class AccessPointSettings(CoreSettings):
         self.ModeSelection.setLayout(self.ModeSelectionLayout)
         self.ModeSelection.setTitle("Wireless Operation Mode")
         self.ModeList = {}
+        
         for mode in self.__modelist:
             setattr(self.__class__, mode.ID, mode)
             self.ModeGroup.addButton(mode.controlui)
+            if ((mode.ID  != 'Static') and mode.checkifHostapdBinaryExist()):
+                mode.controlui.setEnabled(False)
             self.ModeSelectionLayout.addWidget(mode.controlui)
-
-            # self.ModeList[mode.ID] = QtGui.QRadioButton(mode.Name)
-            # self.ModeList[mode.ID].setObjectName(mode.ID)
-            # self.ModeGroup.addButton(self.ModeList[mode.ID])
-            # self.ModeSelectionLayout.addWidget(self.ModeList[mode.ID])
-            # self.ModeList[mode.ID].setChecked(self.FSettings.Settings.get_setting('accesspoint', mode.ID,format=bool))
-            # self.ModeList[mode.ID].toggled.connect(partial(self.ModelistChanged,mode,self.ModeList[mode.ID]))
-
-
         # Initialize WLAN Settings
 
 
