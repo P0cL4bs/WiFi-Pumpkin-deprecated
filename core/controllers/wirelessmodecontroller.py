@@ -257,7 +257,7 @@ class AccessPointSettings(CoreSettings):
         for mode in self.__modelist:
             setattr(self.__class__, mode.ID, mode)
             self.ModeGroup.addButton(mode.controlui)
-            if ((mode.ID  != 'Static') and mode.checkifHostapdBinaryExist()):
+            if ((mode.ID  != 'Static') and not mode.checkifHostapdBinaryExist()):
                 mode.controlui.setEnabled(False)
             self.ModeSelectionLayout.addWidget(mode.controlui)
         # Initialize WLAN Settings
