@@ -117,7 +117,7 @@ class frmAbout(PumpkinModule):
         self.formAbout.addRow(QtGui.QLabel('Feedback:'))
         self.formAbout.addRow(QtGui.QLabel(self.emails[0]))
         self.formAbout.addRow(QtGui.QLabel(self.emails[1]+'<br>'))
-        self.formAbout.addRow(QtGui.QLabel('Copyright 2015-2017, '+self.author[:-14]))
+        self.formAbout.addRow(QtGui.QLabel('Copyright 2015-2018, '+self.author[:-14]))
         self.gnu = QtGui.QLabel('<a href="link">License: GNU General Public License Version</a><br>')
         self.gnu.linkActivated.connect(self.link)
         self.formAbout.addRow(self.gnu)

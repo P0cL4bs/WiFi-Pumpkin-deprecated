@@ -278,6 +278,8 @@ class AccessPointSettings(CoreSettings):
         self.EditChannel.setFixedWidth(10)
         self.EditChannel.setMinimum(0)
 
+        self.EditSSID.textChanged.connect(self.saveEventTextChangeSSID)
+
         self.WLGrid.addWidget(QtGui.QLabel("SSID:"), 0, 0)
         self.WLGrid.addWidget(self.EditSSID, 0, 1)
         self.WLGrid.addWidget(QtGui.QLabel("BSSID:"), 1, 0)
@@ -292,6 +294,10 @@ class AccessPointSettings(CoreSettings):
         self.layout.addWidget(self.WLayout)
         self.layout.addWidget(self.GroupAdapter)
         self.layout.addWidget(self.ModeSelection)
+
+    def saveEventTextChangeSSID(self):
+        ''' save ssid name in config.ini'''
+        self.FSettings.Settings.set_setting('accesspoint', 'ssid',self.EditSSID.text())
 
     def ModelistChanged(self,mode,widget):
         pass
