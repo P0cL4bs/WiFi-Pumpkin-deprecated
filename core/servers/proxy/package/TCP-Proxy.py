@@ -203,7 +203,7 @@ class TCPProxy(ProxyMode):
                 self.LogCredsMonitor.info('UserName: {}'.format(data['POSTCreds']['Pass']))
                 self.LogCredsMonitor.info('Packets: {}'.format(data['POSTCreds']['Destination']))
             elif data.keys()[0] == 'image':
-                self.handler.ImageCapture.SendImageTableWidgets(data['image'])
+                self.parent.ImageSniffer.SendImageTableWidgets(data['image'])
             else:
                 self.tableLogging.writeModeData(data)
                 self.LogTcpproxy.info('[{}] {}'.format(data.keys()[0],data[data.keys()[0]]))

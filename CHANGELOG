@@ -20,6 +20,7 @@ Version 0.8.7
 - added method for check if wireless mode binary exist [hostapd mana/karma]
 - save ssid name in config.ini
 - removed binary hostpad-mana
+- fixed Capture Image plugin 
 
 Version 0.8.5
 -------------

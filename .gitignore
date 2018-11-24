@@ -170,3 +170,4 @@ fabric.properties
 .gitignore
 templates/fakeupdate/Adobe_Update/
 logs/
+core/config/app/
