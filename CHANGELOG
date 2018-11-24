@@ -18,6 +18,8 @@ Version 0.8.7
 - fixed home GUI design auto resize when maximized
 - updated Qtimer Count hours and mins 
 - added method for check if wireless mode binary exist [hostapd mana/karma]
+- save ssid name in config.ini
+- removed binary hostpad-mana
 
 Version 0.8.5
 -------------
