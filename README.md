@@ -1,7 +1,7 @@
 ![logo](https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/docs/logo.png)
 
 [![build](https://travis-ci.org/P0cL4bs/WiFi-Pumpkin.svg)](https://travis-ci.org/P0cL4bs/WiFi-Pumpkin/)
-![version](https://img.shields.io/badge/version-0.8.7%20beta-orange.svg)
+![version](https://img.shields.io/badge/version-0.8.7-orange.svg)
 
 WiFi-Pumpkin - Framework for Rogue Wi-Fi Access Point Attack
 
@@ -18,14 +18,13 @@ The WiFi-Pumpkin is a rogue AP framework to easily create these fake networks, a
 ```sh
  git clone https://github.com/P0cL4bs/WiFi-Pumpkin.git
  cd WiFi-Pumpkin
- git checkout 0.8.7Beta
  ./installer.sh --install
 ```
 
 or download [.deb](https://github.com/P0cL4bs/WiFi-Pumpkin/releases) file to install
 
 ```sh
-sudo dpkg -i wifi-pumpkin-0.8.5-all.deb
+sudo dpkg -i wifi-pumpkin-0.8.7-all.deb
 sudo apt-get -f install # force install dependencies if not install normally
 
 ```
@@ -52,7 +51,7 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 - Capture images on the fly
 - TCP-Proxy (with [scapy](http://www.secdev.org/projects/scapy/))
 - Moduled plugins and proxys
-- Support to hostapd-mana/hostapd-karma by default
+- Wireless Mode support hostapd-mana/hostapd-karma attacks
 
 ### Donation
 
