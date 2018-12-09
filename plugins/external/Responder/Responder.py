@@ -39,7 +39,7 @@ parser.add_option('-v','--verbose',        action="store_true", help="Increase v
 options, args = parser.parse_args()
 
 if not os.geteuid() == 0:
-    print "[!] Responder must be run as root."
+    print "[!] Firelamb must be run as root."
     sys.exit(-1)
 elif options.OURIP is None and IsOsX() is True:
     print "\n\033[1m\033[31mOSX detected, -i mandatory option is missing\033[0m\n"
@@ -54,7 +54,7 @@ StartupMessage()
 settings.Config.ExpandIPRanges()
 
 if settings.Config.AnalyzeMode:
-	print '[i] Responder is in analyze mode. No NBT-NS, LLMNR, MDNS requests will be poisoned.'
+	print '[i] Firelamb is in analyze mode. No NBT-NS, LLMNR, MDNS requests will be poisoned.'
 
 class ThreadingUDPServer(ThreadingMixIn, UDPServer):
 	def server_bind(self):

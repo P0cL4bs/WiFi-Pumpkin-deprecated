@@ -1,4 +1,4 @@
-import queue as Queue
+import Queue
 from os import system
 from scapy.all import *
 from threading import Thread

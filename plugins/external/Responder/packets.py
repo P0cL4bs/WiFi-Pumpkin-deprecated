@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# This file is part of Responder
+# This file is part of Firelamb
 # Original work by Laurent Gaffie - Trustwave Holdings
 #
 # This program is free software: you can redistribute it and/or modify

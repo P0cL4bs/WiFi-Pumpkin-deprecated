@@ -31,7 +31,7 @@ class UI_NetworkManager(QtGui.QWidget):
         self.label = QtGui.QLabel()
         self.app   = app
         self.Main  = QtGui.QVBoxLayout()
-        self.config = frm_Settings()
+        self.config = frm_Settings.instances[0]
         self.setGeometry(0, 0, 300, 120)
         self.setWindowTitle('Checking Connection')
         self.loadtheme(self.config.get_theme_qss())
@@ -40,7 +40,7 @@ class UI_NetworkManager(QtGui.QWidget):
 
     def closeEvent(self, event):
         if self.check_no_internet.isChecked:
-            self.app.form_widget.InternetShareWiFi = False # show window without internet connection
+            self.app.UI.InternetShareWiFi = False # show window without internet connection
         self.app.center()
         self.app.show()
         print('WiFi-Pumpkin Running!')

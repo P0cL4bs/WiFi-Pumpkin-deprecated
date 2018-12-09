@@ -7,7 +7,6 @@ from core.servers.http_handler.ServerHTTP import ServerThreadHTTP
 from core.utility.extract import Beef_Hook_url
 from core.utility.settings import frm_Settings
 from core.utils import ThreadPhishingServer
-from core.utility.threads import ProcessThread
 
 """
 Description:
@@ -15,7 +14,7 @@ Description:
     for Phishing attack.
 
 Copyright:
-    Copyright (C) 2015-2017 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015 Marcos Nesster P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -34,7 +33,7 @@ class frm_PhishingManager(QtGui.QWidget):
         super(frm_PhishingManager, self).__init__(parent)
         self.label = QtGui.QLabel()
         self.Main  = QtGui.QVBoxLayout()
-        self.config = frm_Settings()
+        self.config = frm_Settings.instances[0]
         self.session = str()
         self.setWindowTitle('Phishing Manager')
         self.ThreadTemplates = {'Server':[]}
@@ -244,32 +243,17 @@ class frm_PhishingManager(QtGui.QWidget):
         elif self.check_custom.isChecked():
             self.html = BeautifulSoup(str(self.txt_html.toPlainText()),'lxml')
             self.CheckHookInjection(self.html,C.TEMPLATE_PH)
-            self.proc_Web_server  = ProcessThread({'python':['-m',
-            'SimpleHTTPServer','{}'.format(self.BoxPort.value())]},
-            C.TEMP_CUSTOM)
-            self.proc_Web_server._ProcssOutput.connect(self.get_output_webserver)
-            self.proc_Web_server.start()
-            self.ThreadTemplates['Server'].append(self.proc_Web_server)
-            self.emit(QtCore.SIGNAL('Activated( QString )'), 'started')
+            self.ServerHTTPLoad = ServerThreadHTTP(str(self.txt_redirect.text()),
+            self.BoxPort.value(),redirect=str(self.cloneLineEdit.text()),
+            directory=C.TEMPLATE_PH,session=self.session)
+            self.ThreadTemplates['Server'].append(self.ServerHTTPLoad)
+            self.ServerHTTPLoad.requestHTTP.connect(self.ResponseSignal)
             self.btn_start_template.setEnabled(False)
             self.btn_stop_template.setEnabled(True)
+            self.ServerHTTPLoad.setObjectName('THread::: HTTP Clone')
+            self.ServerHTTPLoad.start()
             self.StatusServer(True)
-
-            # old thread start web server
-            # self.ServerHTTPLoad = ServerThreadHTTP(str(self.txt_redirect.text()),
-            # self.BoxPort.value(),redirect=str(self.cloneLineEdit.text()),
-            # directory=C.TEMPLATE_PH,session=self.session)
-            # self.ThreadTemplates['Server'].append(self.ServerHTTPLoad)
-            # self.ServerHTTPLoad.requestHTTP.connect(self.ResponseSignal)
-            # self.btn_start_template.setEnabled(False)
-            # self.btn_stop_template.setEnabled(True)
-            # self.ServerHTTPLoad.setObjectName('THread::: HTTP Clone')
-            # self.ServerHTTPLoad.start()
-            # self.StatusServer(True)
-            # self.emit(QtCore.SIGNAL('Activated( QString )'),'started')
-
-    def get_output_webserver(self,data):
-        print data
+            self.emit(QtCore.SIGNAL('Activated( QString )'),'started')
 
     def DirectoryPhishing(self,Path=None):
         popen('service apache2 stop')
@@ -325,7 +309,7 @@ class frm_PhishingManager(QtGui.QWidget):
             return self.btn_Clone_page.setEnabled(False)
 
     def killThread(self):
-        if hasattr(self,'proc_Web_server'): self.proc_Web_server.stop()
+        if hasattr(self,'ServerHTTPLoad'): self.ServerHTTPLoad.stop()
         if self.ThreadTemplates['Server'] == []: return
         for thread in self.ThreadTemplates['Server']: thread.stop()
         self.ListOutputWid.clear()

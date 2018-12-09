@@ -283,8 +283,8 @@ def StartupMessage():
 	print ""
 
 	print "[+] " + "Generic Options:"
-	print '    %-27s' % "Responder NIC" + '[%s]' % settings.Config.Interface
-	print '    %-27s' % "Responder IP" + '[%s]' % settings.Config.Bind_To
+	print '    %-27s' % "Firelamb NIC" + '[%s]' % settings.Config.Interface
+	print '    %-27s' % "Firelamb IP" + '[%s]' % settings.Config.Bind_To
 	print '    %-27s' % "Challenge set" + '[%s]' % settings.Config.NumChal
 
 	if settings.Config.Upstream_Proxy:

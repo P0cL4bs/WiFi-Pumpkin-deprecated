@@ -1,0 +1,888 @@
+/* @override http://java.com/css/screen.css */
+
+/* @group Blueprint CSS Framework 0.7.1 http://blueprintcss.googlecode.com * Copyright (c) 2007-2008. See LICENSE for more info. */
+
+/* reset.css */
+html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, code, del, dfn, em, img, q, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td {margin:0;padding:0;border:0;font-weight:inherit;font-style:inherit;font-size:100%;font-family:inherit;vertical-align:baseline;}
+body {line-height:1.5;}
+table {border-collapse:separate;border-spacing:0;}
+caption, th, td {text-align:left;font-weight:normal;}
+table, td, th {vertical-align:middle;}
+blockquote:before, blockquote:after, q:before, q:after {content:"";}
+blockquote, q {quotes:"" "";}
+a img {border:none;}
+
+/* typography.css */
+body {font-size:75%;color:#222;background:#fff;font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;}
+h1, h2, h3, h4, h5, h6 {font-weight:normal;color:#111;}
+h1 {font-size:3em;line-height:1;margin-bottom:0.5em;}
+h2 {font-size:2em;margin-bottom:0.75em;}
+h3 {font-size:1.5em;line-height:1;margin-bottom:1em;}
+h4 {font-size:1.18em;line-height:1;font-weight:bold;margin-bottom:1em;}
+h4.sub {margin-bottom:0.25em !important;}
+
+h5 {font-size:1em;font-weight:bold;margin-bottom:1.5em;}
+h6 {font-size:1em;font-weight:bold;}
+h1.sub,
+h2.sub,
+h3.sub,
+h5.sub,
+h6.sub{margin-bottom:0 !important;}
+h1 img, h2 img, h3 img, h4 img, h5 img, h6 img {margin:0;}
+p {margin:0 0 1.5em;}
+p img {float:left;margin:1.5em 1.5em 1.5em 0;padding:0;}
+p img.right {float:right;margin:1.5em 0 1.5em 1.5em;}
+/*a:focus, a:hover {color:#000;}*/
+/*a {color:#009;text-decoration:underline;}*/
+blockquote {margin:1.5em;color:#666;font-style:italic;}
+strong {font-weight:bold;}
+em, dfn {font-style:italic;}
+dfn {font-weight:bold;}
+sup, sub {line-height:0;}
+abbr, acronym {border-bottom:1px dotted #666;}
+address {margin:0 0 1.5em;font-style:italic;}
+del {color:#666;}
+pre, code {margin:1.5em 0;white-space:normal;}
+pre, code, tt {font:1em 'andale mono', 'lucida console', monospace;line-height:1.5;}
+/*code { background-color: #e8e8ef;}*/
+li ul, li ol {margin:0 1.5em;}
+ul, ol {margin:0 1.5em 1.5em 1.5em;}
+ul {list-style-type:disc;}
+/*ol {list-style-type:decimal;}*/
+dl {margin:0 0 1.5em 0;}
+dl dt {font-weight:bold;}
+dd {margin-left:1.5em;}
+table {margin-bottom:1.4em;width:100%;}
+th {font-weight:bold;background:#eee;}
+/*th{color:#fff;text-shadow:1px 1px 2px #666; background:#666;}*/
+th{color:#666;text-shadow:1px 1px 2px #fff; background:#D5D5D5;}
+th, td {padding:4px 10px 4px 5px;}
+tr.even td {background:#E5ECF9;}
+tfoot {font-style:italic;}
+caption {background:#eee;}
+.small {font-size:.8em;margin-bottom:1.875em;line-height:1.875em;}
+.large {font-size:1.2em;line-height:2.5em;margin-bottom:1.25em;}
+.hide {display:none;}
+.quiet {color:#666;}
+.loud {color:#000;}
+.highlight {background:#ff0;}
+.added {background:#060;color:#fff;}
+.removed {background:#900;color:#fff;}
+.first {margin-left:0;padding-left:0;}
+.last {margin-right:0;padding-right:0;}
+.top {margin-top:0;padding-top:0;}
+.bottom {margin-bottom:0;padding-bottom:0;}
+
+/* grid.css */
+/* Use this to create a horizontal ruler across a column. */
+hr{background:#aaa;color:#aaa;clear:both;float:none;width:100%;height:.1em;margin:0 0 1.45em;border:none;}
+hr.space{background:#fff;color:#fff;}
+
+/* Clearing floats without extra markup
+   Based on How To Clear Floats Without Structural Markup by PiE
+   [http://www.positioniseverything.net/easyclearing.html] */
+.clearfix:after{content:".";display:block;height:0;clear:both;visibility:hidden;}
+.clearfix{display:inline-block;}
+* html .clearfix{height:1%;}
+.clearfix{display:block;}
+.clear{clear:both;}
+
+/* @end Blueprint */
+
+/* @group Global Styles */
+
+a:visited,
+a:link  {color:#333333; text-decoration: underline;}
+a:hover .termhighlight,
+a:hover {color:#f00; text-decoration: none;}
+a:active .termhighlight,
+a:active{color:#C20; text-decoration: none;}
+
+/* @end   Global Styles */
+/* =   Components   = */
+
+/* @group jvh0 Header  */
+
+.jvh0 {
+	background: url('./jv0h.jpg') no-repeat top left;
+	height: 95px;
+	width: 777px;
+	display: block;
+	overflow: hidden;
+	position: relative;
+	margin: 0 auto;
+}
+.jvh0 p {
+	font-size: 1.1em;
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	width: 100%;
+	margin: 0;
+	
+	padding-bottom: 1em;
+	text-align: center;
+}
+.jvh0 p a:link,
+.jvh0 p a:visited {
+	color: #fff;
+	text-decoration: none;
+	padding: 0.5em 0.5em 0.5em 1em;
+}
+.jvh0 p a.on{font-weight:bold;}
+.jvh0 p a.on,
+.jvh0 p a:hover {
+	background: url('/ga/images/jv0h_link_on.gif') no-repeat center left;
+	text-shadow: none;
+}
+.jvh0 p a.on,
+.jvh0 p a:active {
+	color: #fff;
+}
+
+.jvl0 {
+	background: url('/ga/im/a.gif') no-repeat top left; 
+	height: 73px;
+	width: 120px;
+	display: block;
+	overflow: hidden;
+	
+	text-indent: -999em;
+	-webkit-transition:all 0.1s ease-in;
+	position: absolute;
+	top: 12px;
+	left: 24px;
+}
+.jvl0:active{background-position:0px 1px;}
+
+/* @group Search Form */
+
+.jvs0 {
+	position: absolute;
+	top:   16px;
+	right: 16px;
+	left: auto; 
+}
+.jvs0, .jvs0w0 {
+	display: block;
+	border: 1px solid #444;
+	border-bottom-color: #bbb;
+	border-right-color: #bbb;
+	height: 1.5em;
+	overflow: hidden;
+	background: #fff;
+}
+.jvs0w0 input,
+.jvs0 input {
+	margin:  0;
+	padding: 0;
+	height: 18px;
+	line-height: 18px;
+	*line-height: 14px;
+	vertical-align: top;
+	display: block;
+	float: left;
+	border: none;
+	text-indent: 0.5em;
+	font-size: 1em;
+}
+/* @group Sidebar Search Form */
+
+.jvs0w0 {
+	width: 146px;
+	margin: 1.5em 0 1.5em 12px;
+	padding: 0;
+	position: relative;
+}
+.jvs0w0 input.text {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	float: none;
+	width: 124px;
+}
+.jvs0w0 input.image {
+	height: 18px;
+	width: 19px;
+	float: none;
+	background-color: #fff;
+	position: absolute;
+	top: 0px;
+	*top: 2px;
+	right: 0px;
+}
+
+/* @end   Sidebar Search Form */
+
+/* @end   Search Form */
+
+
+/* @end jvh0 Header */
+
+/* @group jvf0 Footer  */
+.jvf0 {
+	clear: both;
+	height: 50px;
+	overflow: visible;
+	width: 777px;
+	margin: 0 auto;
+	position: relative;
+	padding-top: 1em;
+	text-align: left;
+}
+
+.jvf0 .jvsun0 {
+	background: url('/ga/images/jv0_oracle.gif') no-repeat top left;
+	height: 22px;
+	width: 91px;
+	display: block;
+	overflow: hidden;
+	text-indent: -999em;
+	
+	position: absolute;
+	top: 15px;
+	right: 4px;
+}
+.jvf0 .jvsun0:hover {opacity:0.9;}
+.jvf0 .jvsun0:active{opacity:1; background-position:0px 1px;}
+
+.jvf0 p {
+	font-size: 0.95em;
+	line-height: 1.3;
+	margin: 0;
+	margin-left: 16px;
+	padding: 0;
+	padding-top:2px;
+	color: #666;
+}
+.jvf0 p a:visited,
+.jvf0 p a:link {
+	padding: 0.1em 0.3em;
+}
+
+.jvf0 p a:visited,
+.jvf0 p a:link  {color: #666;}
+.jvf0 p a:hover {color: #333;}
+.jvf0 p a:active{color: #A32000;}
+
+/* @end jvf0 Footer */
+
+/* @group jvc0 Content Area Columns */
+
+.jvc0 {
+	text-align: left;
+	width: 777px;
+	margin: 0 auto;
+	position: relative;
+}
+.jvc0{margin-top:1.5em;}
+.jvc0w2{margin-left:18px; margin-right:18px; display:block;}
+* html .jvc0w2{height:1%;}
+
+/* 2 Column Layout */
+.jvc0w1{width:607px;float:right;}
+
+/* @end   jvc0 Content Area Columns */
+/* @group jvc0 Styles */
+
+.jvc0 {color:#111;}
+.jvc0 h1 {font-size: 1.6667em; line-height: 1.5em; margin-bottom:0.3em; color:#ff0000;}/*20px*/
+.jvc0 h1 span{color:#333; font-size:1.25em;}
+.jvc0 h1 b{display: block; font-size: 0.65em; line-height:1.3846em; font-weight: normal;}
+.jvc0 h2 {font-size: 1.5em; line-height: 1.6667em; margin-bottom:0.3333em; color:#666;}
+.jvc0 h2 b{color:#dc5519; font-weight: normal;}
+.jvc0 h3 {font-size: 1.4167em; line-height: 1.7647em; margin-bottom:0.3529em; color:#333;}
+
+/* @end   jvc0 Styles */
+
+/* @group Homepage */
+
+/* @group jvc0v1 */
+html .jvc0v3 h1,
+html .jvc0v1 h1 {
+	text-transform: uppercase;
+	color: #646464;
+	text-align: center;
+	font: normal 64px/63px Helvetica, Arial, sans-serif;
+	padding-top: 7px;
+}
+
+html .jvc0v3 h1 em,
+html .jvc0v1 h1 em {
+	font-weight: normal;
+	font-style: normal;
+	color: #ef6207;
+	font-family: Arial, Helvetica, Geneva, sans-serif;
+	padding-left: 15px;
+	padding-right: 11px;
+}
+html .jvc0v1 .jvc0w1{float:left;}
+html .jvcs0{width:170px;float:right;}
+
+/* @end   jvc0v1 */
+
+#jvhx0 {
+	clear: both;
+	overflow: hidden;
+	margin: 0 16px;
+	position: relative;
+}
+#jvhx0 h2 {
+	font-size: 1em;
+	font-weight: bold;
+	display: block;
+	border-top: 1px solid #aaa;
+	color: #333;
+}
+#jvhx0 h2 a:visited,
+#jvhx0 h2 a:link {
+	color: #666;
+	font-weight: normal;
+}
+
+#jvhx0 .jvhx0w1 {
+	white-space: nowrap;
+	height: 130px;
+	overflow: hidden;
+	padding: 0;
+}
+
+#jvhx0 .jvhx0w1 a {
+	display: block;
+	float: left;
+	width: 125px;
+	overflow: hidden;
+}
+html #jvhx0 .jvhx0w1 a.last {
+	width: 117px;
+}
+#jvhx0 .jvhx0w1 img {
+	padding: 0;
+	margin: 0;
+}
+
+#jvhx0 .jvhx0w1 a img {
+	position: relative;
+	-webkit-transition: opacity 0.2s ease-out, padding-top 0.2s ease-out;
+	opacity: 0.99999;
+	vertical-align: top;
+}
+#jvhx0 .jvhx0w1.hover a img,
+#jvhx0 .jvhx0w1:hover a img {
+	opacity: 0.5;
+	-moz-opacity: 0.5;
+	filter:alpha(opacity=50);
+}
+html #jvhx0 .jvhx0w1 a:hover img {
+	opacity: 1.0;
+	-moz-opacity: 1.0;
+	filter:alpha(opacity=100);
+	filter: none;
+/*	padding-top: 3px;*/
+}
+
+
+/* @group jvc0v2 : English Home */
+
+.jvc0v2 .jvc0w1 {
+	width: auto;
+	float: none;
+	height: 336px;
+	padding-right: 330px;
+}
+html .jvc0v2 h1 {
+	display: block;
+	background: url('/ga/images/jv0ht.gif') no-repeat top center;
+	height: 173px;
+	text-indent: -999em;
+	margin-bottom: 2em;
+	position: relative;
+	top: 1em;
+}
+
+html #jvc0v2     .jvc0w1{background:      url('/ga/images/photos/java_home_photo2.jpg') no-repeat top right;}
+html #jvc0v2.bg1 .jvc0w1{background-image:url('/ga/images/photos/java_home_photo1.jpg');}
+html #jvc0v2.bg2 .jvc0w1{background-image:url('/ga/images/photos/java_home_photo2.jpg');}
+html #jvc0v2.bg3 .jvc0w1{background-image:url('/ga/images/photos/java_home_photo3.jpg');}
+html #jvc0v2.bg4 .jvc0w1{background-image:url('/ga/images/photos/java_home_photo4.jpg');}
+html #jvc0v2.bg5 .jvc0w1{background-image:url('/ga/images/photos/java_home_photo5.jpg');}
+/* @end   jvc0v2 : English Home */
+
+/* @group jvc0v3 : Home no sidebar */
+
+.jvc0v3 .jvc0w1 {
+	width: auto;
+	float: none;
+}
+html .jvc0v3 h1 {
+	display: block;
+}
+
+/* @end   jvc0v2 : English Home */
+
+/* @end   Homepage */
+
+/* @group Java In Action */
+
+/*.jvc0v4 .jvc0w1 {width:595px;}*/
+
+.jvc0v4 h1{display:none;}
+.jvc0v4 h2{color:#f00;padding-top:242px;}
+
+.jvc0v4 .jvc0w2 {
+	background-repeat: no-repeat;
+	background-position: top right;
+}
+/*clearfix*/
+.jvc0w2 .thumbs:after{content:".";display:block;height:0;clear:both;visibility:hidden;}
+.jvc0w2 .thumbs{display:inline-block;}
+* html .jvc0w2 .thumbs{height:1%;}
+.jvc0w2 .thumbs{display:block;}
+/*/clearfix*/
+.jvc0w2 .thumbs{
+	width: 580px;
+	margin-left:-9px;
+	overflow: hidden;
+}
+.jvc0w2 .thumbs .thumb{
+	display:block;
+	float:left;
+	padding-left:9px;
+	
+	position: relative;
+	z-index: 1;
+}
+.jvc0w2 .thumbs3 .thumb{width:184px;}/* (571-(2*9))/3 */
+.jvc0w2 .thumbs4 .thumb{width:136px;}/* (571-(3*9))/4 */
+.jvc0w2 .thumbs5 .thumb{width:107px;}/* (571-(4*9))/5 */
+
+.jvc0w2 .thumbs .thumb span{
+	display:block;
+	width:100%;
+	overflow:hidden;
+	text-align:center;
+	font-size: 0.9167em;
+	line-height: 1.2727em;
+	padding: 0.9em 0 1.1em 0;
+}
+.jvc0w2 .thumbs .thumb img{
+	border: 1px solid #222;
+	padding:1px;
+	background:#fff;
+}
+.jvc0w2 .thumbs .thumb a:hover img{
+	border-color: #000;
+	background-color: #ccc;
+	outline: 2px solid #eee;
+}
+.jvc0w2 .thumbs div.hr{clear:left;}
+
+/* @end   Java In Action */
+
+
+/* @group jvcs0 Sidebar */
+
+.jvcs0{width:170px;float:left;}
+.jvcs0 li.hr {display:block; padding:0; margin:0;}
+.jvcs0 hr {
+	background: #999;
+	color: #999;
+	margin: 1.3333em 0 1.5833em 1em; *margin: 0 0 0 1em;
+	width: 146px;
+	position: relative; *top:-11px;
+}
+
+/*Baseline matches 4 lines to 3 of the main font*/
+
+.jvcs0 p   {font-size:0.9167em;line-height:1.0909em;margin-bottom:1.0909em;}
+.jvcs0v1 p {font-size:1em;line-height:1.5em;margin-bottom:1.5em;}
+.jvcs0 h3,
+.jvcs0 h4 {
+	font-weight: bold;
+	
+	font-size: 0.9167em;
+	line-height: 1.3636em;
+	padding: 0.3636em 0 0.4545em;
+	height: 1.3636em;
+	height: auto;
+	
+	margin-bottom: 0.5em;
+}
+.jvcs0 h3 a,.jvcs0 h4 a{display:block;}
+.jvcs0 h3 a:visited,
+.jvcs0 h3 a:link{color:#fff;}
+.jvcs0 h4 a:visited,
+.jvcs0 h4 a:link{color:#666;}
+
+/* @group Sidebar Text Content */
+
+.jvcs0w0{background:url('/ga/images/jv0_sidebar_bg.gif') repeat-x top left; padding-bottom:3em;}
+.jvcs0w0 h3, .jvcs0w0 h4, .jvcs0w0 p{padding-left:10px;padding-right:10px;}
+
+/*Lists*/
+.jvcs0w0 ul{padding:0;margin-left:0;margin-right:0;}
+.jvcs0w0 ul li{list-style: none;text-indent:-0.8em;padding-left:1.8em;}
+.jvcs0w0 ul li a:visited,
+.jvcs0w0 ul li a:link{display:block;}
+* html .jvcs0w0 ul li a:visited,
+* html .jvcs0w0 ul li a:link{display:inline;}
+/*.jvcs0w0 ul li a{font-size:0.8333em;line-height:1.8em;}*/
+.jvcs0 ul li.on a:visited,
+.jvcs0 ul li.on a:link {color:#666; cursor: default; }
+.jvcs0 ul li.on a:hover {text-decoration: none;}
+
+/*Headers*/
+.jvcs0w0 h3{color:#fff;text-shadow:1px 1px 2px #666; background:#666 url('/ga/images/jv0_sidebar_head.gif') repeat-y;}
+.jvcs0w0 h4{color:#666;text-shadow:1px 1px 2px #fff; background:#D5D5D5 url('/ga/images/jv0_sidebar_subhead.gif') repeat-y;}
+
+/*Forms*/
+.jvcs0w0 label{font-size: 1em;line-height:1.5;padding-left:0.5em;cursor: pointer;}
+.jvcs0w0 input[type=checkbox]{cursor: pointer;}
+
+/* @end   Sidebar Text Content */
+
+/* @group spsidebar */
+.spsidebar {border:1px solid #e4e2e2;}
+.spheader { padding:3px 0 3px 9px; color:#000; text-transform:uppercase;vertical-align:middle; line-height:23px;background:#f0efef repeat-y !important; }
+.spheader a:visited, 
+.spheader a:link {color:black;font-weight:bold;text-decoration:none; }
+.spsidebar ul {color:#ff0000;line-height:1.5em;padding-bottom:3px;padding-top:4px; padding-left:5px;margin-right:2px; }
+/* @end spsidebar */
+
+/* @end   jvcs0 Sidebar */
+
+
+/* @group jvlt0 Link Table */
+
+.jvlt0{}
+.jvlt0 tr.alt td{background:#eee;}
+.jvlt0 td{padding:0;}
+.jvlt0 td a:visited,
+.jvlt0 td a:link{display:block;padding-left:1em;line-height:2em;height:2em;}
+/*3 Columns*/
+.jvlt0v3 tr td{width:33.33333%;}
+
+/* @end   jvlt0 Link Table */
+
+/* @group jvn0 Newsletter Form */
+
+.jvn0{display: block;text-align:center;margin-bottom:1.5em;}
+.jvn0 input.text{width:270px;}
+
+/* @end   jvn0 Newsletter Form */
+
+/* @group Search Results */
+
+.termhighlight{color:#111;background:#FDF7CD;font-weight:bold;}
+.jvsp0 .jvsp0x0{float:right;}
+
+.jvsp0v1 {
+	color:#fff;
+	background-color: #999999;
+	padding: 0.5em 1em 0.45em 1em;
+	margin:1.5em 0;
+	text-shadow: 1px 1.5px #666666;
+}
+.jvsp0v1 hr{
+	display:none;
+}
+.jvsp0v1 a,
+.jvsp0v1 a:link,
+.jvsp0v1 a:visited{
+	color:#fff;
+	text-decoration:underline;
+}
+.jvsp0v1 a:hover{
+	color:#FF0000;
+}
+
+/* @end   Search Results */
+
+/* @group jvdl0 DOWNLOAD Component  */
+.jvdl0{
+	position: relative;
+	margin: 0 auto;
+	text-align: center;
+}
+
+.jvdl0 p {
+	margin-top: -1.25em;
+	position: relative;
+	z-index: 1;
+}
+.jvdl0 p a:visited,
+.jvdl0 p a:link {
+	padding: 1em 0.25em;
+	text-shadow: 0px -1px 3px #fff;
+}
+.jvdl0 p a:hover  {text-shadow:1px 1px 2px #fff;}
+.jvdl0 p a:active {text-shadow:none;}
+
+/* @group Button */
+
+.jvdl0 a.jvdla0, .jvdl0x1, .jvdl0x2 {
+	background: url('./jv0dl_a.png') no-repeat bottom left;
+	display: block;
+	overflow: hidden;
+	margin: 0 auto;
+	width: 224px;
+}
+.jvdl0 a.jvdla0 {
+	color: white;
+	text-decoration: none;
+	text-align: center;
+	position: relative;
+	padding-bottom: 41px;
+}
+.jvdl0 a.jvdla0        .jvdl0x1{background-position:top    left; height:28px; position:absolute; top:0px; left:0px;}
+.jvdl0 a.jvdla0        .jvdl0x2{background-position:bottom left; height:65px; position:absolute; top:0px; left:0px;}
+.jvdl0 a.jvdla0:hover          {background-position:bottom center;}
+.jvdl0 a.jvdla0:hover  .jvdl0x1{background-position:top    center;}
+.jvdl0 a.jvdla0:hover  .jvdl0x2{background-position:bottom center;}
+.jvdl0 a.jvdla0:active         {background-position:bottom right;}
+.jvdl0 a.jvdla0:active .jvdl0x1{background-position:top    right;}
+.jvdl0 a.jvdla0:active .jvdl0x2{background-position:bottom right;}
+
+.jvdl0 a.jvdla0 span {
+	display: block;
+	padding: 1.15em;
+	line-height: 1em;
+	position: relative;
+	z-index: 1;
+	top: 3px;
+	font-size: 1.2em;
+	font-weight: bold;
+}
+
+/* @end   Button */
+/* @end jvdl0 DOWNLOAD Component */
+
+
+/* = DEPRECATED = */
+
+/* @group Support the old Help content asis */
+
+#helpcontent table {
+	margin: 0;
+	width: auto;
+	margin-right: auto;
+	margin-left: auto;
+}
+#helpcontent td{vertical-align:top;}
+td.gradientHeader{background:#666 url('/ga/images/jv0_sidebar_head.gif') repeat-y !important;}
+td.gradientHeader a:visited,
+td.gradientHeader a:link{color:white; text-decoration:none;}
+
+/* @end   Support the old Help content asis */
+/* = STYLES = */
+/* @group Individual Styles */
+
+/*Table with borders*/
+table.lined td,table.lined{border:1px solid #999;border-collapse:collapse;}
+
+
+/* @end   Individual Styles */
+/* = Sun Components = */
+/* @group Sun Components */
+
+/* pc6 - now using custom style */
+
+/* @end   Sun Components */
+
+.jvcs0v2 .jvcs0w0 {
+	padding-bottom: 25em;
+}
+
+body.debug * {outline:1px dotted aqua;}
+body.debug td {outline:1px dotted red;}
+html:hover body.debug * {outline:none;}
+
+html tr.manualsize th,
+html tr.manualsize td{margin:0;padding:0;}
+
+/* @group jvmt0 Thumbnail Grid Component */
+
+.jvmt0 {margin:0;}
+.jvmt0 li {
+	display: block;
+	float: left;
+	width: 285px;
+	overflow: hidden;
+	text-align: left;
+	margin-bottom: 1.5em;
+}
+.jvmt0 li span{display:block;text-align: center; float:left; width:274px;}
+.jvmt0 li.alt span{float:right;}
+.jvmt0 li.alt{
+	text-align: right;
+}
+.jvmt0 li img{
+	width: 270px;
+	height: 150px;
+	background-color: #ddd;
+	color: #333;
+}
+.jvmt0 li u {
+	background: #fff;
+	border: 1px solid #333;
+	display: block;
+	float: left;
+}
+.jvmt0 li.alt u {float:right;}
+.jvmt0 li u img {margin:1px;}
+
+/* @end   jvmt0 Thumbnail Grid Component */
+
+/* @group Fix Feedback alignment */
+
+/* #O_o {margin-left: -10px !important;} */
+/* #O_c table,#O_o table {margin:0;} */
+/* #O_c th,#O_o th,#O_c td,#O_o td {padding:0;} */
+
+/* @end   Fix Feedback alignment */
+
+/* @group subtlePager */
+
+html .subtlePager .page4,
+html .subtlePager .page3,
+html .subtlePager .page2,
+html .subtlePager .page1{display:none;}
+html .subtlePager.page4   .page4,
+html .subtlePager.page3   .page3,
+html .subtlePager.page2   .page2,
+html .subtlePager.page1   .page1{display:block;}
+
+* html .subtlePager .page4,
+* html .subtlePager .page3,
+* html .subtlePager .page2,
+* html .subtlePager .page1{display:block;position:absolute;left:-9999px;}
+* html .subtlePager.page4   .page4,
+* html .subtlePager.page3   .page3,
+* html .subtlePager.page2   .page2,
+* html .subtlePager.page1   .page1{display:block;position:relative;left:auto;}
+
+/* @end   subtlePager */
+
+ul.bluearrows li {
+	list-style: none;
+	padding-left: 0;
+	text-indent: -1em;
+}
+ul.bluearrows li a {
+	padding-left: 1em;
+	background: url('./ar_dbl_red.png') no-repeat left top;
+}
+
+ul.sidebar li {
+	list-style: none; 
+	padding-left: .8em;
+}
+ul.sidebar li a {
+	padding-left: 1.8em;
+	background: url('./ar_dbl_red.png') no-repeat left;
+}
+
+/* @group Fixes */
+/*Multi Column List Fix for IE*/
+td ol{padding-left:0.5em;}
+/* @end   Fixes */
+
+/* @group eulatxt */
+.eulatxt { width:65%; margin-left:auto; margin-right:auto; }
+/* @end eulatxt */
+
+/* @group closewin */
+.closetop { float:right;margin-top:2.5em;margin-right:.45em; }
+a.closewh {color:#fff;}
+img.closewh { margin-right:5px; width:12px;height:12px; border:0px; }
+img.closerd { margin-right:5px; width:15px;height:12px;border:0px;} 
+/* @end closewin */
+
+/* @group shadow box */
+div.boxshadow {
+	border:1px solid #ccc;
+	width: 380px;
+	padding: 1em 1.2em 1em 0.8em;
+	background:#E8E8EF repeat-y !important;
+	-moz-box-shadow: 4px 5px 6px #444;
+	-webkit-box-shadow: 4px 5px 6px #444;
+	box-shadow: 4px 5px 6px #444;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#444444')";
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#444444');
+	margin-top: 1em;
+	margin-left: auto;
+	margin-right: auto; 
+	font-size: 1.1em;
+	line-height: 1.15em;
+}
+
+div.boxshadow.centertext { text-align: center; }
+
+/* @end shadow box */
+
+/* @group img */
+.alertimg { float: left; margin:3px 6px 20px 1px; }
+img.alert { float: left; margin:3px 6px 20px 1px; }
+img.alerthelp { margin: 0.3em 0.75em 0.5em 0em; }
+img.thinfo { margin-right:2px;margin-bottom:-4px;margin-left:25px;width:16px;height:16px; }
+img.ctralign { display: block; margin-left:auto; margin-right:auto; margin-bottom:1em; }
+img.pfv { margin-left:4.5px; margin-right:4px; margin-bottom:-1px; border: 0; }
+img.infoic { float: left; margin:0.2em 5px 0px 0px; }
+img.aupanel { float: left; margin: 0.75em 0.9em 12em 0.2em; }
+img.logo { float: left; margin:-0.25em 2em 0 0; }
+
+/* @end img */
+
+/* alert panel styles */
+.alertPanel {
+	background-color: #ffffce;
+	border: solid 1px #f0c000;
+	text-align: left;
+	padding: 1.65em 1.65em .75em 0.5em; 
+}
+.alertPaneltext {
+	border: .85px; 
+	margin: -1.65em 0 0.55em 2.5em;
+}
+/* @end alert panel styles */
+
+/* notice panel styles */
+.noticePanel {
+	background-color: #ffffce;
+	border: solid 1px #f0c000;
+	text-align: left;
+	padding: 1.65em 1.6em 1.6em 2.5em; 
+}
+
+.infoPanel {
+	background-color: #eef8f8;
+	border: solid 1px #00000;
+	text-align: left;
+	padding: 1.65em 1.6em 1em 2.5em; 
+}
+
+/* @end notice panel styles */
+
+/* additional styles */
+ul.redarrows {
+	margin-top: 1em;
+	list-style-image: url('/ga/im/ar_dbl_red.png');
+}
+
+ul.logo { padding-left:3.5em; overflow:hidden; }
+span.rightarrowred {color:#f00;}
+.flrgt { float: right; } 
+.fllft { float: left; } 
+.hcenter { text-align:center; margin-top:1.5em; margin-bottom:1.5em; }
+.btmargsmall { margin-bottom: 0.25em; }
+.btmargless { margin-bottom: -0.45em; }
+
+.logotxtrt { 
+	margin: 0.65em 1.85em 1.85em 2em; 
+	padding: 0.2em 0.5em 0.95em 0.5em; 
+	border: 1px solid #000; 
+	float: right; 
+	width:170px; 
+	text-align: center;
+}
+/* end additional styles */

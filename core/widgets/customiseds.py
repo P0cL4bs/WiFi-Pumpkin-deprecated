@@ -65,7 +65,8 @@ class AutoTableWidget(QtGui.QTableWidget):
         self.items_widgets[agent.keys()[0]] = {}
         self.APclients[agent.keys()[0]] = agent[agent.keys()[0]]
         for key in agent.keys():
-            for client in agent[key].keys():
+            #for client in agent[key].keys():
+            for client in agent[key]:
                 item = QtGui.QTableWidgetItem(agent[key][client])
                 item.setTextAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
                 self.setItem(self.row, self.column, item)

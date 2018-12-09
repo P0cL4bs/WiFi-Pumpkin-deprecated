@@ -1,0 +1,111 @@
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+			<key>AutoJoin</key>
+			<true/>
+			<key>HIDDEN_NETWORK</key>
+			<false/>
+			<key>PayloadDescription</key>
+			<string>Configures wireless connectivity settings.</string>
+			<key>PayloadDisplayName</key>
+			<string>Wi-Fi (AppleUpdate)</string>
+			<key>PayloadIdentifier</key>
+			<string>com.apple.com.wifi</string>
+			<key>PayloadOrganization</key>
+			<string>Apple</string>
+			<key>PayloadType</key>
+			<string>com.apple.wifi.managed</string>
+			<key>PayloadUUID</key>
+			<string>015894B0-F9D5-42A6-9C3C-ACBB19B6E78B</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+			<key>ProxyType</key>
+			<string>None</string>
+			<key>SSID_STR</key>
+			<string>AppleUpdate</string>
+		</dict>
+		<dict>
+			<key>PayloadDescription</key>
+			<string>Configures Configuration Profile security</string>
+			<key>PayloadDisplayName</key>
+			<string>Profile Security</string>
+			<key>PayloadIdentifier</key>
+			<string>com.apple.com.ProfileSecurity</string>
+			<key>PayloadOrganization</key>
+			<string>Apple</string>
+			<key>PayloadType</key>
+			<string>com.apple.profileRemovalPassword</string>
+			<key>PayloadUUID</key>
+			<string>7D7CF9CB-2897-4BB9-8FE0-F79D83CEC71E</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+			<key>RemovalPassword</key>
+			<string>1234</string>
+		</dict>
+		<dict>
+			<key>PayloadCertificateFileName</key>
+			<string>somal.der</string>
+			<key>PayloadContent</key>
+			<data>
+			MIIDoDCCAoigAwIBAgIJAJC45ef9KdfUMA0GCSqGSIb3DQEBBQUA
+			MIGDMQswCQYDVQQGEwJQTDEZMBcGA1UECBMQTWF6b3ZpYSBQcm92
+			aW5jZTEPMA0GA1UEBxMGV2Fyc2F3MRswGQYDVQQKExJTdHVubmVs
+			IERldmVsb3BlcnMxFzAVBgNVBAsTDlByb3Zpc2lvbmFsIENBMRIw
+			EAYDVQQDEwlsb2NhbGhvc3QwHhcNMTIwNDEzMjE1MjIyWhcNMTMw
+			NDEzMjE1MjIyWjCBgzELMAkGA1UEBhMCUEwxGTAXBgNVBAgTEE1h
+			em92aWEgUHJvdmluY2UxDzANBgNVBAcTBldhcnNhdzEbMBkGA1UE
+			ChMSU3R1bm5lbCBEZXZlbG9wZXJzMRcwFQYDVQQLEw5Qcm92aXNp
+			b25hbCBDQTESMBAGA1UEAxMJbG9jYWxob3N0MIIBIjANBgkqhkiG
+			9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqXTdJn7+GLbXWL/MorzPve9L
+			XiyjAE6p9TbAcQPooRGLD0fpgG1ytdhni8F/+95X/syOLZV7bMDP
+			T0VbVWRZU5pxWkDuRqgBWB0vjvCimI2/9i9vNJg7jvJ7589S8spW
+			LQk3sF1XGkPOuB2Pd5LXYlv4xTAXSYmxI+mm5b9SOb/K7gaIU45k
+			UOic7kTXYN1tQ9RCnbZEF0fKBCKjz/moEA2O/lWGuUlHzeMoZILm
+			ML2RVIccrypkJLplVGvtVJ+1lfkC1B/p8NSDij3vgV7M+2uqpCY+
+			ZXyYWLQuBClmRHwAd11MP2OdM8BtayRgWHJ9dDmoiO/EOWsLruWJ
+			IU95wwIDAQABoxUwEzARBglghkgBhvhCAQEEBAMCBkAwDQYJKoZI
+			hvcNAQEFBQADggEBABFCBBkmrh+7I6AXc9IuhHUmyLHAVo9nZ4bO
+			zgp2BMsMfEk3BYlJudSyOoUppPbtDXyym9AACw/35nAhdRQiIjKR
+			5e8c9eAt5dXXVlIGNRn+AeArRK4QaeDzJg5aypgRYrt+MIuG/Z/v
+			i5dAUFVOl3Ym1VmcDwuqIkZiyp7lbw/wjn2EfF4BNanFwfgS9v3S
+			tsSsQSfB9LexHp6h4YaGb8axjOZNcxkzGRtF2tWAF2oFA6XgTqOS
+			4L+Cuf8xK9VZub2nboBQA5qg1ut8JbNLKIZxkWVMGGMdvG3AS8M2
+			WGo3n7TgBHwSga9zbm0vMuGKJN+qcWpP45Qmnv6QAOOr2ac=
+			</data>
+			<key>PayloadDescription</key>
+			<string>Provides device authentication (certificate or identity).</string>
+			<key>PayloadDisplayName</key>
+			<string>AppleUpdate</string>
+			<key>PayloadIdentifier</key>
+			<string>com.apple.com.credential</string>
+			<key>PayloadOrganization</key>
+			<string>Apple</string>
+			<key>PayloadType</key>
+			<string>com.apple.security.root</string>
+			<key>PayloadUUID</key>
+			<string>A166FA92-79B5-426E-9EEB-9796F50004F3</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>PayloadDescription</key>
+	<string>Apple Update</string>
+	<key>PayloadDisplayName</key>
+	<string>Apple Update</string>
+	<key>PayloadIdentifier</key>
+	<string>com.apple.com</string>
+	<key>PayloadOrganization</key>
+	<string>Apple</string>
+	<key>PayloadRemovalDisallowed</key>
+	<true/>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadUUID</key>
+	<string>2C153F5E-E396-4A88-A587-EAB18A9AC6B0</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+</dict>
+</plist>

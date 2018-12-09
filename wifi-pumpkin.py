@@ -33,11 +33,10 @@ if version_info.major != 2:
 
 if __name__ == '__main__':
     from core.loaders.checker.depedences import check_dep_pumpkin
-    from PyQt4 import QtGui
-    from core.utility.application import ApplicationLoop
-    from core.main import Initialize
-    from core.loaders.checker.networkmanager import CLI_NetworkManager, UI_NetworkManager
+    from core.loaders.checker.networkmanager import CLI_NetworkManager,UI_NetworkManager
     from core.utility.collection import SettingsINI
+    from core.utility.application import ApplicationLoop,QtGui
+    from core.main import Initialize
 
     check_dep_pumpkin()
     from os import getuid
@@ -51,6 +50,7 @@ if __name__ == '__main__':
 
     print('Loading GUI...')
     main = Initialize()
+    main.passSettings()
     main.setWindowIcon(QtGui.QIcon('icons/icon.png'))
     main.center()
     # check if Wireless connection
