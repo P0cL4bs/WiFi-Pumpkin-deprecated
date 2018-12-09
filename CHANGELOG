@@ -86,7 +86,11 @@ Version 0.8.5
 - fixed bug module Queue #357
 - fixed renamed module Queue to queue [modules func]
 - fixed struct.error: argument for 's' must be a string [ARP poisoner] #326
+<<<<<<< HEAD
 - change update for brump beta version 0.8.7
+=======
+- fixed #322 error when remove the client from tableWidget
+>>>>>>> master
 
 Version 0.8.4
 -------------
