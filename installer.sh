@@ -82,6 +82,15 @@ func_install(){
 	echo "[$green✔$txtrst] execute $bldred sudo wifi-pumpkin$txtrst in terminal"
 	echo "[$green+$txtrst]$color_y P0cL4bs Team CopyRight 2015-2017$txtrst"
 	echo "[$green+$txtrst] Enjoy"
+
+
+	echo "[+] $green WiFiMode $txtrst: is a module to include binary hostapd-mana/hostapd-Karma options \n
+	the WiFiMode will go download and compile the plugin hostapd/Mana and Karma."
+	echo -n "[!] Do you wanna install wifimode ? (y/n)? "
+	read answer
+	if [ "$answer" != "${answer#[Yy]}" ] ;then
+		sudo ./installer_wifimode.sh
+	fi
 	exit 0
 }
 

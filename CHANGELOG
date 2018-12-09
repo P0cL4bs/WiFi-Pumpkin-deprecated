@@ -22,6 +22,7 @@ Version 0.8.7
 - removed binary hostpad-mana
 - fixed Capture Image plugin 
 - added check if PumpkinProxy module dependencies is installed
+- added installer to enable Wireless Mode options Hostapd-Mana/Karma
 
 Version 0.8.5
 -------------
