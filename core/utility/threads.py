@@ -18,8 +18,15 @@ from PyQt4.QtGui import QMessageBox
 from plugins.external.sergio_proxy.plugins import *
 from multiprocessing import Process,Manager
 from core.servers.proxy.http.controller.handler import MasterHandler
-from mitmproxy import proxy,flow,options
-from mitmproxy.proxy.server import ProxyServer
+
+pump_proxy_lib = True #check package is installed
+try:
+    from mitmproxy import proxy, flow, options
+    from mitmproxy.proxy.server import ProxyServer
+except ImportError as e:
+    pump_proxy_lib = False
+
+
 import core.utility.constants as C
 
 """
@@ -272,6 +279,11 @@ class ThreadReactor(QThread):
 class ThreadPumpkinProxy(QObject):
     '''Thread: run Pumpkin-Proxy mitmproxy on brackground'''
     send = pyqtSignal(object)
+
+    @staticmethod
+    def isMitmProxyInstalled():
+        return pump_proxy_lib
+
     def __init__(self,session=None):
         QObject.__init__(self)
         self.session = session

@@ -21,6 +21,7 @@ Version 0.8.7
 - save ssid name in config.ini
 - removed binary hostpad-mana
 - fixed Capture Image plugin 
+- added check if PumpkinProxy module dependencies is installed
 
 Version 0.8.5
 -------------

@@ -21,8 +21,11 @@ from core.utility.threads import  (
 from core.widgets.pluginssettings import PumpkinProxySettings
 from core.widgets.docks.dock import DockableWidget
 from plugins.analyzers import *
-from plugins.extension import *
 from plugins.external.scripts import *
+
+if (ThreadPumpkinProxy().isMitmProxyInstalled()):
+    from plugins.extension import *
+from core.widgets.notifications import ServiceNotify
 
 class PumpkinProxyDock(DockableWidget):
     ''' get all output and filter data from Pumpkin-Proxy plugin'''
@@ -49,9 +52,12 @@ class PumpkinProxyDock(DockableWidget):
 
     def get_AllPluginName(self):
         ''' get all name plugins PumpkinProxy'''
-        plugin_classes = plugin.PluginTemplate.__subclasses__()
-        for p in plugin_classes:
-            self.pluginsName.append(p().Name)
+        try:
+            plugin_classes = plugin.PluginTemplate.__subclasses__()
+            for p in plugin_classes:
+                self.pluginsName.append(p().Name)
+        except NameError:
+            pass
 
     def writeModeData(self,data):
         ''' get data output and add on QtableWidgets'''
@@ -189,9 +195,15 @@ class PumpkinMitmproxy(ProxyMode):
 
     def search_all_ProxyPlugins(self):
         ''' load all plugins function '''
-        plugin_classes = plugin.PluginTemplate.__subclasses__()
-        for p in plugin_classes:
-            self.plugins.append(p())
+        try:
+            plugin_classes = plugin.PluginTemplate.__subclasses__()
+            for p in plugin_classes:
+                self.plugins.append(p())
+        except NameError: 
+            infoLabel = ServiceNotify(C.PUMPKINPROXY_notify,title='Package Requirement')
+            self.mainLayout.addWidget(infoLabel)
+
+            
     def boot(self):
         self.reactor = ThreadPumpkinProxy(self.parent.currentSessionID)
         self.reactor.send.connect(self.LogOutput)
