@@ -23,6 +23,7 @@ Version 0.8.7
 - fixed Capture Image plugin 
 - added check if PumpkinProxy module dependencies is installed
 - added installer to enable Wireless Mode options Hostapd-Mana/Karma
+- fixed update all settings when restart AP #435
 
 Version 0.8.5
 -------------
@@ -86,11 +87,7 @@ Version 0.8.5
 - fixed bug module Queue #357
 - fixed renamed module Queue to queue [modules func]
 - fixed struct.error: argument for 's' must be a string [ARP poisoner] #326
-<<<<<<< HEAD
 - change update for brump beta version 0.8.7
-=======
-- fixed #322 error when remove the client from tableWidget
->>>>>>> master
 
 Version 0.8.4
 -------------

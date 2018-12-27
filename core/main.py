@@ -263,6 +263,14 @@ class WifiPumpkin(QtGui.QWidget):
                 v.sendSingal_disable.emit(v.controlui.isChecked())
         self.DHCP = self.SessionConfig.DHCP.conf
         self.dhcpcontrol = DHCPController(self)
+        self.updateSettingsAP() # create settings ap on startup
+        self.initial_GUI_loader()
+        self.proxy.Active.dockwidget.addDock.emit(self.proxy.Active.controlui.isChecked())
+        for mitm in self.mitmhandler.Active:
+            mitm.dockwidget.addDock.emit(mitm.controlui.isChecked())
+        self.DockArrage()
+
+    def updateSettingsAP(self):
         self.SettingsAP = {
             'interface':
                 [
@@ -301,56 +309,6 @@ class WifiPumpkin(QtGui.QWidget):
                     'option subnet-mask {};\n'.format(self.DHCP['netmask']),
                     'option broadcast-address {};\n'.format(self.DHCP['broadcast']),
                     'option domain-name \"%s\";\n' % (str(self.SessionConfig.Wireless.EditSSID.text())),
-                    'option domain-name-servers {};\n'.format('8.8.8.8'),
-                    'range {};\n'.format(self.DHCP['range'].replace('/', ' ')),
-                    '}',
-                ],
-        }
-        self.initial_GUI_loader()
-        self.proxy.Active.dockwidget.addDock.emit(self.proxy.Active.controlui.isChecked())
-        for mitm in self.mitmhandler.Active:
-            mitm.dockwidget.addDock.emit(mitm.controlui.isChecked())
-        self.DockArrage()
-
-    def updateSettingsAP(self):
-        self.SettingsAP = {
-            'interface':
-                [
-                    'ifconfig %s up' % (self.SessionConfig.Wireless.WLANCard.currentText()),
-                    'ifconfig %s %s netmask %s' % (
-                        self.SessionConfig.Wireless.WLANCard.currentText(),
-                        self.DHCP['router'],
-                        self.DHCP['netmask']),
-                    'ifconfig %s mtu 1400' % (self.SessionConfig.Wireless.WLANCard.currentText()),
-                    'route add -net %s netmask %s gw %s' % (self.DHCP['subnet'],
-                                                            self.DHCP['netmask'], self.DHCP['router'])
-                ],
-            'kill':
-                [
-                    'iptables --flush',
-                    'iptables --table nat --flush',
-                    'iptables --delete-chain',
-                    'iptables --table nat --delete-chain',
-                    'ifconfig %s 0' % (self.SessionConfig.Wireless.WLANCard.currentText()),
-                    'killall dhpcd 2>/dev/null',
-                ],
-            'hostapd':
-                [
-                    'interface={}\n'.format(str(self.SessionConfig.Wireless.WLANCard.currentText())),
-                    'ssid={}\n'.format(str(self.wireless.Activated.Settings.EditSSID.text())),
-                    'channel={}\n'.format(str(self.wireless.Activated.Settings.EditChannel.value())),
-                    'bssid={}\n'.format(str(self.wireless.Activated.Settings.EditBSSID.text())),
-                ],
-            'dhcp-server':
-                [
-                    'authoritative;\n',
-                    'default-lease-time {};\n'.format(self.DHCP['leasetimeDef']),
-                    'max-lease-time {};\n'.format(self.DHCP['leasetimeMax']),
-                    'subnet %s netmask %s {\n' % (self.DHCP['subnet'], self.DHCP['netmask']),
-                    'option routers {};\n'.format(self.DHCP['router']),
-                    'option subnet-mask {};\n'.format(self.DHCP['netmask']),
-                    'option broadcast-address {};\n'.format(self.DHCP['broadcast']),
-                    'option domain-name \"%s\";\n' % (str(self.wireless.Activated.Settings.EditSSID.text())),
                     'option domain-name-servers {};\n'.format('8.8.8.8'),
                     'range {};\n'.format(self.DHCP['range'].replace('/', ' ')),
                     '}',
