@@ -17,12 +17,13 @@ from PyQt4.QtCore import QThread,pyqtSignal,SIGNAL,pyqtSlot,QProcess,QObject,SLO
 from PyQt4.QtGui import QMessageBox
 from plugins.external.sergio_proxy.plugins import *
 from multiprocessing import Process,Manager
-from core.servers.proxy.http.controller.handler import MasterHandler
+
 
 pump_proxy_lib = True #check package is installed
 try:
     from mitmproxy import proxy, flow, options
     from mitmproxy.proxy.server import ProxyServer
+    from core.servers.proxy.http.controller.handler import MasterHandler
 except ImportError as e:
     pump_proxy_lib = False
 
