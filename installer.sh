@@ -53,15 +53,12 @@ func_install(){
 	apt-get install -y build-essential libnetfilter-queue-dev
 	apt-get install -y python-qt4 python-scapy hostapd rfkill
 	apt-get install -y python-dev git
-	apt-get install -y libpcap-dev gdebi
+	apt-get install -y libpcap-dev
 	dist=$(tr -s ' \011' '\012' < /etc/issue | head -n 1)
     if [ "$dist" = "Kali" ]; then
         apt-get install libssl1.0
     fi
 	pip install -r requirements.txt
-	wget http://ftp.de.debian.org/debian/pool/main/m/mitmproxy/mitmproxy_0.18.2-6_all.deb \
-		-O /tmp/mitmproxy_0.18.2-6_all.deb
-	gdebi --non-interactive /tmp/mitmproxy_0.18.2-6_all.deb
 	
 	echo "----------------------------------------"
 	echo "[=]$bldblu checking dependencies $txtrst "
@@ -74,6 +71,15 @@ func_install(){
     if [ "$dist" = "Ubuntu" ]; then
         apt-get install libjpeg8-dev -y
     fi
+    if [ "$dist" = "Debian" ]; then
+    	apt-get install -y gdebi
+	wget http://ftp.de.debian.org/debian/pool/main/m/mitmproxy/mitmproxy_0.18.2-6_all.deb \
+		-O /tmp/mitmproxy_0.18.2-6_all.deb
+	gdebi --non-interactive /tmp/mitmproxy_0.18.2-6_all.deb
+    else
+	pip install mitmproxy=0.18.2
+    fi
+    	
 	echo "[=] $bldblu Install WiFi-Pumpkin $txtrst"
 	if [ -d "$DIRECTORY" ]; then
 		rm -r $DIRECTORY
