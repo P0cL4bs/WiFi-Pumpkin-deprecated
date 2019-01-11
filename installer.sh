@@ -59,7 +59,7 @@ func_install(){
         apt-get install libssl1.0
     fi
 	pip install -r requirements.txt
-	pip install mitmproxy==0.18.2
+	
 	echo "----------------------------------------"
 	echo "[=]$bldblu checking dependencies $txtrst "
 	func_check_install "hostapd"
@@ -71,6 +71,15 @@ func_install(){
     if [ "$dist" = "Ubuntu" ]; then
         apt-get install libjpeg8-dev -y
     fi
+    if [ "$dist" = "Debian" ]; then
+    	apt-get install -y gdebi
+	wget http://ftp.de.debian.org/debian/pool/main/m/mitmproxy/mitmproxy_0.18.2-6_all.deb \
+		-O /tmp/mitmproxy_0.18.2-6_all.deb
+	gdebi --non-interactive /tmp/mitmproxy_0.18.2-6_all.deb
+    else
+	pip install mitmproxy=0.18.2
+    fi
+    	
 	echo "[=] $bldblu Install WiFi-Pumpkin $txtrst"
 	if [ -d "$DIRECTORY" ]; then
 		rm -r $DIRECTORY
