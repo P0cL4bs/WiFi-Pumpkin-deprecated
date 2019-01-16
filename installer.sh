@@ -77,7 +77,7 @@ func_install(){
 		-O /tmp/mitmproxy_0.18.2-6_all.deb
 	gdebi --non-interactive /tmp/mitmproxy_0.18.2-6_all.deb
     else
-	pip install mitmproxy=0.18.2
+	pip install mitmproxy==0.18.2
     fi
     	
 	echo "[=] $bldblu Install WiFi-Pumpkin $txtrst"
