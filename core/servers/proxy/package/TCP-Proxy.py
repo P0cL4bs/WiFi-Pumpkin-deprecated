@@ -18,7 +18,6 @@ from core.widgets.docks.dockmonitor import (
     dockTCPproxy,dockUrlMonitor
 )
 from plugins.external.scripts import *
-from plugins.extension import *
 from plugins.analyzers import *
 from core.widgets.docks.dock import DockableWidget
 

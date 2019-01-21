@@ -23,7 +23,6 @@ from core.utility.threads import  (
 )
 from core.widgets.pluginssettings import PumpkinProxySettings
 from plugins.analyzers import *
-from plugins.extension import *
 from plugins.external.scripts import *
 
 

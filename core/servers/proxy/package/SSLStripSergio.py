@@ -21,7 +21,6 @@ from core.utility.threads import  (
 )
 from core.widgets.pluginssettings import PumpkinProxySettings
 from plugins.analyzers import *
-from plugins.extension import *
 from plugins.external.scripts import *
 from core.widgets.docks.dock import DockableWidget
 

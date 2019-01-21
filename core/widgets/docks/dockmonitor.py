@@ -1,4 +1,4 @@
-from plugins.extension import *
+
 from collections import OrderedDict
 from PyQt4.QtGui import (
     QListWidget,QTableWidget,QSizePolicy,
@@ -215,9 +215,12 @@ class dockPumpkinProxy(QTableWidget):
 
     def get_AllPluginName(self):
         ''' get all name plugins PumpkinProxy'''
-        plugin_classes = plugin.PluginTemplate.__subclasses__()
-        for p in plugin_classes:
-            self.pluginsName.append(p().Name)
+        try:
+            plugin_classes = plugin.PluginTemplate.__subclasses__()
+            for p in plugin_classes:
+                self.pluginsName.append(p().Name)
+        except:
+            pass
 
     def writeModeData(self,data):
         ''' get data output and add on QtableWidgets'''
