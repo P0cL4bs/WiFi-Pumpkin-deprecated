@@ -25,6 +25,7 @@ Version 0.8.7
 - added installer to enable Wireless Mode options Hostapd-Mana/Karma
 - fixed update all settings when restart AP #435
 - fixed start WP without mitmproxy module installed
+- change default pyoxy to DNS2Proxy if mitmproxy is not installed
 
 Version 0.8.5
 -------------

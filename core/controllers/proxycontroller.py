@@ -3,6 +3,7 @@ from collections import OrderedDict
 from core.widgets.default.uimodel import *
 from core.servers.proxy.package import *
 from core.utility.component import ControllerBlueprint
+from core.utility.threads import ThreadPumpkinProxy
 
 
 
@@ -52,6 +53,9 @@ class ProxyModeController(PluginsUI,ControllerBlueprint):
              ('Author', self.p_author),
              ('Description', self.p_desc)
              ])
+            
+        
+        
         self.table.setColumnCount(4)
         self.table.setRowCount(len(self.proxies))
         self.table.resizeRowsToContents()
@@ -79,6 +83,15 @@ class ProxyModeController(PluginsUI,ControllerBlueprint):
                     item = QtGui.QTableWidgetItem(item)
                     self.table.setItem(m, n, item)
         self.table.setHorizontalHeaderLabels(self.THeadersPluginsProxy.keys())
+        
+        
+        # change default pyoxy to DNS2Proxy if mitmproxy is not installed
+        if not ThreadPumpkinProxy.isMitmProxyInstalled():
+            for p_controlui in self.p_name:
+                if (p_controlui.text() == 'SSLStrip+DNS2Proxy'):
+                    p_controlui.setChecked(True)
+                    break
+        
     def get_disable_proxy(self):
 
 

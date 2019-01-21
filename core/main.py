@@ -37,6 +37,7 @@ from core.servers.dhcp.dhcp import *
 approot = QtCore.QCoreApplication.instance()
 
 
+
 """
 Description:
     This program is a core for wifi-pumpkin.py. file which includes functionality
@@ -175,6 +176,7 @@ class WifiPumpkin(QtGui.QWidget):
         self.UpdateSoftware.checkUpdate()
         self.Timer.start()
 
+        self.status_plugin_proxy_name = QtGui.QLabel('')  # status name proxy activated
 
         # define all Widget TABs
         self.MainControl    = QtGui.QVBoxLayout()
@@ -224,7 +226,7 @@ class WifiPumpkin(QtGui.QWidget):
         self.LeftTabBar.setStyleSheet(C.MENU_STYLE)
         # add in Tab default widget TABs
 
-        self.status_plugin_proxy_name = QtGui.QLabel('')  # status name proxy activated
+        
 
         self.SessionsAP     = loads(str(self.FSettings.Settings.get_setting('accesspoint','sessions')))
 
