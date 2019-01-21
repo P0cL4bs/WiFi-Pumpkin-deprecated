@@ -26,6 +26,7 @@ Version 0.8.7
 - fixed update all settings when restart AP #435
 - fixed start WP without mitmproxy module installed
 - change default pyoxy to DNS2Proxy if mitmproxy is not installed
+- fixed AttributeError: Queue in TCP-Proxy package #449
 
 Version 0.8.5
 -------------
