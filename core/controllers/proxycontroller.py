@@ -86,7 +86,7 @@ class ProxyModeController(PluginsUI,ControllerBlueprint):
         
         
         # change default pyoxy to DNS2Proxy if mitmproxy is not installed
-        if not ThreadPumpkinProxy.isMitmProxyInstalled():
+        if not ThreadPumpkinProxy.isMitmProxyInstalled() and self.Active.Name == 'Pumpkin Proxy':
             for p_controlui in self.p_name:
                 if (p_controlui.text() == 'SSLStrip+DNS2Proxy'):
                     p_controlui.setChecked(True)
