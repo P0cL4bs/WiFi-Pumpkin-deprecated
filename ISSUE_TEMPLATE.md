@@ -1,11 +1,23 @@
-Before opening a new issue, please read this [wiki](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/Bug-reporting)
+**Description of the bug or feature request**
 
-## What's the problem (or question)?
+A clear and concise description of what the bug is.
 
-*answer here*
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Go to '...'
+2. Click on '....'
+4. See error
 
-#### Please tell us details about your environment.
-* Card wireless adapters name (please check if support AP/mode):
+**Expected behavior**
+A clear and concise description of what you expected to happen.
+
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
+
+**Desktop (please complete the following information):**
 * Version used tool: 
 * Virtual Machine (yes or no and which): 
 * Operating System and version: 
+
+
+** INCOMPLETE REPORT WILL BE CLOSED **
