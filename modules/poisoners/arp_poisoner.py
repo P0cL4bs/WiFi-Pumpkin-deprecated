@@ -171,7 +171,7 @@ class frm_Arp_Poison(PumpkinModule):
         if x['gateway'] != None:
             self.txt_gateway.setText(x['gateway'])
             self.txt_redirect.setText(x['IPaddress'])
-            self.txt_mac.setText(Refactor.getHwAddr(x['activated'][0]))
+            self.txt_mac.setText(Refactor.get_interface_mac(x['activated'][0]))
         self.connect(self.ComboIface, QtCore.SIGNAL("currentIndexChanged(QString)"), self.discoveryIface)
         n = self.interfaces['all']
         for i,j in enumerate(n):
