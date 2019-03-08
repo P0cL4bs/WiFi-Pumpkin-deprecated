@@ -798,6 +798,7 @@ class WifiPumpkin(QtGui.QWidget):
         # disable options when started AP
         self.btn_start_attack.setDisabled(True)
         self.SessionConfig.DHCP.setEnabled(False)
+        self.SessionConfig.DNSSettings.setEnabled(False)
 
         self.proxy.setEnabled(False)
         self.mitmhandler.setEnabled(False)
@@ -872,6 +873,11 @@ class WifiPumpkin(QtGui.QWidget):
         self.dnsserver.Stop()
         self.dhcpcontrol.Stop()
         self.wireless.Stop()
+
+        self.SessionConfig.DHCP.setEnabled(True)
+        self.SessionConfig.DNSSettings.setEnabled(True)
+        self.proxy.setEnabled(True)
+        self.mitmhandler.setEnabled(True)
 
         self.FSettings.Settings.set_setting('accesspoint','statusAP',False)
         #TODO Fix this

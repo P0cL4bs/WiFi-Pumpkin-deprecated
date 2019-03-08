@@ -28,6 +28,7 @@ Version 0.8.7
 - change default pyoxy to DNS2Proxy if mitmproxy is not installed
 - fixed AttributeError: Queue in TCP-Proxy package #449
 - fixed No pyOpenSSL installed, no access internet #472
+fixed DHCP settings unchangeable after first starting #471
 
 Version 0.8.5
 -------------
