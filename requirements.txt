@@ -19,3 +19,4 @@ h2
 scapy_http
 service_identity
 backports.ssl_match_hostname
+pyOpenSSL
