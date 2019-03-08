@@ -208,3 +208,6 @@ class ExamplePlugin(PSniffer):
 ### Contact Us
 
 Whether you want to report a [bug](https://github.com/P0cL4bs/WiFi-Pumpkin/issues/new), send a patch or give some suggestions on this project, drop us or open [pull requests](https://github.com/P0cL4bs/WiFi-Pumpkin/pulls)
+
+### community
+https://discord.gg/jywYskR
