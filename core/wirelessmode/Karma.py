@@ -15,8 +15,8 @@ class Karma(Mode):
         super(Karma, self).__init__(parent)
 
     def Initialize(self):
-        self.configure_network_AP()
         self.parent.updateSettingsAP()  # update settings
+        self.configure_network_AP()
         self.get_soft_dependencies()
         ignore = ('interface=', 'ssid=', 'channel=', 'essid=')
         with open(C.HOSTAPDCONF_PATH, 'w') as apconf:

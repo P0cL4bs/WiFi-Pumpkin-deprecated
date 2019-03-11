@@ -20,9 +20,9 @@ class PyDHCP(DHCPServers):
         return self._isRunning
 
     def boot(self):
+        self.reactor = DHCPServer(str(self.parent.SessionConfig.Wireless.WLANCard.currentText()), self.parent.SessionConfig.DHCP.conf)
         if not self.getStatusReactor:
             self.setIsRunning(True)
-            self.reactor = DHCPServer(str(self.parent.SessionConfig.Wireless.WLANCard.currentText()), self.DHCPConf)
             self.reactor.sendConnetedClient.connect(self.get_DHCP_Discover_clients)
             self.reactor.setObjectName('Py_DHCP')
         self.reactor.LoopDhcpStatus = True

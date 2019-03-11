@@ -28,8 +28,8 @@ class Static(Mode):
 
     def Initialize(self):
         self.check_Wireless_Security()
-        dh, gateway = self.SessionConfig.DHCP.conf['router'], str(
-            self.SessionConfig.DHCP.EditGateway.text())
+        dh, gateway = self.parent.SessionConfig.DHCP.conf['router'], str(
+            self.parent.SessionConfig.DHCP.EditGateway.text())
         if dh[:len(dh) - len(dh.split('.').pop())] == gateway[:len(gateway) - len(gateway.split('.').pop())]:
             return QtGui.QMessageBox.warning(self, 'DHCP Server settings',
                                              'The DHCP server check if range ip class is same.'
@@ -52,8 +52,8 @@ class Static(Mode):
                             str(self.Settings.editPasswordAP.text()))):
                     return self.check_key_security_invalid()
         # get Tab-Hostapd conf and configure hostapd
-        self.configure_network_AP()
         self.parent.updateSettingsAP()  # update settings to resettings options ap
+        self.configure_network_AP()
         self.check_Wireless_Security()  # check if user set wireless password
         ignore = ('interface=', 'ssid=', 'channel=', 'essid=')
         with open(C.HOSTAPDCONF_PATH, 'w') as apconf:

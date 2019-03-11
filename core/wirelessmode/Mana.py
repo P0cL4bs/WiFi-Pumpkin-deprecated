@@ -16,8 +16,8 @@ class Mana(Mode):
 
     def Initialize(self):
 
-        self.configure_network_AP()
         self.parent.updateSettingsAP()
+        self.configure_network_AP()
         self.get_soft_dependencies()
         ignore = ('interface=', 'ssid=', 'channel=', 'essid=')
         with open(C.HOSTAPDCONF_PATH, 'w') as apconf:

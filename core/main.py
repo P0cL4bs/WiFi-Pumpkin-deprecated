@@ -273,6 +273,7 @@ class WifiPumpkin(QtGui.QWidget):
         self.DockArrage()
 
     def updateSettingsAP(self):
+        self.DHCP = self.SessionConfig.DHCP.conf
         self.SettingsAP = {
             'interface':
                 [
@@ -813,6 +814,8 @@ class WifiPumpkin(QtGui.QWidget):
 
         self.set_status_label_AP(True)
 
+        self.updateSettingsAP()
+        
         self.dhcpcontrol.Start()
         self.dnsserver.Start()
         self.proxy.Start()

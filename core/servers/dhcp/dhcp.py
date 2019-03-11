@@ -169,6 +169,7 @@ class DHCPSettings(CoreSettings):
         self.btnSave.setIcon(QtGui.QIcon('icons/export.png'))
         self.btnDefault.setIcon(QtGui.QIcon('icons/settings.png'))
         self.btnDefault.clicked.connect(self.setdefaultSettings)
+        self.btnSave.clicked.connect(self.setChangeSettings)
 
 
         self.dhcpClassIP = QtGui.QComboBox()
@@ -207,6 +208,7 @@ class DHCPSettings(CoreSettings):
         self.layoutbuttons.addWidget(self.btnDefault)
         self.layoutDHCP.addRow(self.layoutbuttons)
         self.layout.addLayout(self.layoutDHCP)
+
     def dhcpClassIPClicked(self,classIP):
         self.selected = str(self.dhcpClassIP.currentText())
         if 'class-Custom-Address' in self.selected: self.selected = 'dhcp'
@@ -218,6 +220,9 @@ class DHCPSettings(CoreSettings):
         self.subnet.setText(self.FSettings.Settings.get_setting(self.selected,'subnet'))
         self.broadcast.setText(self.FSettings.Settings.get_setting(self.selected,'broadcast'))
         self.savesettingsDHCP()
+        self.updateconf()
+        
+
     def setdefaultSettings(self):
         self.dhcpClassIP.setCurrentIndex(self.classtypes.index('Class-A-Address'))
         self.leaseTimeDef.setText(self.FSettings.Settings.get_setting('dhcpdefault','leasetimeDef'))
@@ -228,6 +233,13 @@ class DHCPSettings(CoreSettings):
         self.subnet.setText(self.FSettings.Settings.get_setting('dhcpdefault','subnet'))
         self.broadcast.setText(self.FSettings.Settings.get_setting('dhcpdefault','broadcast'))
         self.updateconf()
+        self.savesettingsDHCP()
+        QtGui.QMessageBox.information(self, 'DHCP Settings', 'DHCP Server conf successfully restarted')
+
+    def setChangeSettings(self):
+        self.savesettingsDHCP()
+        self.updateconf()
+        QtGui.QMessageBox.information(self, 'DHCP Settings', 'DHCP configuration had been saved successfully')
 
     def savesettingsDHCP(self):
         self.all_geteway_check = []
