@@ -33,6 +33,7 @@ class js_inject(PluginTemplate):
         for key,value in self.meta.items():
             self.__dict__[key] = value
         self.ConfigParser = True
+        self.exclude_extension = ('.css', '.js')  
         self.url = self.config.get_setting('set_js_inject','url')
 
     def request(self, flow):
@@ -46,7 +47,7 @@ class js_inject(PluginTemplate):
             if "Content-Security-Policy" in flow.response.headers:
                 del flow.response.headers["Content-Security-Policy"]
             """
-            if html.body:
+            if html.body and not flow.request.path.endswith(self.exclude_extension):
                 url =  '{}'.format(flow.request.pretty_host)
                 metatag = html.new_tag('script')
                 metatag.attrs['src'] = self.url
