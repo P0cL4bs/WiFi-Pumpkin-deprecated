@@ -230,11 +230,8 @@ class frm_PhishingManager(QtGui.QWidget):
                 self.btn_stop_template.setEnabled(True)
                 self.ServerHTTPLoad.setObjectName('THread::: HTTP Clone')
                 self.ServerHTTPLoad.start()
-                self.ServerHTTPLoad.sleep(5)
-                a = urlopen('http://{}:{}'.format(str(self.txt_redirect.text()),self.BoxPort.value()))
-                if a.getcode() == 200:
-                    self.StatusServer(True)
-                    self.emit(QtCore.SIGNAL('Activated( QString )'),'started')
+                self.StatusServer(True)
+                self.emit(QtCore.SIGNAL('Activated( QString )'),'started')
 
         elif self.check_server.isChecked():
             self.DirectoryPhishing(Path=str(self.EditDirectory.text()))

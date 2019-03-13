@@ -31,6 +31,7 @@ Version 0.8.7
 - fixed DHCP settings unchangeable after first starting #471
 - fixed DHCP configuration file for pyDHCPServer and IscDHCPServer #475
 - fixed Insert html code into js and css files PumpkiProxy #463
+- fixed Error when enabled website clone and IP #469
 
 Version 0.8.5
 -------------
