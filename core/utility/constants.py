@@ -1,5 +1,5 @@
 import os
-
+from tempfile import gettempdir
 dir_of_executable = os.path.dirname(__file__)
 
 # window constants
@@ -43,6 +43,7 @@ IPFORWARD = '/proc/sys/net/ipv4/ip_forward'
 
 # logging
 LOG_PUMPKINPROXY = 'logs/AccessPoint/pumpkin-proxy.log'
+LOG_CAPTIVEPORTALPROXY = 'logs/AccessPoint/captivePortal-proxy.log'
 LOG_URLCAPTURE = 'logs/AccessPoint/urls.log'
 LOG_CREDSCAPTURE = 'logs/AccessPoint/credentials.log'
 LOG_TCPPROXY = 'logs/AccessPoint/tcp-proxy.log'
@@ -61,6 +62,7 @@ LOG_ALL = 'logs/everything.log'
 CONFIG_INI = 'core/config/app/config.ini'
 TCPPROXY_INI = 'core/config/app/tcpproxy.ini'
 PUMPPROXY_INI = 'core/config/app/proxy.ini'
+CAPTIVEPORTAL_INI = 'core/config/app/captive-portal.ini'
 TEMPLATES = 'templates/fakeupdate/Windows_Update/Settins_WinUpdate.html'
 TEMPLATES_WWW = 'templates/www/portal/index.html'
 TEMPLATE_PH = 'templates/phishing/custom/index.html'
@@ -87,3 +89,13 @@ BDFPROXY_EXEC = 'plugins/external/BDFProxy-ng/bdf_proxy.py'
 YELLOW = '\033[33m'
 RED = '\033[91m'
 ENDC = '\033[0m'
+
+# extra captive portal themes
+EXTRACAPTIVETHEMES = 'https://github.com/mh4x0f/captiveportals/archive/master.zip'
+CAPTIVETHEMESZIP = '{}'.format(gettempdir() + "/download.zip")
+PATHCAPTIVEFINI  = '{}/captiveportals-master/settings.ini'.format(gettempdir())
+TEMPPATH = gettempdir()
+CAPTIVEPATH_TMP_TEMPLATES = '{}/captiveportals-master/templates/'.format(gettempdir())
+CAPTIVEPATH_TMP_PLUGINS = '{}/captiveportals-master/plugins/'.format(gettempdir())
+CAPTIVE_PATH_TEMPLATES = 'plugins/captivePortal/templates/'
+CAPTIVE_PATH_PLUGINS  = 'plugins/captivePortal'
