@@ -1,6 +1,7 @@
 Version 0.8.8
 -------------
 - added new moduled captive portal plugin
+- fixed TypeError: SetRules method
 
 Version 0.8.7
 -------------

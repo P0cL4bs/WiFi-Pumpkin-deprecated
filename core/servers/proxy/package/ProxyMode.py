@@ -160,10 +160,12 @@ class ProxyMode(Widget,ComponentBlueprint):
             items.append(str(self.FSettings.ListRules.item(index).text()))
         if self.optionsRules(strrules) in items:
             return
-        item = QtGui.QListWidgetItem()
-        item.setText(self.optionsRules(strrules))
-        item.setSizeHint(QtCore.QSize(30, 30))
-        self.FSettings.ListRules.addItem(item)
+        if (self.optionsRules(strrules) != None):
+            item = QtGui.QListWidgetItem()
+            item.setText(self.optionsRules(strrules))
+            item.setSizeHint(QtCore.QSize(30, 30))
+            self.FSettings.ListRules.addItem(item)
+
     def ClearRules(self):
         for rules in self.search.keys():
             self.unset_Rules(rules)
