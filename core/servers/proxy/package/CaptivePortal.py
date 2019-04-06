@@ -74,7 +74,7 @@ class CaptivePortal(ProxyMode):
     ''' settings  Captive Portal Proxy '''
     Name = "Captive Portal"
     Author = "Pumpkin-Dev"
-    Description = "Intercepting HTTP data, this proxy server that allows to intercept requests and response on the fly"
+    Description = "Captive-Portal allow the Attacker block Internet access for users until they open the page login page where a password is required before being allowed to browse the web."
     Icon = "icons/captive_portal.png"
     ModSettings = True
     Hidden = False

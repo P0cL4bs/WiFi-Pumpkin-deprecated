@@ -1,7 +1,7 @@
 ![logo](https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/docs/logo.png)
 
 [![build](https://travis-ci.org/P0cL4bs/WiFi-Pumpkin.svg)](https://travis-ci.org/P0cL4bs/WiFi-Pumpkin/)
-![version](https://img.shields.io/badge/version-0.8.7-orange.svg)
+![version](https://img.shields.io/badge/version-0.8.8-orange.svg)
 
 WiFi-Pumpkin - Framework for Rogue Wi-Fi Access Point Attack
 
@@ -9,7 +9,7 @@ WiFi-Pumpkin - Framework for Rogue Wi-Fi Access Point Attack
 
 The WiFi-Pumpkin is a rogue AP framework to easily create these fake networks, all while forwarding legitimate traffic to and from the unsuspecting target. It comes stuffed with features, including rogue Wi-Fi access points, deauth attacks on client APs, a probe request and credentials monitor, transparent proxy, Windows update attack, phishing manager, ARP Poisoning, DNS Spoofing, Pumpkin-Proxy, and image capture on the fly. moreover, the WiFi-Pumpkin is a very complete framework for auditing Wi-Fi security check the list of features is quite broad.
 
-![screenshot](https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/0.8.7Beta/docs/screenshot.png)
+![screenshot](https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/docs/screenshot.png)
 
 ### Installation
 
@@ -24,7 +24,7 @@ The WiFi-Pumpkin is a rogue AP framework to easily create these fake networks, a
 or download [.deb](https://github.com/P0cL4bs/WiFi-Pumpkin/releases) file to install
 
 ```sh
-sudo dpkg -i wifi-pumpkin-0.8.7-all.deb
+sudo dpkg -i wifi-pumpkin-0.8.8-all.deb
 sudo apt-get -f install # force install dependencies if not install normally
 
 ```
@@ -52,12 +52,9 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 - TCP-Proxy (with [scapy](http://www.secdev.org/projects/scapy/))
 - Moduled plugins and proxys
 - Wireless Mode support hostapd-mana/hostapd-karma attacks
+- Capitve-portals [new]
 
 ### Donation
-
-##### Patreon:
-
-[![Patreon](https://cloud.githubusercontent.com/assets/8225057/5990484/70413560-a9ab-11e4-8942-1a63607c0b00.png)](http://www.patreon.com/wifipumpkin)
 
 ##### paypal:
 
@@ -76,6 +73,8 @@ refer to the wiki for [Installation](https://github.com/P0cL4bs/WiFi-Pumpkin/wik
 | [Sergio_proxy](https://github.com/supernothing/sergio-proxy) | Sergio Proxy (a Super Effective Recorder of Gathered Inputs and Outputs) is an HTTP proxy that was written in Python for the Twisted framework. |
 | [BDFProxy](https://github.com/davinerd/BDFProxy-ng)          | Patch Binaries via MITM: BackdoorFactory + mitmProxy, bdfproxy-ng is a fork and review of the original BDFProxy @secretsquirrel.                |
 | [Responder](https://github.com/lgandx/Responder)             | Responder an LLMNR, NBT-NS and MDNS poisoner. Author: Laurent Gaffie                                                                            |
+| [PumpkinProxy]()                                             | Intercepting HTTP data, this proxy server that allows to intercept requests and response on the fly
+| [CaptivePortals]()                                          | Captive-Portal allow the Attacker block Internet access for users until they open the page login page where a password is required before being allowed to browse the web. | 
 
 ### Transparent Proxy
 
@@ -196,6 +195,12 @@ class ExamplePlugin(PSniffer):
 #### About TCP-Proxy
 
 [TCP-Proxy](https://github.com/P0cL4bs/WiFi-Pumpkin/wiki/TCP-PProxy) on the wiki
+
+#### About Captive Portals
+
+the plugin Captive-Portal allow the Attacker mount a wireless access point which is used in conjuction with a web server and iptables traffic capturing rules to create the phishing portal. Users can freely connect to these networks without a password and will often be directed to a login page where a password is required before being allowed to browse the web.
+
+[Captive-portals](https://github.com/mh4x0f/captiveportals) on the wiki
 
 ### Screenshots
 
