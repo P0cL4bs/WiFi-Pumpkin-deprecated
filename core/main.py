@@ -44,7 +44,7 @@ Description:
     for mount Access point.
 
 Copyright:
-    Copyright (C) 2015-2017 Marcos Nesster P0cl4bs Team
+    Copyright (C) 2015-2019 Marcos Bomfim (Nesster) P0cl4bs Team
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -63,8 +63,8 @@ Copyright:
 author      = 'Marcos Nesster (@mh4x0f)  P0cl4bs Team'
 emails      = ['mh4root@gmail.com','p0cl4bs@gmail.com']
 license     = ' GNU GPL 3'
-version     = '0.8.7'
-update      = '10/21/2018'
+version     = '0.8.8'
+update      = '04/06/2019'
 desc        = ['Framework for Rogue Wi-Fi Access Point Attacks']
 
 class Initialize(QtGui.QMainWindow):

@@ -45,7 +45,8 @@ class ProxyMode(Widget,ComponentBlueprint):
                             ' --destination-port 80 -j REDIRECT --to-port ' + self.FSettings.redirectport.text()),
             'dns2proxy': str('iptables -t nat -A PREROUTING -p udp --destination-port 53 -j REDIRECT --to-port 53'),
             'bdfproxy': str('iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port 8080'),
-            'PumpkinProxy': str('iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port 8080')}
+            'PumpkinProxy': str('iptables -t nat -A PREROUTING -p tcp --destination-port 80 -j REDIRECT --to-port 8080')
+            }
 
         self.search[self.Name]=self.iptablesrules
         self.popup = QtGui.QWidget()
@@ -145,23 +146,26 @@ class ProxyMode(Widget,ComponentBlueprint):
     @property
     def isEnabled(self):
         pass
-    def optionsRules(self):
-        return "No Rules"
+        
     def Initialize(self):
         pass
+
     def optionsRules(self,type):
         ''' add rules iptable by type plugins'''
         return self.search[type]
+
     def SetRules(self,strrules=""):
         items = []
         for index in xrange(self.FSettings.ListRules.count()):
             items.append(str(self.FSettings.ListRules.item(index).text()))
         if self.optionsRules(strrules) in items:
             return
-        item = QtGui.QListWidgetItem()
-        item.setText(self.optionsRules(strrules))
-        item.setSizeHint(QtCore.QSize(30, 30))
-        self.FSettings.ListRules.addItem(item)
+        if (self.optionsRules(strrules) != None):
+            item = QtGui.QListWidgetItem()
+            item.setText(self.optionsRules(strrules))
+            item.setSizeHint(QtCore.QSize(30, 30))
+            self.FSettings.ListRules.addItem(item)
+
     def ClearRules(self):
         for rules in self.search.keys():
             self.unset_Rules(rules)
@@ -178,13 +182,13 @@ class ProxyMode(Widget,ComponentBlueprint):
     def Configure(self):
         self.ConfigWindow.show()
 
-    def unset_Rules(self,type):
+    def unset_Rules(self,iptables):
         ''' remove rules from Listwidget in settings widget'''
         items = []
         for index in xrange(self.FSettings.ListRules.count()):
             items.append(str(self.FSettings.ListRules.item(index).text()))
         for position,line in enumerate(items):
-            if self.optionsRules(type) == line:
+            if self.optionsRules(iptables) == line:
                 self.FSettings.ListRules.takeItem(position)
     def SaveLog(self):
         pass

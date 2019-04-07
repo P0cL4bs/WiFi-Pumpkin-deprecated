@@ -190,9 +190,10 @@ class ThreadFastScanIP(QThread):
 
 class ProcessThread(QObject):
     _ProcssOutput = pyqtSignal(object)
-    def __init__(self,cmd,):
+    def __init__(self,cmd,directory=None):
         QObject.__init__(self)
         self.cmd = cmd
+        self.directory = directory
 
     def getNameThread(self):
         return '[New Thread {} ({})]'.format(self.procThread.pid(),self.objectName())
@@ -204,6 +205,8 @@ class ProcessThread(QObject):
 
     def start(self):
         self.procThread = QProcess(self)
+        if (self.directory):
+            self.procThread.setWorkingDirectory(self.directory)
         self.procThread.setProcessChannelMode(QProcess.MergedChannels)
         QObject.connect(self.procThread, SIGNAL('readyReadStandardOutput()'), self, SLOT('readProcessOutput()'))
         self.procThread.start(self.cmd.keys()[0],self.cmd[self.cmd.keys()[0]])
