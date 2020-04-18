@@ -1,3 +1,5 @@
+# This repository is ⛔️ DEPRECATED, [wifipumpkin3](https://github.com/P0cL4bs/wifipumpkin3) is Released, checkout!
+
 ![logo](https://raw.githubusercontent.com/P0cL4bs/WiFi-Pumpkin/master/docs/logo.png)
 
 [![build](https://travis-ci.org/P0cL4bs/WiFi-Pumpkin.svg)](https://travis-ci.org/P0cL4bs/WiFi-Pumpkin/)
