@@ -1,9 +1,0 @@
-$PBExportHeader$str_overlapped.srs
-global type str_overlapped from structure
-	unsignedlong		Internal
-	unsignedlong		InternalHigh
-	unsignedlong		Offset
-	unsignedlong		OffsetHigh
-	unsignedlong		hEvent
-end type
-

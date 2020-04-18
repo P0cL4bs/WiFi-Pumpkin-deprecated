@@ -1,2 +1,0 @@
-
-2016-04-25 11:25:26 Client IP: 127.0.0.1    request is    www.google.com. IN A

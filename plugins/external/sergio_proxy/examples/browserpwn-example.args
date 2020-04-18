@@ -1,4 +1,0 @@
---startmsf
---msf-exploit
-windows/browser/ms10_090_ie_css_clip
---browserpwn

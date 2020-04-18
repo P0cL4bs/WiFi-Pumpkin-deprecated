@@ -1,7 +1,0 @@
-$PBExportHeader$str_security_attibutes.srs
-global type str_security_attibutes from structure
-	unsignedlong		nlength
-	long		lpsecuritydescriptor
-	boolean		binherithandle
-end type
-
